@@ -1112,7 +1112,7 @@
 
   #processingBanner .request-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     padding: 8px 12px;
     background: var(--bg-secondary);
@@ -1134,16 +1134,51 @@
 
   #processingBanner .request-item .item-icon {
     flex-shrink: 0;
+    margin-top: 2px;
   }
 
   #processingBanner .request-item .item-text {
     flex: 1;
-    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  #processingBanner .request-company {
+    font-weight: 600;
     color: var(--text);
+    font-size: 14px;
+  }
+
+  #processingBanner .request-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  #processingBanner .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  #processingBanner .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+
+  #processingBanner .progress-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 400;
   }
 
   #processingBanner .request-item.completed .item-text {
-    color: var(--success);
+    color: var(--text);
   }
 
   #processingBanner .message {
@@ -1460,6 +1495,7 @@
 
     <section id="tabContentArea">
       <div id="resumeFormContainer" class="active">
+        <p id="result" style="text-align: center; padding: 8px; margin: 0 0 16px 0; font-weight: 500; color: var(--text);"></p>
         <form id="resumeForm">
           <!-- Side Navigation & Content -->
           <div class="form-nav-container">
@@ -1833,7 +1869,15 @@
       <div class="item-icon">
         <div class="spinner-small"></div>
       </div>
-      <div class="item-text">${companyName || 'Unknown Company'}</div>
+      <div class="item-text">
+        <div class="request-company">${companyName || 'Unknown Company'}</div>
+        <div class="request-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress_${requestId}" style="width: 0%"></div>
+          </div>
+          <div class="progress-text" id="progress_text_${requestId}">Starting...</div>
+        </div>
+      </div>
     `;
     requestsList.appendChild(requestItem);
     
@@ -1850,6 +1894,18 @@
     updateBannerCount();
   }
 
+  function updateRequestProgress(requestId, percentage, message) {
+    const progressFill = document.getElementById(`progress_${requestId}`);
+    const progressText = document.getElementById(`progress_text_${requestId}`);
+    
+    if (progressFill) {
+      progressFill.style.width = `${percentage}%`;
+    }
+    if (progressText) {
+      progressText.textContent = `${percentage}% - ${message}`;
+    }
+  }
+
   function markRequestComplete(requestId, fileName) {
     const request = activeRequests.get(requestId);
     if (request) {
@@ -1857,7 +1913,12 @@
       request.element.classList.add('completed');
       request.element.innerHTML = `
         <div class="item-icon">✓</div>
-        <div class="item-text">${request.company} - ${fileName}</div>
+        <div class="item-text">
+          <div class="request-company">${request.company}</div>
+          <div class="request-progress">
+            <div class="progress-text" style="color: var(--success);">✓ Complete - ${fileName}</div>
+          </div>
+        </div>
       `;
       
       updateBannerCount();
@@ -1881,7 +1942,12 @@
       request.element.classList.add('failed');
       request.element.innerHTML = `
         <div class="item-icon" style="color: var(--danger);">✗</div>
-        <div class="item-text" style="color: var(--danger);">${request.company} - Failed</div>
+        <div class="item-text">
+          <div class="request-company">${request.company}</div>
+          <div class="request-progress">
+            <div class="progress-text" style="color: var(--danger);">✗ Failed</div>
+          </div>
+        </div>
       `;
       
       updateBannerCount();
@@ -2069,21 +2135,55 @@
   function triggerUpload(){document.getElementById('uploadJSON').click();}
   document.getElementById('uploadJSON').addEventListener('change', e=>{
     const file=e.target.files[0];if(!file)return;
-    const r=new FileReader();r.onload=ev=>{try{
-      const d=JSON.parse(ev.target.result);
-      if(d.resume_data) populateForm(d.resume_data);
-      else populateForm(d);
-      if(d.job_description_data && d.job_description_data.job_description) {
-        const jobDescTab = document.getElementById('jobDescriptionTab');
-        const companyNameJD = document.getElementById('companyNameJD');
-        if (jobDescTab) jobDescTab.value = d.job_description_data.job_description;
-        if (companyNameJD && d.job_description_data.company_name) {
-          companyNameJD.value = d.job_description_data.company_name;
+    const r=new FileReader();r.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        console.log('JSON parsed successfully:', d);
+        
+        // Populate resume form
+        try {
+          if(d.resume_data) {
+            console.log('Populating from resume_data');
+            populateForm(d.resume_data);
+          }
+          else {
+            console.log('Populating directly from data');
+            populateForm(d);
+          }
+          console.log('Form populated successfully');
+        } catch (populateError) {
+          console.error('Error populating form:', populateError);
+          console.error('Stack trace:', populateError.stack);
+          showResult('⚠️ JSON loaded but some fields may not populate correctly');
         }
+        
+        // Populate job description
+        try {
+          if(d.job_description_data) {
+            console.log('Populating job description');
+            if(d.job_description_data.job_description) {
+              const jobDescTab = document.getElementById('jobDescriptionTab');
+              const companyNameJD = document.getElementById('companyNameJD');
+              if (jobDescTab) jobDescTab.value = d.job_description_data.job_description;
+              if (companyNameJD && d.job_description_data.company_name) {
+                companyNameJD.value = d.job_description_data.company_name;
+              }
+            }
+          }
+        } catch (jdError) {
+          console.error('Error populating job description:', jdError);
+        }
+        
+        showResult('✅ JSON Uploaded Successfully');
       }
-      showResult('✅ JSON Uploaded');
-    }
-      catch{alert("Invalid JSON");}};r.readAsText(file);});
+      catch(jsonError){
+        console.error('JSON Parse Error:', jsonError);
+        console.error('File content:', ev.target.result);
+        alert("Invalid JSON file. Please check the file format.\n\nError: " + jsonError.message);
+      }
+    };
+    r.readAsText(file);
+  });
 
   function populateForm(d){
     const f = document.getElementById('resumeForm');
@@ -2125,7 +2225,15 @@
     }
     document.getElementById('projectsList').innerHTML = '';
     if (d.projects && d.projects.length) {
-      d.projects.forEach(p => addProject(p));
+      // Filter out empty projects (no title and no bullets)
+      const validProjects = d.projects.filter(p => 
+        (p.title && p.title.trim()) || (p.bullets && p.bullets.length > 0 && p.bullets.some(b => b.trim()))
+      );
+      if (validProjects.length > 0) {
+        validProjects.forEach(p => addProject(p));
+      } else {
+        addProject(); // Add empty project if no valid projects
+      }
     } else {
       addProject();
     }
@@ -2164,10 +2272,26 @@
     const payload = {
       resume_data: resumeObj,
       job_description_data: jobObj,
-      mode: resumeMode  // Add mode to payload
+      mode: resumeMode,
+      request_id: requestId  // Add request ID to payload
     };
     
-    // Call new endpoint for JSON output (use correct backend port)
+    // Start polling for progress updates
+    const progressInterval = setInterval(async () => {
+      try {
+        const progressRes = await fetch(`http://localhost:5001/api/progress/${requestId}`);
+        if (progressRes.ok) {
+          const progressData = await progressRes.json();
+          if (progressData.percentage !== undefined && progressData.message) {
+            updateRequestProgress(requestId, progressData.percentage, progressData.message);
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching progress:', e);
+      }
+    }, 500); // Poll every 500ms
+    
+    // Call API to generate resume
     const apiUrl = 'http://localhost:5001/api/generate_resume_json';
     try {
       const res = await fetch(apiUrl, {
@@ -2175,6 +2299,10 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
+      
+      // Stop polling
+      clearInterval(progressInterval);
+      
       if(res.ok){
         const json = await res.json();
         // Show success message with file name
@@ -2197,14 +2325,11 @@
       }
     } catch (error) {
       console.error('Request failed:', error);
-      
-      // Mark request as failed in UI
+      clearInterval(progressInterval);
       markRequestFailed(requestId, error.message);
-      
-      showResult('❌ Failed to connect to server.');
+      showResult('❌ Error generating resume.');
     }
   }
-  
 
   function clearAll(){if(!confirm("Clear all fields?"))return;
     document.getElementById('resumeForm').reset();
