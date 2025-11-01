@@ -43,6 +43,7 @@ generated_resumes/
 debug_files/
 
 # Environment Variables
+.env
 .env.local
 
 # Logs

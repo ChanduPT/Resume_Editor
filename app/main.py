@@ -9,8 +9,10 @@ import random
 import traceback
 from datetime import datetime
 import json
+import asyncio
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from app.create_resume import create_resume
 
 from app.utils import ( 
@@ -289,9 +291,30 @@ def convert_resume_json_to_text(resume_data: dict) -> str:
 from fastapi import HTTPException
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from queue import Queue
 
 # Create a thread pool for CPU-bound operations
 executor = ThreadPoolExecutor(max_workers=4)
+
+# Global dictionary to track progress for each request
+progress_store: Dict[str, Dict[str, Any]] = {}
+
+def send_progress(request_id: str, percentage: int, message: str):
+    """Send progress update to the store for a specific request"""
+    if request_id:
+        progress_store[request_id] = {
+            "percentage": percentage,
+            "message": message,
+            "timestamp": datetime.now().isoformat()
+        }
+        logger.info(f"[PROGRESS] {request_id}: {percentage}% - {message}")
+
+@app.get("/api/progress/{request_id}")
+async def get_progress(request_id: str):
+    """Get current progress for a specific request"""
+    if request_id in progress_store:
+        return progress_store[request_id]
+    return {"percentage": 0, "message": "Initializing..."}
 
 @app.post("/api/generate_resume_json")
 async def generate_resume_json(request: Request):
@@ -301,19 +324,29 @@ async def generate_resume_json(request: Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
     
+    # Extract request_id if provided
+    request_id = data.get("request_id")
+    
     # Run CPU-intensive operations in thread pool to not block event loop
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(executor, process_resume, data)
+    result = await loop.run_in_executor(executor, process_resume, data, request_id)
+    
+    # Clean up progress after completion
+    if request_id and request_id in progress_store:
+        del progress_store[request_id]
     
     return result
 
-def process_resume(data: dict) -> dict:
+def process_resume(data: dict, request_id: str = None) -> dict:
     """Process resume in thread pool - this is the CPU-intensive part"""
     resume_json = data.get("resume_data", {})
     job_json = data.get("job_description_data", {})
     mode = data.get("mode", "complete_jd")  # Extract mode, default to 'complete_jd'
     
     logger.info(f"[MODE] Processing resume in '{mode}' mode")
+    
+    if request_id:
+        send_progress(request_id, 5, "Starting resume processing...")
 
     final_json = {}
     name = resume_json.get("name", "")
@@ -347,6 +380,9 @@ def process_resume(data: dict) -> dict:
 
     # convert resume_json to text format if needed
     resume_txt = convert_resume_json_to_text(resume_json)
+    
+    if request_id:
+        send_progress(request_id, 10, "Analyzing job description...")
 
     # write debug files
     # _save_debug_file(resume_txt, "resume_text.txt", prefix="resume")
@@ -361,10 +397,16 @@ def process_resume(data: dict) -> dict:
     sections = split_resume_sections(resume_text)
     #_save_debug_file(sections, "resume_sections.json", prefix="resume_sections")
 
+    if request_id:
+        send_progress(request_id, 20, "Generating optimization plan...")
+
     # Plan + JD hints
     plan_prompt = SCORING_PROMPT_JSON.replace("{jd_text}", jd).replace("{resume_text}", resume_text)    
     plan_raw = chat_completion(plan_prompt)
     plan = _safe_load_json(plan_raw) or {"section_updates": []}
+    
+    if request_id:
+        send_progress(request_id, 30, "Extracting key insights from job description...")
     
     # Debug: Log the scoring plan
     logger.info(f"[SCORING PLAN] Received {len(plan.get('section_updates', []))} section updates")
@@ -375,6 +417,9 @@ def process_resume(data: dict) -> dict:
     jd_hints = chat_completion(JD_HINTS_PROMPT.format(jd_text=jd))
     #save jd_hints
     #_save_debug_file(jd_hints, "jd_hints.txt", prefix="jd_hints")
+
+    if request_id:
+        send_progress(request_id, 40, "Optimizing summary section...")
 
     # Apply plan (same as /api/tailor)
     rewritten: Dict[str, str] = {}
@@ -405,6 +450,9 @@ def process_resume(data: dict) -> dict:
         rewritten["Summary"] = chat_completion(prompt).strip()
         logger.info("[SUMMARY] Summary section rewritten successfully")
         
+    if request_id:
+        send_progress(request_id, 55, "Optimizing technical skills...")
+        
     # Process Skills section
     if sections.get("Skills"):
         skills_edits = [e for e in updates if _norm_section_name(e.get("section")) == "skills"]
@@ -431,6 +479,9 @@ def process_resume(data: dict) -> dict:
         logger.info("[SKILLS] Skills section rewritten successfully")
     else:
         logger.warning("[SKILLS] No Skills section found in parsed resume sections")
+
+    if request_id:
+        send_progress(request_id, 70, "Optimizing experience section...")
 
     # Process Experience section
     if sections.get("Experience"):
@@ -463,6 +514,9 @@ def process_resume(data: dict) -> dict:
     
     # _save_debug_file(rewritten, "rewritten_sections.json", prefix="rewritten_sections")
     
+    if request_id:
+        send_progress(request_id, 80, "Structuring final resume data...")
+    
     # get summary from rewritten into final_json
     if rewritten.get("Summary"):
         final_json["summary"] = rewritten["Summary"]
@@ -474,6 +528,9 @@ def process_resume(data: dict) -> dict:
         experience_json = parse_experience_to_json(rewritten["Experience"])
         # print(f"\n\n experience_json before balancing: {experience_json} \n\n")
         logger.info(f"[EXPERIENCE] Parsed experience JSON: {experience_json}")
+
+        if request_id:
+            send_progress(request_id, 85, "Balancing experience bullets...")
 
         # Apply enhancements using JSON structure
         new_experience_json = _balance_experience_roles(experience_json, jd_hints)
@@ -488,6 +545,10 @@ def process_resume(data: dict) -> dict:
         skills_json = parse_skills_to_json(rewritten["Skills"])
         logger.info(f"[SKILLS] Parsed skills JSON: {skills_json}")
         # print(f"\n\n skills_json before formatting: {skills_json} \n\n")
+        
+        if request_id:
+            send_progress(request_id, 90, "Organizing skills...")
+        
         # Apply formatting using JSON structure
         prompt = ORGANIZE_SKILLS_PROMPT.format(skills_json=json.dumps(skills_json, ensure_ascii=False, indent=2))
         response = chat_completion(prompt)
@@ -508,11 +569,17 @@ def process_resume(data: dict) -> dict:
 
     # _save_debug_file(final_json, "final_resume_json.json", prefix="final_resume_json")
 
+    if request_id:
+        send_progress(request_id, 95, "Generating Word document...")
+
     comapny_name = job_json.get("company_name", "Company")
     # file name - company_name_date_time.docx
     file_name = f"{comapny_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
 
 
     create_resume(final_json, file_name)
+
+    if request_id:
+        send_progress(request_id, 100, "Resume generated successfully!")
 
     return {"result": "Resume generated successfully", "file_name": file_name}

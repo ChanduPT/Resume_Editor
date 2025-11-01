@@ -216,7 +216,7 @@ def create_resume(data, file_name):
     contact.paragraph_format.space_after = Pt(0)
 
     # --- Summary ---
-    heading = doc.add_heading("SUMMARY", level=1)
+    heading = doc.add_heading("PROFESSIONAL SUMMARY", level=1)
     set_paragraph_format(heading, font_size=11)
     heading.paragraph_format.space_before = Pt(0)
     for run in heading.runs:
@@ -278,7 +278,7 @@ def create_resume(data, file_name):
             set_paragraph_format(skill_para, font_size=10, spacing=1.0, alignment=WD_ALIGN_PARAGRAPH.LEFT)
 
     # --- Experience ---
-    heading = doc.add_heading("EXPERIENCE", level=1)
+    heading = doc.add_heading("WORK EXPERIENCE", level=1)
     set_paragraph_format(heading, font_size=11)
     for run in heading.runs:
         run.font.color.rgb = RGBColor(0, 0, 0)  # Set to black
