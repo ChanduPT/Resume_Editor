@@ -90,7 +90,7 @@ cd ~/Downloads
 ### Step 2: Install Dependencies
 
 ```bash
-cd resume_editor_v1.1
+cd Resume_Editor
 pip3 install -r requirements.txt
 ```
 
