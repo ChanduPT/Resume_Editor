@@ -1,0 +1,2331 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Resume Builder Pro</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --bg-secondary: #ffffff;
+    --text: #0f172a;
+    --text-secondary: #64748b;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --accent-light: #eef2ff;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #10b981;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --bg-secondary: #1e293b;
+    --text: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --card: #1e293b;
+    --border: #334155;
+    --accent: #818cf8;
+    --accent-hover: #6366f1;
+    --accent-light: #312e81;
+    --danger: #f87171;
+    --danger-hover: #ef4444;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== MENU BAR ===== */
+  header {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    right: 0;
+    background: var(--bg-secondary);
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    height: 64px;
+  }
+  
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  #menuActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  /* Buttons & Dropdown Triggers */
+  header button, .dropdown-btn {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+  }
+  
+  header button:hover, .dropdown-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #clearBtn {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+  }
+  
+  #clearBtn:hover {
+    background: var(--danger-hover);
+    border-color: var(--danger-hover);
+  }
+
+  header button[onclick*="generateResume"] {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  header button[onclick*="generateResume"]:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  #toggleTheme {
+    width: auto;
+    min-width: 80px;
+    padding: 8px 14px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  /* ===== Dropdown Menus ===== */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: var(--card);
+    min-width: 180px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1200;
+    overflow: hidden;
+  }
+  
+  .dropdown-content a {
+    color: var(--text);
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+    transition: background 0.15s ease;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: var(--accent-light);
+    color: var(--accent);
+  }
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+    animation: fadeIn 0.15s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== MAIN AREA ===== */
+  main {
+    padding: 80px 40px 40px;
+    max-width: 100%;
+    margin: 0;
+    min-height: calc(100vh - 64px);
+  }
+  
+  h3 {
+    font-weight: 600;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  
+  h3:first-child {
+    margin-top: 0;
+  }
+  
+  label {
+    font-weight: 500;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    margin-top: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.15s ease;
+  }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  
+  textarea::placeholder, input::placeholder {
+    color: var(--text-secondary);
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .entry {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-top: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  
+  .entry:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+  }
+  
+  .bullet {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    gap: 8px;
+  }
+  
+  .bullet input {
+    flex: 1;
+    margin-top: 0;
+  }
+  
+  .remove-btn {
+    margin-left: 0;
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .remove-btn:hover {
+    background: var(--danger-hover);
+    transform: scale(1.05);
+  }
+
+  .sub-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    margin-top: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .sub-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  #result {
+    margin-top: 32px;
+    font-weight: 500;
+    text-align: center;
+    padding: 12px 24px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+  }
+
+  /* Scroll to Top Button */
+  #scrollToTop {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+  }
+
+  #scrollToTop.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #scrollToTop:hover {
+    background: var(--accent-hover);
+    transform: translateY(-3px);
+  }
+
+  /* ===== Modal (About) ===== */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .modal-content {
+    background-color: var(--card);
+    margin: 10% auto;
+    padding: 32px;
+    border: 1px solid var(--border);
+    width: 90%;
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .modal-content p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  
+  .close {
+    color: var(--text-secondary);
+    float: right;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    line-height: 1;
+    margin-top: -8px;
+    margin-right: -8px;
+  }
+
+  .close:hover {
+    color: var(--text);
+  }
+
+  /* ===== Sidebar & Tab Layout ===== */
+  #tabContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    background: var(--bg);
+    position: relative;
+  }
+  
+  #sidebar {
+    position: sticky;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 24px;
+    box-sizing: border-box;
+    gap: 12px;
+    z-index: 998;
+  }
+
+  /* Action Buttons Bar - Remove */
+  .action-buttons-bar {
+    display: none;
+  }
+
+  /* Floating Action Buttons */
+  .floating-actions {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px; /* Fixed width container */
+    height: 200px; /* Fixed height to contain all buttons */
+    z-index: 999;
+    pointer-events: none; /* Allow clicks to pass through container */
+  }
+
+  .floating-actions input[type="file"] {
+    display: none; /* Completely hidden, doesn't affect layout */
+  }
+
+  .floating-actions button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    position: absolute; /* Position absolutely to prevent pushing */
+    right: 0;
+    overflow: visible;
+    padding: 0;
+    pointer-events: auto; /* Re-enable clicks on buttons */
+  }
+
+  /* Position each button vertically */
+  .floating-actions button:nth-of-type(1) {
+    bottom: 144px; /* Top button (upload) */
+  }
+
+  .floating-actions button:nth-of-type(2) {
+    bottom: 72px; /* Middle button (download) */
+  }
+
+  .floating-actions button:nth-of-type(3) {
+    bottom: 0; /* Bottom button (clear) */
+  }
+
+  .floating-actions button:hover {
+    border-radius: var(--radius-lg);
+    width: auto;
+    min-width: 56px;
+    padding-left: 20px;
+    padding-right: 16px;
+    justify-content: flex-end;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10; /* Bring hovered button above siblings */
+  }
+
+  .floating-actions button::before {
+    content: attr(data-icon);
+    font-size: 20px;
+    flex-shrink: 0;
+    order: 2;
+  }
+
+  .floating-actions button::after {
+    content: attr(data-label);
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 8px;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    order: 1;
+  }
+
+  .floating-actions button:hover::after {
+    opacity: 1;
+    max-width: 200px;
+    margin-right: 8px;
+  }
+
+  .floating-actions button.upload-btn {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .floating-actions button.download-btn {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .floating-actions button.clear-btn {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .floating-actions button.upload-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  .floating-actions button.download-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  .floating-actions button.clear-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+  
+  .tab-btn {
+    padding: 12px 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    margin: 0;
+    min-width: 180px;
+  }
+  
+  .tab-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .tab-btn:not(.active):hover {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #tabContentArea {
+    margin-left: 0;
+    flex: 1;
+    padding: 40px 48px;
+    padding-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  
+  #resumeFormContainer, #jobDescTabPanel {
+    width: 100%;
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  #resumeFormContainer.active, #jobDescTabPanel.active {
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease;
+  }
+  /* Job Description Tab Panel */
+  #jobDescTabPanel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-top: 0;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    min-height: 400px;
+    max-width: 100%;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #jobDescTabPanel h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+  
+  #jobDescTabPanel textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 450px;
+    margin-top: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text);
+    padding: 14px;
+    box-sizing: border-box;
+  }
+  
+  #generateJDResumeBtn {
+    margin-top: 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    align-self: flex-start;
+    transition: all 0.15s ease;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #generateJDResumeBtn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  @media (max-width: 1100px) {
+    #tabContentArea {
+      padding: 32px 24px;
+      padding-bottom: 80px;
+    }
+
+    .floating-actions {
+      bottom: 16px;
+      right: 16px;
+    }
+
+    .floating-actions button {
+      width: 48px;
+      height: 48px;
+      font-size: 18px;
+    }
+
+    .floating-actions button::before {
+      font-size: 18px;
+    }
+
+    header {
+      padding: 12px 20px;
+    }
+
+    header h1 {
+      font-size: 18px;
+    }
+
+    #menuActions {
+      gap: 6px;
+    }
+
+    header button, .dropdown-btn {
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+    
+    #toggleTheme {
+      padding: 7px 12px;
+    }
+  }
+  
+  @media (max-width: 850px) {
+    #tabContainer {
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+    }
+    
+    #sidebar {
+      padding: 12px 12px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      padding: 12px 16px;
+    }
+
+    .floating-actions {
+      bottom: 12px;
+      right: 12px;
+      gap: 8px;
+    }
+
+    .floating-actions button {
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+    }
+
+    .floating-actions button::before {
+      font-size: 16px;
+    }
+    
+    #tabContentArea {
+      padding: 24px 16px;
+      padding-bottom: 160px;
+    }
+    
+    #jobDescTabPanel, #resumeFormContainer {
+      padding: 20px 16px;
+    }
+
+    header {
+      padding: 10px 16px;
+      height: auto;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    header h1 {
+      font-size: 16px;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    #menuActions {
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    header button, .dropdown-btn {
+      font-size: 11px;
+      padding: 6px 10px;
+    }
+    
+    #toggleTheme {
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    main {
+      padding: 100px 16px 32px;
+    }
+
+    .entry {
+      padding: 12px;
+    }
+
+    #processingBanner {
+      top: 70px;
+      right: 12px;
+      min-width: 240px;
+      padding: 10px 16px;
+    }
+
+    #processingBanner .message {
+      font-size: 13px;
+    }
+  }
+
+  /* Additional Polish */
+  form {
+    margin-bottom: 24px;
+    max-width: 100%;
+  }
+
+  .entry input {
+    margin-bottom: 8px;
+  }
+
+  .entry input:last-of-type {
+    margin-bottom: 0;
+  }
+
+  /* Skill entries styling */
+  #skillsList .entry {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+  }
+
+  #skillsList .entry input {
+    margin-bottom: 0;
+  }
+  
+  /* Contact entries styling - same as skills */
+  #contactList .entry {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+  }
+
+  #contactList .entry input {
+    margin-bottom: 0;
+  }
+  
+  /* Readonly contact labels styling */
+  #contactList .entry input[readonly] {
+    background: var(--bg);
+    border-color: var(--border);
+    cursor: default;
+    opacity: 0.8;
+  }
+  
+  /* Ensure inputs don't overflow */
+  input, textarea {
+    max-width: 100%;
+  }
+
+  /* Form Section Navigation */
+  .form-nav-container {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    margin-top: 16px;
+    align-items: start;
+  }
+
+  .form-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 0px;
+    height: fit-content;
+    align-self: start;
+  }
+  
+  .form-sections {
+    min-height: 500px;
+  }
+
+  .form-nav-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-nav-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .form-nav-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+
+  .form-nav-btn .icon {
+    font-size: 18px;
+  }
+
+  .form-section-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+    min-height: 400px;
+  }
+
+  .form-section-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-section-panel h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Responsive: Stack navigation on mobile */
+  @media (max-width: 850px) {
+    .form-nav-container {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .form-nav {
+      position: static;
+      flex-direction: row;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .form-nav-btn {
+      white-space: nowrap;
+      min-width: fit-content;
+    }
+  }
+
+  /* Better focus states */
+  button:focus-visible, .tab-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* Loading spinner for status modal */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  /* Processing Banner */
+  #processingBanner {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1100;
+    min-width: 320px;
+    max-width: 400px;
+    pointer-events: auto;
+    animation: slideInFromRight 0.3s ease;
+  }
+
+  #processingBanner.active {
+    display: flex;
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  #processingBanner .banner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  #processingBanner .banner-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #processingBanner .close-banner {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+  }
+
+  #processingBanner .close-banner:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  #processingBanner .spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    flex-shrink: 0;
+  }
+
+  #processingBanner .requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  #processingBanner .request-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    transition: all 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+  }
+
+  #processingBanner .request-item.completed {
+    background: var(--accent-light);
+    border-left: 3px solid var(--success);
+  }
+
+  #processingBanner .request-item.failed {
+    background: #fee;
+    border-left: 3px solid var(--danger);
+  }
+
+  #processingBanner .request-item .item-icon {
+    flex-shrink: 0;
+  }
+
+  #processingBanner .request-item .item-text {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  #processingBanner .request-item.completed .item-text {
+    color: var(--success);
+  }
+
+  #processingBanner .message {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 3px;
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* ===== FAQ Section ===== */
+  .faq-section {
+    display: none; /* Hidden by default */
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px;
+    max-width: 100%;
+    position: relative;
+  }
+  
+  .faq-section.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .faq-header {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .faq-section h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .faq-close {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .faq-close:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .faq-section .faq-item {
+    max-width: 900px;
+    margin: 0 auto 12px;
+  }
+
+  .faq-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all 0.15s ease;
+  }
+
+  .faq-item:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+  }
+
+  .faq-question {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 18px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.15s ease;
+  }
+
+  .faq-question:hover {
+    color: var(--accent);
+  }
+
+  .faq-icon {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+    color: var(--accent);
+  }
+
+  .faq-item.active .faq-icon {
+    transform: rotate(180deg);
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 24px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .faq-item.active .faq-answer {
+    max-height: 200px;
+    padding: 0 24px 18px;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 48px 32px 24px;
+    margin-top: 0;
+    clear: both;
+    width: 100%;
+    position: relative;
+  }
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+
+  .footer-about h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .footer-about p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .footer-about a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+  }
+
+  .footer-about a:hover {
+    color: var(--accent-hover);
+  }
+
+  .footer-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-links li {
+    margin-bottom: 10px;
+  }
+
+  .footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.15s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent);
+  }
+
+  .social-links {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .social-links a {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 18px;
+    transition: all 0.15s ease;
+  }
+
+  .social-links a:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  [data-theme="dark"] .social-links a:hover {
+    color: white;
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  @media (max-width: 850px) {
+    .footer-content {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .faq-section {
+      padding: 0 16px;
+    }
+
+    .faq-section h2 {
+      font-size: 24px;
+    }
+
+    .faq-question {
+      padding: 14px 16px;
+      font-size: 15px;
+    }
+
+    .faq-answer {
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 32px 16px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Resume Builder Pro</h1>
+  <div id="menuActions">
+    <button onclick="generateResume()" style="background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;">🚀 Start Cheyi Bro</button>
+    <button id="toggleTheme">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+  <div id="tabContainer">
+    <nav id="sidebar">
+      <button class="tab-btn active" id="tabResumeBtn" type="button">View Resume</button>
+      <button class="tab-btn" id="tabEditJDBtn" type="button">Edit Resume</button>
+    </nav>
+
+    <section id="tabContentArea">
+      <div id="resumeFormContainer" class="active">
+        <form id="resumeForm">
+          <!-- Side Navigation & Content -->
+          <div class="form-nav-container">
+            <!-- Side Navigation -->
+            <div class="form-nav">
+              <button type="button" class="form-nav-btn active" onclick="showFormSection('basic')">
+                <span class="icon">📝</span>
+                <span>Basic Info</span>
+              </button>
+              <button type="button" class="form-nav-btn" onclick="showFormSection('contact')">
+                <span class="icon">📞</span>
+                <span>Contact</span>
+              </button>
+              <button type="button" class="form-nav-btn" onclick="showFormSection('skills')">
+                <span class="icon">🛠️</span>
+                <span>Skills</span>
+              </button>
+              <button type="button" class="form-nav-btn" onclick="showFormSection('experience')">
+                <span class="icon">💼</span>
+                <span>Experience</span>
+              </button>
+              <button type="button" class="form-nav-btn" onclick="showFormSection('education')">
+                <span class="icon">🎓</span>
+                <span>Education</span>
+              </button>
+              <button type="button" class="form-nav-btn" onclick="showFormSection('projects')">
+                <span class="icon">🚀</span>
+                <span>Projects</span>
+              </button>
+              <button type="button" class="form-nav-btn" onclick="showFormSection('certifications')">
+                <span class="icon">🏆</span>
+                <span>Certifications</span>
+              </button>
+            </div>
+
+            <!-- Content Panels -->
+            <div class="form-sections">
+              <!-- Basic Information Section -->
+              <div id="section-basic" class="form-section-panel active">
+                <h3><span>📝</span> Basic Information</h3>
+                <label>Name</label>
+                <input name="name" placeholder="e.g., Gachibowli Diwakar" required="">
+                
+                <label style="margin-top: 12px;">Summary</label>
+                <textarea name="summary" rows="10" placeholder="Professional summary ..." required=""></textarea>
+              </div>
+
+              <!-- Contact Information Section -->
+              <div id="section-contact" class="form-section-panel">
+                <h3><span>📞</span> Contact Information</h3>
+                <div id="contactList"><div class="entry"><input placeholder="Label (e.g., phone, email, linkedin)" class="contact-key" value="">
+    <input placeholder="Value" class="contact-value" value=""></div></div>
+                <button type="button" class="sub-btn" onclick="addContact()">+ Add Contact Field</button>
+              </div>
+
+              <!-- Technical Skills Section -->
+              <div id="section-skills" class="form-section-panel">
+                <h3><span>🛠️</span> Technical Skills</h3>
+                <div id="skillsList"><div class="entry"><input placeholder="Category" class="skill-key" value="">
+    <input placeholder="Values (comma-separated)" class="skill-value" value=""></div></div>
+                <button type="button" class="sub-btn" onclick="addSkill()">+ Add Skill</button>
+              </div>
+
+              <!-- Experience Section -->
+              <div id="section-experience" class="form-section-panel">
+                <h3><span>💼</span> Experience</h3>
+                <div id="experienceList"><div class="entry"><input placeholder="Company" class="exp-company" value="">
+  <input placeholder="Role" class="exp-role" value="">
+  <input placeholder="Period" class="exp-period" value="">
+  <div class="bullets"><div class="bullet"><input placeholder="Achievement..." class="exp-point" value="">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button></div></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button></div></div>
+                <button type="button" class="sub-btn" onclick="addExperience()">+ Add Experience</button>
+              </div>
+
+              <!-- Education Section -->
+              <div id="section-education" class="form-section-panel">
+                <h3><span>🎓</span> Education</h3>
+                <div id="educationList"><div class="entry"><input placeholder="Degree" class="edu-degree" value="">
+    <input placeholder="Institution" class="edu-inst" value="">
+    <input placeholder="Year" class="edu-year" value=""></div></div>
+                <button type="button" class="sub-btn" onclick="addEducation()">+ Add Education</button>
+              </div>
+
+              <!-- Projects Section -->
+              <div id="section-projects" class="form-section-panel">
+                <h3><span>🚀</span> Projects</h3>
+                <div id="projectsList"></div>
+                <button type="button" class="sub-btn" onclick="addProject()">+ Add Project</button>
+              </div>
+
+              <!-- Certifications Section -->
+              <div id="section-certifications" class="form-section-panel">
+                <h3><span>🏆</span> Certifications</h3>
+                <div id="certificationsList"></div>
+                <button type="button" class="sub-btn" onclick="addCertification()">+ Add Certification</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Scroll to Top Button -->
+        <button id="scrollToTop" onclick="scrollToTop()">↑</button>
+        
+        <!-- Status Modal Popup -->
+        <div id="statusModal" class="modal" style="display:none;z-index:3000;">
+          <div class="modal-content" style="width:280px;min-height:80px;padding:24px;">
+            <span id="statusText" style="font-weight:600; color:var(--accent); font-size:15px;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="jobDescTabPanel">
+        <h3>Edit Resume Based on Job Description</h3>
+        <label for="companyNameJD"><b>Company Name</b></label>
+        <input id="companyNameJD" name="companyNameJD" placeholder="e.g., Microsoft, Google, etc." type="text" style="margin-bottom:10px;">
+        
+        <!-- Mode Selection -->
+        <div style="margin: 16px 0; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Resume Generation Mode:</label>
+          <div style="display: flex; gap: 24px; align-items: center;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400;">
+              <input type="radio" name="resumeMode" value="resume_jd" style="width: auto; cursor: pointer;">
+              <span>Resume + JD</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400;">
+              <input type="radio" name="resumeMode" value="complete_jd" checked style="width: auto; cursor: pointer;">
+              <span>Complete JD</span>
+            </label>
+          </div>
+          <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-secondary);">
+            <b>Complete JD:</b> Generate resume entirely from job description.<br>
+            <b>Resume + JD:</b> Apply edits to existing resume based on job description.
+          </p>
+        </div>
+        
+        <textarea id="jobDescriptionTab" placeholder="Paste Job Description here..."></textarea>
+        <button id="generateJDResumeBtn" type="button">Generate Resume Based on JD</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Processing Banner -->
+<div id="processingBanner">
+  <div class="banner-header">
+    <div class="banner-title">
+      <div class="spinner-small"></div>
+      <span id="bannerCount">Processing resumes...</span>
+    </div>
+    <button class="close-banner" onclick="closeProcessingBanner()" title="Minimize">×</button>
+  </div>
+  <div class="requests-list" id="requestsList">
+    <!-- Request items will be added here dynamically -->
+  </div>
+</div>
+
+<!-- Floating Action Buttons -->
+<div class="floating-actions">
+  <input type="file" id="uploadJSON" accept=".json" style="display:none;">
+  <button class="upload-btn" data-icon="📂" data-label="Upload JSON" onclick="triggerUpload()"></button>
+  <button class="download-btn" data-icon="💾" data-label="Download JSON" onclick="downloadJSON()"></button>
+  <button class="clear-btn" data-icon="🧹" data-label="Clear All" onclick="clearAll()"></button>
+</div>
+
+<!-- ===== ABOUT MODAL ===== -->
+<div id="aboutModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAbout()">×</span>
+    <h3>About Resume Builder Pro</h3>
+    <p>Created by Sushmitha for generating professional Word resumes with FastAPI backend integration.</p>
+    <p>Version: 1.0.0</p>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <!-- FAQ SECTION (collapsible) -->
+  <section class="faq-section" id="faqSection">
+    <div class="faq-header">
+      <h2>Frequently Asked Questions</h2>
+      <button class="faq-close" onclick="toggleFAQSection()">✕</button>
+    </div>
+    
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>How does Resume Builder Pro work?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        Resume Builder Pro uses AI to tailor your resume to specific job descriptions. Fill in your resume details, paste a job description, and our AI will analyze and optimize your resume content to match the job requirements using advanced LLM technology.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>What's the difference between "Complete JD" and "Resume + JD" modes?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        <strong>Complete JD Mode:</strong> Generates brand new content from scratch using the job description, preserving only company names, dates, and titles. Best for maximum ATS alignment.<br><br>
+        <strong>Resume + JD Mode:</strong> Makes targeted edits to your existing resume content while keeping most of your original writing. Best when you have a strong resume that needs minor adjustments.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>How many resumes can I generate at once?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        You can generate up to 4 resumes concurrently! Just fill in different job descriptions and click "Generate Resume" multiple times. The processing banner in the top-right corner shows all active requests.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>Can I save and reuse my resume data?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        Yes! Use the floating "Download JSON" button (💾) to save your resume data as a JSON file. Later, use "Upload JSON" (📂) to reload all your information instantly. This lets you maintain multiple resume versions for different roles.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>What format is the generated resume?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        Resumes are generated as professional Microsoft Word (.docx) files with proper formatting, including clickable hyperlinks for emails and URLs in the contact section. Download from the "generated_resumes" folder.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>How does the AI optimize my resume?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        The AI analyzes the job description to extract keywords, required skills, and responsibilities. It then rewrites your Summary, Skills, and Experience sections to align with these requirements while maintaining truthfulness. Each experience role gets 6-8 optimized bullet points with measurable impacts.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>What LLM provider is used?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        Currently configured to use Google Gemini (gemini-2.5-flash) via the Google Generative AI API. The system is provider-agnostic and can be configured to use OpenAI or other LLM providers through the .env file.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>How do I clear all my data?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        Click the floating "Clear All" button (🧹) at the bottom right. This will reset all fields in both the Resume and Job Description tabs. Make sure to download your JSON first if you want to save your data!
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFAQ(this)">
+        <span>Is my information private?</span>
+        <span class="faq-icon">▼</span>
+      </button>
+      <div class="faq-answer">
+        Yes, we take your privacy seriously. Your data is never shared, and all resume content is processed securely. We don't store any personal information on our servers.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-content">
+    <div class="footer-about">
+      <h3>Resume Builder Pro</h3>
+      <p>Create stunning, professional resumes in minutes. Our intuitive platform helps you showcase your skills and experience with beautifully designed templates.</p>
+      <a href="#" onclick="openAbout(); return false;">Learn More →</a>
+      <div class="social-links">
+        <a href="https://linkedin.com" target="_blank" title="LinkedIn">💼</a>
+        <a href="https://github.com" target="_blank" title="GitHub">🐙</a>
+        <a href="https://twitter.com" target="_blank" title="Twitter">🐦</a>
+        <a href="mailto:support@resumebuilder.pro" title="Email">📧</a>
+      </div>
+    </div>
+
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul class="footer-links">
+        <li><a href="#" onclick="document.querySelector('.dropdown-btn').click(); return false;">Templates</a></li>
+        <li><a href="#" onclick="switchTab('resume'); return false;">Create Resume</a></li>
+        <li><a href="#" onclick="switchTab('jd'); return false;">Edit Resume</a></li>
+        <li><a href="#" onclick="toggleFAQSection(); return false;">FAQ</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Legal</h4>
+      <ul class="footer-links">
+        <li><a href="#privacy">Privacy Policy</a></li>
+        <li><a href="#terms">Terms of Service</a></li>
+        <li><a href="#cookies">Cookie Policy</a></li>
+        <li><a href="#license">License</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>Support</h4>
+      <ul class="footer-links">
+        <li><a href="#contact">Contact Us</a></li>
+        <li><a href="#help">Help Center</a></li>
+        <li><a href="#feedback">Send Feedback</a></li>
+        <li><a href="#report">Report Issue</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 Resume Builder Pro. All Rights Reserved.</p>
+  </div>
+</footer>
+
+<script>
+  /* ---------- REQUEST TRACKING ---------- */
+  // Track all active resume generation requests
+  const activeRequests = new Map(); // key: requestId, value: {company, status, element}
+  let requestIdCounter = 0;
+
+  function generateRequestId() {
+    return `req_${Date.now()}_${++requestIdCounter}`;
+  }
+
+  function updateBannerCount() {
+    const banner = document.getElementById('processingBanner');
+    const bannerCount = document.getElementById('bannerCount');
+    const activeCount = Array.from(activeRequests.values()).filter(r => r.status === 'processing').length;
+    
+    console.log('[DEBUG] Updating banner count. Active:', activeCount, 'Total:', activeRequests.size);
+    
+    if (activeCount > 0) {
+      banner.classList.add('active');
+      bannerCount.textContent = activeCount === 1 
+        ? 'Processing 1 resume...' 
+        : `Processing ${activeCount} resumes...`;
+    } else {
+      // Keep banner open for 3 seconds to show completed items
+      setTimeout(() => {
+        const stillActive = Array.from(activeRequests.values()).filter(r => r.status === 'processing').length;
+        if (stillActive === 0) {
+          banner.classList.remove('active');
+        }
+      }, 3000);
+    }
+  }
+
+  function addRequestToUI(requestId, companyName) {
+    console.log('[DEBUG] Adding request to UI:', requestId, companyName);
+    
+    const requestsList = document.getElementById('requestsList');
+    if (!requestsList) {
+      console.error('[DEBUG] requestsList element not found!');
+      return;
+    }
+    
+    const requestItem = document.createElement('div');
+    requestItem.className = 'request-item';
+    requestItem.id = `request_${requestId}`;
+    requestItem.innerHTML = `
+      <div class="item-icon">
+        <div class="spinner-small"></div>
+      </div>
+      <div class="item-text">${companyName || 'Unknown Company'}</div>
+    `;
+    requestsList.appendChild(requestItem);
+    
+    console.log('[DEBUG] Request item added to DOM, total items:', requestsList.children.length);
+    
+    activeRequests.set(requestId, {
+      company: companyName,
+      status: 'processing',
+      element: requestItem
+    });
+    
+    console.log('[DEBUG] Active requests count:', activeRequests.size);
+    
+    updateBannerCount();
+  }
+
+  function markRequestComplete(requestId, fileName) {
+    const request = activeRequests.get(requestId);
+    if (request) {
+      request.status = 'completed';
+      request.element.classList.add('completed');
+      request.element.innerHTML = `
+        <div class="item-icon">✓</div>
+        <div class="item-text">${request.company} - ${fileName}</div>
+      `;
+      
+      updateBannerCount();
+      
+      // Remove completed item after 5 seconds
+      setTimeout(() => {
+        request.element.style.opacity = '0';
+        setTimeout(() => {
+          request.element.remove();
+          activeRequests.delete(requestId);
+          updateBannerCount();
+        }, 300);
+      }, 5000);
+    }
+  }
+
+  function markRequestFailed(requestId, error) {
+    const request = activeRequests.get(requestId);
+    if (request) {
+      request.status = 'failed';
+      request.element.classList.add('failed');
+      request.element.innerHTML = `
+        <div class="item-icon" style="color: var(--danger);">✗</div>
+        <div class="item-text" style="color: var(--danger);">${request.company} - Failed</div>
+      `;
+      
+      updateBannerCount();
+      
+      // Remove failed item after 8 seconds
+      setTimeout(() => {
+        request.element.style.opacity = '0';
+        setTimeout(() => {
+          request.element.remove();
+          activeRequests.delete(requestId);
+          updateBannerCount();
+        }, 300);
+      }, 8000);
+    }
+  }
+
+  function closeProcessingBanner() {
+    const banner = document.getElementById('processingBanner');
+    banner.classList.remove('active');
+  }
+
+  /* ---------- FORM SECTION NAVIGATION ---------- */
+  function showFormSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.form-section-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+    
+    // Remove active from all nav buttons
+    document.querySelectorAll('.form-nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected section
+    const section = document.getElementById(`section-${sectionId}`);
+    if (section) {
+      section.classList.add('active');
+    }
+    
+    // Mark button as active
+    event.target.closest('.form-nav-btn').classList.add('active');
+  }
+
+  /* ---------- SCROLL TO TOP ---------- */
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Show/hide scroll button based on scroll position
+  window.addEventListener('scroll', () => {
+    const scrollBtn = document.getElementById('scrollToTop');
+    if (window.pageYOffset > 300) {
+      scrollBtn.classList.add('visible');
+    } else {
+      scrollBtn.classList.remove('visible');
+    }
+  });
+
+  /* ---------- THEME ---------- */
+  const themeBtn = document.getElementById('toggleTheme');
+  const savedTheme = localStorage.getItem('theme');
+  if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
+  themeBtn.textContent = savedTheme === 'dark' ? '☀️ Day' : '🌙 Night';
+  themeBtn.addEventListener('click', ()=>{
+    const dark = document.body.getAttribute('data-theme') === 'dark';
+    document.body.setAttribute('data-theme', dark ? 'light' : 'dark');
+    localStorage.setItem('theme', dark ? 'light' : 'dark');
+    themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
+  });
+
+  /* ---------- FORM BUILDERS ---------- */
+  function addContact(k='',v=''){
+    const d=document.createElement('div');
+    d.className='entry';
+    // Determine placeholder based on key
+    let valuePlaceholder = 'Value';
+    if (k === 'Phone') valuePlaceholder = '+1 999 999 9999';
+    else if (k === 'Email') valuePlaceholder = 'abc@mail.com';
+    else if (k === 'LinkedIn') valuePlaceholder = 'https://linkedin.com/in/yourprofile';
+    else if (k === 'Portfolio') valuePlaceholder = 'https://yourportfolio.com';
+    else if (v) valuePlaceholder = 'URL or value';
+
+    d.innerHTML=`<input placeholder="Label (Phone, Email, LinkedIn, Portfolio)" class="contact-key" value="${k}" ${k ? 'readonly' : ''}>
+    <input placeholder="${valuePlaceholder}" class="contact-value" value="${v}">`;
+    document.getElementById('contactList').appendChild(d);
+  }
+  function addSkill(k='',v=''){const d=document.createElement('div');
+    d.className='entry';d.innerHTML=`<input placeholder="Category" class="skill-key" value="${k}">
+    <input placeholder="Values (comma-separated)" class="skill-value" value="${v}">`;
+    document.getElementById('skillsList').appendChild(d);}
+  function addExperience(exp=null){const d=document.createElement('div');
+  d.className='entry';d.innerHTML=`<input placeholder="Company" class="exp-company" value="${exp?.company||''}">
+  <input placeholder="Role" class="exp-role" value="${exp?.role||''}">
+  <input placeholder="Period" class="exp-period" value="${exp?.period||''}">
+  <div class="bullets"></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button>`;
+  document.getElementById('experienceList').appendChild(d);
+  const bulletsDiv = d.querySelector('.bullets');
+  let pts = Array.isArray(exp?.points) ? exp.points : [''];
+  // If no points, add one empty bullet
+  if (!pts.length) pts = [''];
+  // Pass the bulletsDiv directly to addBullet for correct population
+  pts.forEach(p => addBullet(bulletsDiv, p));
+  }
+  function addBullet(btn,text=''){const b=document.createElement('div');b.className='bullet';
+    b.innerHTML=`<input placeholder="Achievement..." class="exp-point" value="${text||''}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
+    // If btn is a .bullets container, append directly; else fallback to previous logic
+    if (btn && btn.classList && btn.classList.contains('bullets')) {
+      btn.appendChild(b);
+    } else if (btn && btn.parentElement && btn.parentElement.querySelector('.bullets')) {
+      btn.parentElement.querySelector('.bullets').appendChild(b);
+    }
+}
+  function addEducation(e=null){const d=document.createElement('div');
+    d.className='entry';d.innerHTML=`<input placeholder="Degree" class="edu-degree" value="${e?.degree||''}">
+    <input placeholder="Institution" class="edu-inst" value="${e?.institution||''}">
+    <input placeholder="Year" class="edu-year" value="${e?.year||''}">`;
+    document.getElementById('educationList').appendChild(d);}
+
+  function addProject(proj=null){
+    const d=document.createElement('div');
+    d.className='entry';
+    d.innerHTML=`<input placeholder="Project Title" class="proj-title" value="${proj?.title||''}">
+    <div class="bullets"></div>
+    <button type="button" class="sub-btn" onclick="addProjectBullet(this)">+ Add Bullet</button>`;
+    document.getElementById('projectsList').appendChild(d);
+    const bulletsDiv = d.querySelector('.bullets');
+    let pts = Array.isArray(proj?.bullets) ? proj.bullets : [''];
+    if (!pts.length) pts = [''];
+    pts.forEach(p => addProjectBullet(bulletsDiv, p));
+  }
+
+  function addProjectBullet(btn, text=''){
+    const b=document.createElement('div');
+    b.className='bullet';
+    b.innerHTML=`<input placeholder="Project detail..." class="proj-point" value="${text||''}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
+    if (btn && btn.classList && btn.classList.contains('bullets')) {
+      btn.appendChild(b);
+    } else if (btn && btn.parentElement && btn.parentElement.querySelector('.bullets')) {
+      btn.parentElement.querySelector('.bullets').appendChild(b);
+    }
+  }
+
+  function addCertification(cert=null){
+    const d=document.createElement('div');
+    d.className='entry';
+    d.innerHTML=`<input placeholder="Certification Name" class="cert-name" value="${cert?.name||''}">
+    <input placeholder="Issuing Organization" class="cert-org" value="${cert?.organization||''}">
+    <input placeholder="Year" class="cert-year" value="${cert?.year||''}">`;
+    document.getElementById('certificationsList').appendChild(d);
+  }
+
+  /* ---------- JSON HANDLERS ---------- */
+  function buildJSON(){
+    const f=document.getElementById('resumeForm');
+    const resume_data = {name:f.name.value,contact:{},summary:f.summary.value,
+      technical_skills:{},experience:[],education:[],projects:[],certifications:[]};
+    document.querySelectorAll('#contactList .entry').forEach(x=>{
+      const k=x.querySelector('.contact-key').value.trim(),v=x.querySelector('.contact-value').value.trim();if(k&&v)resume_data.contact[k.toLowerCase()]=v;});
+    document.querySelectorAll('#skillsList .entry').forEach(x=>{
+      const k=x.querySelector('.skill-key').value,v=x.querySelector('.skill-value').value;if(k&&v)resume_data.technical_skills[k]=v;});
+    document.querySelectorAll('#experienceList .entry').forEach(x=>{
+      resume_data.experience.push({company:x.querySelector('.exp-company').value,
+        role:x.querySelector('.exp-role').value,period:x.querySelector('.exp-period').value,
+        points:Array.from(x.querySelectorAll('.exp-point')).map(i=>i.value.trim()).filter(Boolean)});});
+    document.querySelectorAll('#educationList .entry').forEach(x=>{
+      resume_data.education.push({degree:x.querySelector('.edu-degree').value,
+        institution:x.querySelector('.edu-inst').value,year:x.querySelector('.edu-year').value});});
+    document.querySelectorAll('#projectsList .entry').forEach(x=>{
+      resume_data.projects.push({title:x.querySelector('.proj-title').value,
+        bullets:Array.from(x.querySelectorAll('.proj-point')).map(i=>i.value.trim()).filter(Boolean)});});
+    document.querySelectorAll('#certificationsList .entry').forEach(x=>{
+      resume_data.certifications.push({name:x.querySelector('.cert-name').value,
+        organization:x.querySelector('.cert-org').value,year:x.querySelector('.cert-year').value});});
+    const companyNameJD = document.getElementById('companyNameJD') ? document.getElementById('companyNameJD').value : '';
+    const jobDescriptionElem = document.getElementById('jobDescriptionTab');
+    const job_description_data = {
+      job_description: jobDescriptionElem ? jobDescriptionElem.value : '',
+      company_name: companyNameJD
+    };
+    return {resume_data, job_description_data};
+  }
+
+  function triggerUpload(){document.getElementById('uploadJSON').click();}
+  document.getElementById('uploadJSON').addEventListener('change', e=>{
+    const file=e.target.files[0];if(!file)return;
+    const r=new FileReader();r.onload=ev=>{try{
+      const d=JSON.parse(ev.target.result);
+      if(d.resume_data) populateForm(d.resume_data);
+      else populateForm(d);
+      if(d.job_description_data && d.job_description_data.job_description) {
+        const jobDescTab = document.getElementById('jobDescriptionTab');
+        const companyNameJD = document.getElementById('companyNameJD');
+        if (jobDescTab) jobDescTab.value = d.job_description_data.job_description;
+        if (companyNameJD && d.job_description_data.company_name) {
+          companyNameJD.value = d.job_description_data.company_name;
+        }
+      }
+      showResult('✅ JSON Uploaded');
+    }
+      catch{alert("Invalid JSON");}};r.readAsText(file);});
+
+  function populateForm(d){
+    const f = document.getElementById('resumeForm');
+    f.name.value = d.name || '';
+    f.summary.value = d.summary || '';
+    
+    // Handle contact - both old format (string) and new format (object)
+    document.getElementById('contactList').innerHTML = '';
+    const contact = d.contact || {};
+    if (typeof contact === 'string') {
+      // Old format: single string - convert to phone field
+      addContact('Phone', contact);
+    } else if (typeof contact === 'object') {
+      // New format: structured object
+      Object.entries(contact).forEach(([k, v]) => addContact(k, v));
+    }
+    if (document.querySelectorAll('#contactList .entry').length === 0) {
+      addContact(); // Add empty field if no contact data
+    }
+    
+    document.getElementById('skillsList').innerHTML = '';
+    const skills = d.technical_skills || d.skills || {};
+    if (Object.keys(skills).length) {
+      Object.entries(skills).forEach(([k, v]) => addSkill(k, v));
+    } else {
+      addSkill();
+    }
+    document.getElementById('experienceList').innerHTML = '';
+    if (d.experience && d.experience.length) {
+      d.experience.forEach(e => addExperience(e));
+    } else {
+      addExperience();
+    }
+    document.getElementById('educationList').innerHTML = '';
+    if (d.education && d.education.length) {
+      d.education.forEach(e => addEducation(e));
+    } else {
+      addEducation();
+    }
+    document.getElementById('projectsList').innerHTML = '';
+    if (d.projects && d.projects.length) {
+      d.projects.forEach(p => addProject(p));
+    } else {
+      addProject();
+    }
+    document.getElementById('certificationsList').innerHTML = '';
+    if (d.certifications && d.certifications.length) {
+      d.certifications.forEach(c => addCertification(c));
+    } else {
+      addCertification();
+    }
+  }
+
+  function downloadJSON(){
+    const data = buildJSON();
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download="resume_input.json";a.click();URL.revokeObjectURL(a.href);showResult('💾 JSON Downloaded');}
+
+  async function generateResume(){
+    console.log('[DEBUG] Generate Resume clicked');
+    
+    // Get selected resume mode
+    const resumeModeRadio = document.querySelector('input[name="resumeMode"]:checked');
+    const resumeMode = resumeModeRadio ? resumeModeRadio.value : 'complete_jd'; // Default to complete_jd
+    
+    const {resume_data: resumeObj, job_description_data: jobObj} = buildJSON();
+    
+    // Generate unique request ID
+    const requestId = generateRequestId();
+    const companyName = jobObj.company_name || 'Unknown Company';
+    
+    console.log('[DEBUG] Request ID:', requestId, 'Company:', companyName);
+    
+    // Add request to UI tracking
+    addRequestToUI(requestId, companyName);
+    
+    const payload = {
+      resume_data: resumeObj,
+      job_description_data: jobObj,
+      mode: resumeMode  // Add mode to payload
+    };
+    
+    // Call new endpoint for JSON output (use correct backend port)
+    const apiUrl = 'http://localhost:5001/api/generate_resume_json';
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(res.ok){
+        const json = await res.json();
+        // Show success message with file name
+        const fileName = json.file_name || 'resume.docx';
+        const result = json.result || 'Resume generated successfully';
+        
+        // Mark request as complete in UI
+        markRequestComplete(requestId, fileName);
+        
+        showResult(`✅ ${result} - ${fileName}`);
+      }
+      else {
+        const errorText = await res.text();
+        console.error('API Error:', errorText);
+        
+        // Mark request as failed in UI
+        markRequestFailed(requestId, errorText);
+        
+        showResult('❌ Error generating resume.');
+      }
+    } catch (error) {
+      console.error('Request failed:', error);
+      
+      // Mark request as failed in UI
+      markRequestFailed(requestId, error.message);
+      
+      showResult('❌ Failed to connect to server.');
+    }
+  }
+  
+
+  function clearAll(){if(!confirm("Clear all fields?"))return;
+    document.getElementById('resumeForm').reset();
+    document.getElementById('contactList').innerHTML='';
+    document.getElementById('skillsList').innerHTML='';
+    document.getElementById('experienceList').innerHTML='';
+    document.getElementById('educationList').innerHTML='';
+    document.getElementById('projectsList').innerHTML='';
+    document.getElementById('certificationsList').innerHTML='';
+    const jobDescTab = document.getElementById('jobDescriptionTab');
+    const companyNameJD = document.getElementById('companyNameJD');
+    if (jobDescTab) jobDescTab.value = '';
+    if (companyNameJD) companyNameJD.value = '';
+    addContact('Phone', '');addContact('Email', '');addContact('LinkedIn', '');
+    addSkill();addExperience();addEducation();addProject();addCertification();showResult('🧹 Cleared all fields');}
+
+  function showResult(msg){const r=document.getElementById('result');r.textContent=msg;setTimeout(()=>r.textContent='',4000);}
+
+  /* ---------- ABOUT MODAL ---------- */
+  const modal=document.getElementById("aboutModal");
+  function openAbout(){modal.style.display="block";}
+  function closeAbout(){modal.style.display="none";}
+  window.onclick=function(e){if(e.target==modal)modal.style.display="none";}
+
+  /* ---------- FAQ ACCORDION ---------- */
+  function toggleFAQ(button) {
+    const faqItem = button.parentElement;
+    const isActive = faqItem.classList.contains('active');
+    
+    // Close all FAQ items
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    
+    // Open clicked item if it wasn't active
+    if (!isActive) {
+      faqItem.classList.add('active');
+    }
+  }
+
+  /* ---------- FAQ SECTION TOGGLE ---------- */
+  function toggleFAQSection() {
+    const faqSection = document.getElementById('faqSection');
+    if (faqSection.classList.contains('active')) {
+      faqSection.classList.remove('active');
+    } else {
+      faqSection.classList.add('active');
+      // Scroll to FAQ section smoothly
+      setTimeout(() => {
+        faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }
+
+  // --------- TAB SWITCHING LOGIC ---------
+  const tabResumeBtn = document.getElementById('tabResumeBtn');
+  const tabEditJDBtn = document.getElementById('tabEditJDBtn');
+  const resumeFormContainer = document.getElementById('resumeFormContainer');
+  const jobDescTabPanel = document.getElementById('jobDescTabPanel');
+
+  function switchTab(tab) {
+    if (tab === 'resume') {
+      tabResumeBtn.classList.add('active');
+      tabEditJDBtn.classList.remove('active');
+      resumeFormContainer.classList.add('active');
+      jobDescTabPanel.classList.remove('active');
+    } else {
+      tabEditJDBtn.classList.add('active');
+      tabResumeBtn.classList.remove('active');
+      jobDescTabPanel.classList.add('active');
+      resumeFormContainer.classList.remove('active');
+    }
+  }
+  tabResumeBtn.addEventListener('click', () => switchTab('resume'));
+  tabEditJDBtn.addEventListener('click', () => switchTab('jd'));
+
+  // --------- INIT ---------
+  // Initialize with common contact fields
+  document.getElementById('contactList').innerHTML = '';
+  addContact('Phone', '');
+  addContact('Email', '');
+  addContact('LinkedIn', '');
+  addSkill();addExperience();addEducation();addProject();addCertification();
+  // Default: show Resume tab
+  switchTab('resume');
+
+  // --------- JOB DESC TAB PANEL LOGIC ---------
+  const jobDescriptionTab = document.getElementById('jobDescriptionTab');
+  
+  // Generate Resume Based on JD button
+  const generateJDResumeBtn = document.getElementById('generateJDResumeBtn');
+  if (generateJDResumeBtn) {
+    generateJDResumeBtn.addEventListener('click', function() {
+      generateResume();
+    });
+  }
+
+  // Load Sample JD for the tab textarea
+  function loadSampleJobDescTab() {
+    const sampleText = `We are looking for a skilled Software Engineer with experience in JavaScript, React, and Node.js. The candidate should have strong problem-solving skills and the ability to work in a fast-paced environment. Responsibilities include developing new features, optimizing performance, and collaborating with cross-functional teams.`;
+    if (jobDescriptionTab) jobDescriptionTab.value = sampleText;
+  }
+  // Optionally, allow loading sample JD when double-clicking the textarea
+  if (jobDescriptionTab) {
+    jobDescriptionTab.addEventListener('dblclick', loadSampleJobDescTab);
+  }
+
+  /* ---------- INITIALIZE PAGE ---------- */
+  // Show Basic Info section by default
+  window.addEventListener('DOMContentLoaded', function() {
+    const basicSection = document.getElementById('section-basic');
+    const basicBtn = document.querySelector('.form-nav-btn');
+    
+    if (basicSection) {
+      basicSection.classList.add('active');
+    }
+    if (basicBtn) {
+      basicBtn.classList.add('active');
+    }
+  });
+</script>
+
+
+</body></html>

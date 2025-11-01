@@ -1,0 +1,9 @@
+fastapi==0.115.4
+uvicorn[standard]==0.30.6
+python-docx==1.1.2
+pdfminer.six==20231228
+pydantic==2.9.2
+openai==1.51.2
+python-multipart==0.0.9
+python-dotenv==1.0.1
+docxtpl==0.20.1
