@@ -1,6 +1,15 @@
 # Resume Builder Pro
 
-An AI-powered resume builder that tailors your resume to specific job descriptions using LLM technology (OpenAI GPT or Google Gemini).
+An AI-powered resume builder that tailors your resume to specific job descriptions using LLM technology (Google Gemini).
+
+## 🚀 Quick Deploy (Free)
+
+**Deploy to Render.com in 5 minutes - $0/month**
+
+📖 **Full Guide:** [`DEPLOY_FREE.md`](DEPLOY_FREE.md)  
+⚡ **Quick Reference:** [`FREE_TIER_SUMMARY.md`](FREE_TIER_SUMMARY.md)
+
+**Free Tier Capacity:** 1-2 concurrent users, 2 jobs per user
 
 ## Features
 

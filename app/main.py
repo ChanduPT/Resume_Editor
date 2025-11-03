@@ -99,9 +99,22 @@ async def startup_event():
     try:
         init_db()
         logger.info("Database initialized successfully")
+        logger.info(f"MAX_WORKERS: {os.getenv('MAX_WORKERS', '2')}")
+        logger.info(f"MAX_CONCURRENT_JOBS: {os.getenv('MAX_CONCURRENT_JOBS', '2')}")
     except Exception as e:
         logger.error(f"Failed to initialize database: {str(e)}")
         raise
+
+# Health check endpoint for deployment platforms
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and auto-wake on free tiers"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "max_workers": int(os.getenv("MAX_WORKERS", "2")),
+        "max_concurrent_jobs": int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
+    }
 
 # --------------------- Static Files & Dashboard ---------------------
 
@@ -389,7 +402,9 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 # Create a thread pool for CPU-bound operations
-executor = ThreadPoolExecutor(max_workers=4)
+# Optimized for free tier deployment (512 MB RAM limit)
+MAX_WORKERS = int(os.getenv("MAX_WORKERS", "2"))  # Default: 2 for free tier, increase for production
+executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
 
 # --------------------- Auth Endpoints ---------------------
 
@@ -468,8 +483,8 @@ async def generate_resume_json(
 ):
     """Generate resume with job tracking and rate limiting"""
     try:
-        # Check user limits
-        MAX_CONCURRENT_JOBS = 3  # Max 3 simultaneous jobs per user
+        # Check user limits (configurable for different deployment tiers)
+        MAX_CONCURRENT_JOBS = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))  # Default: 2 for free tier, 3+ for production
         # No daily limit - users can create unlimited resumes
         
         # Count active jobs for this user
@@ -1023,17 +1038,19 @@ async def get_user_stats(
         ResumeJob.status.in_(["pending", "processing"])
     ).count()
     
+    max_concurrent = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
+    
     return {
         "user_id": user.user_id,
         "total_resumes": user.total_resumes_generated or 0,
         "today_resumes": today_resumes,
         "active_jobs": active_jobs,
         "limits": {
-            "max_concurrent_jobs": 3,
+            "max_concurrent_jobs": max_concurrent,
             "rate_limit": "5 requests per minute"
         },
         "remaining": {
-            "concurrent_slots": max(0, 3 - active_jobs)
+            "concurrent_slots": max(0, max_concurrent - active_jobs)
         },
         "account_created": user.created_at.isoformat(),
         "last_login": user.last_login.isoformat() if user.last_login else None
