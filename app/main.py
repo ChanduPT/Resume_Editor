@@ -29,7 +29,7 @@ from slowapi.errors import RateLimitExceeded
 from app.create_resume import create_resume
 from app.database import (
     get_db, init_db, User, ResumeJob, UserResumeTemplate,
-    create_user, authenticate_user, SessionLocal
+    create_user, authenticate_user, verify_password, SessionLocal
 )
 
 from app.utils import ( 
@@ -450,28 +450,35 @@ async def register(
 
 @app.post("/api/auth/login")
 async def login(credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
-    """User login endpoint"""
+    """User login endpoint with specific error messages"""
     username = credentials.username
     password = credentials.password
     
     logger.info(f"[LOGIN ATTEMPT] User: {username}")
     
-    user = db.query(User).filter(User.username == username).first()
+    # Check if user exists
+    user = db.query(User).filter(User.user_id == username).first()
     
     if not user:
         logger.warning(f"[LOGIN FAILED] User not found: {username}")
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=404, 
+            detail="User ID not found. Please check your username or register a new account."
+        )
     
     # Verify password
     if not verify_password(password, user.password_hash):
         logger.warning(f"[LOGIN FAILED] Invalid password for user: {username}")
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=401, 
+            detail="Incorrect password. Please try again."
+        )
     
     logger.info(f"[LOGIN SUCCESS] User: {username}")
     
     return {
         "message": "Login successful",
-        "username": user.username,
+        "username": user.user_id,
         "user_id": user.user_id
     }
 

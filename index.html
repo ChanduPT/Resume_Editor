@@ -3040,7 +3040,11 @@
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-      throw new Error(error.detail || 'Request failed');
+      
+      // Extract the error message from backend
+      const errorMessage = error.detail || error.message || 'Request failed';
+      
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -3099,7 +3103,9 @@
       loadDashboardHistory();
     } catch (error) {
       dashboardCredentials = null;
-      showDashMessage(error.message, 'error');
+      // Display specific error message from backend
+      const errorMessage = error.message || 'Login failed. Please try again.';
+      showDashMessage(errorMessage, 'error');
     }
   }
 
