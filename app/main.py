@@ -60,18 +60,24 @@ app.add_middleware(
 security = HTTPBasic()
 
 # --------------------- Logging Setup ---------------------
+import os
+import sys
 
+# Configure logging - only to console for production
+log_handlers = [logging.StreamHandler(sys.stdout)]
 
-# Setup enhanced logging configuration
+# Only add file logging in local development
+if os.environ.get('ENVIRONMENT') != 'production':
+    os.makedirs('debug_files', exist_ok=True)
+    log_handlers.append(logging.FileHandler(os.path.join('debug_files', 'app.log')))
+
 logging.basicConfig(
-    level=logging.DEBUG,  # Set to DEBUG level to capture all logs
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),  # Log to console
-        logging.FileHandler(os.path.join('debug_files', 'app.log'))  # Log to file
-    ]
+    handlers=log_handlers
 )
-logger = logging.getLogger("resume_tailor")
+
+logger = logging.getLogger(__name__)
 
 # Create and configure debug directory
 debug_dir = os.path.join(os.getcwd(), "debug_files")

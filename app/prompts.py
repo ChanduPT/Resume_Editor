@@ -369,6 +369,7 @@ Instructions:
 - Remove duplicates, fix inconsistent naming, and sort alphabetically within each list.
 - The output **must be valid JSON only**, with no extra text.
 - **Prefer broader categories over narrow ones** (e.g., use "Cloud & Infrastructure" instead of separate "Cloud Platforms" and "Infrastructure").
+- Remove keywords that are not technical skills or tools (e.g., soft skills, methodologies) unless they are critical to the role.
 
 Recommended category consolidation:
 - Combine: Data Engineering, Data Processing, ETL, Databases, RDBMS, NoSQL → "Databases & Data Platforms"
