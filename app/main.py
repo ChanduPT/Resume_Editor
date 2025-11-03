@@ -9,9 +9,28 @@ import random
 import traceback
 from datetime import datetime
 import json
-from fastapi import FastAPI, Request
+import time
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+from fastapi import FastAPI, Request, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 from app.create_resume import create_resume
+from app.database import (
+    get_db, init_db, User, ResumeJob, 
+    create_user, authenticate_user, SessionLocal
+)
 
 from app.utils import ( 
     normalize_whitespace,
@@ -26,12 +45,19 @@ from app.prompts import (
 # --------------------- App Setup ---------------------
 app = FastAPI(title="Resume Tailor MVP")
 
+# Rate limiting setup
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+security = HTTPBasic()
 
 # --------------------- Logging Setup ---------------------
 
@@ -64,6 +90,67 @@ try:
 except Exception as e:
     logger.error(f"Failed to setup debug directory: {str(e)}")
     raise
+
+# --------------------- Database Startup ---------------------
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {str(e)}")
+        raise
+
+# --------------------- Static Files & Dashboard ---------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_index():
+    """Serve the main index.html with integrated dashboard"""
+    index_path = Path(__file__).parent.parent / "index.html"
+    if index_path.exists():
+        with open(index_path, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    else:
+        return HTMLResponse(
+            content="<h1>Resume Builder not found</h1><p>Please ensure index.html exists in the project root.</p>",
+            status_code=404
+        )
+
+# Global dict to track job progress in memory
+job_progress = {}
+
+def send_progress(request_id: str, progress: int, status: str, db: Session = None):
+    """Update job progress in database and memory"""
+    job_progress[request_id] = {"progress": progress, "status": status}
+    logger.info(f"Job {request_id}: {progress}% - {status}")
+    
+    if db:
+        try:
+            job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id).first()
+            if job:
+                job.progress = progress
+                job.status = "processing" if progress < 100 else "completed"
+                if progress == 100:
+                    job.completed_at = datetime.utcnow()
+                db.commit()
+        except Exception as e:
+            logger.error(f"Failed to update job progress: {str(e)}")
+
+# Dependency to get current user
+async def get_current_user(
+    credentials: HTTPBasicCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    user = authenticate_user(db, credentials.username, credentials.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return user
 
 # --------------------- Helpers ---------------------
 def extract_json(text: str) -> dict:
@@ -293,22 +380,200 @@ from concurrent.futures import ThreadPoolExecutor
 # Create a thread pool for CPU-bound operations
 executor = ThreadPoolExecutor(max_workers=4)
 
-@app.post("/api/generate_resume_json")
-async def generate_resume_json(request: Request):
-    
-    try:
-        data = await request.json()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
-    
-    # Run CPU-intensive operations in thread pool to not block event loop
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(executor, process_resume, data)
-    
-    return result
+# --------------------- Auth Endpoints ---------------------
 
-def process_resume(data: dict) -> dict:
+@app.post("/api/auth/register")
+async def register(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Register new user"""
+    try:
+        user_data = await request.json()
+        user_id = user_data.get("user_id")
+        password = user_data.get("password")
+        
+        if not user_id or not password:
+            raise HTTPException(status_code=400, detail="user_id and password required")
+        
+        # Check if user exists
+        existing_user = db.query(User).filter(User.user_id == user_id).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User already exists")
+        
+        # Create user
+        user = create_user(db, user_id, password)
+        
+        return {
+            "message": "User created successfully",
+            "user_id": user.user_id,
+            "created_at": user.created_at.isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/auth/login")
+async def login(
+    credentials: HTTPBasicCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    """Login user"""
+    user = authenticate_user(db, credentials.username, credentials.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"}
+        )
+    
+    return {
+        "message": "Login successful",
+        "user_id": user.user_id,
+        "last_login": user.last_login.isoformat() if user.last_login else None
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.1"
+    }
+
+# --------------------- Resume Generation Endpoints ---------------------
+
+@app.post("/api/generate_resume_json")
+@limiter.limit("5/minute")  # Max 5 requests per minute per IP
+async def generate_resume_json(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generate resume with job tracking and rate limiting"""
+    try:
+        # Check user limits
+        MAX_CONCURRENT_JOBS = 3  # Max 3 simultaneous jobs per user
+        # No daily limit - users can create unlimited resumes
+        
+        # Count active jobs for this user
+        active_jobs = db.query(ResumeJob).filter(
+            ResumeJob.user_id == current_user.user_id,
+            ResumeJob.status.in_(["pending", "processing"])
+        ).count()
+        
+        if active_jobs >= MAX_CONCURRENT_JOBS:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Too many concurrent jobs. You have {active_jobs} jobs processing. Please wait for them to complete."
+            )
+        
+        data = await request.json()
+        request_id = data.get("request_id", f"req_{int(time.time())}_{current_user.user_id}")
+        
+        # Create resume job record
+        resume_job = ResumeJob(
+            user_id=current_user.user_id,
+            request_id=request_id,
+            company_name=data.get("company_name", "Unknown"),
+            job_title=data.get("job_title", "Unknown"),
+            mode=data.get("mode", "complete_jd"),
+            jd_text=data.get("jd", ""),
+            resume_input_json=data.get("resume_data", {}),
+            status="pending",
+            progress=0
+        )
+        db.add(resume_job)
+        db.commit()
+        db.refresh(resume_job)
+        
+        logger.info(f"Created resume job {resume_job.id} for user {current_user.user_id}")
+        
+        # Process resume in background
+        background_tasks.add_task(
+            process_resume_background,
+            data,
+            request_id,
+            resume_job.id
+        )
+        
+        return {
+            "message": "Resume generation started",
+            "request_id": request_id,
+            "job_id": resume_job.id,
+            "status": "pending"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting resume generation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def process_resume_background(data: dict, request_id: str, job_id: int):
+    """Background task to process resume"""
+    db = SessionLocal()
+    try:
+        # Update status to processing
+        job = db.query(ResumeJob).filter(ResumeJob.id == job_id).first()
+        if job:
+            job.status = "processing"
+            
+            # Increment active jobs counter
+            user = db.query(User).filter(User.user_id == job.user_id).first()
+            if user:
+                user.active_jobs_count = (user.active_jobs_count or 0) + 1
+            
+            db.commit()
+        
+        # Process resume
+        result = process_resume(data, request_id, db)
+        
+        # Update job with final result
+        if job:
+            job.final_resume_json = result
+            job.status = "completed"
+            job.progress = 100
+            job.completed_at = datetime.utcnow()
+            
+            # Update user stats
+            user = db.query(User).filter(User.user_id == job.user_id).first()
+            if user:
+                user.total_resumes_generated = (user.total_resumes_generated or 0) + 1
+                user.active_jobs_count = max(0, (user.active_jobs_count or 1) - 1)
+            
+            db.commit()
+            
+        logger.info(f"Resume generation completed for job {job_id}")
+        
+    except Exception as e:
+        logger.error(f"Error in background processing: {str(e)}\n{traceback.format_exc()}")
+        
+        # Update job with error
+        job = db.query(ResumeJob).filter(ResumeJob.id == job_id).first()
+        if job:
+            job.status = "failed"
+            job.error_message = str(e)
+            
+            # Decrement active jobs counter on failure
+            user = db.query(User).filter(User.user_id == job.user_id).first()
+            if user:
+                user.active_jobs_count = max(0, (user.active_jobs_count or 1) - 1)
+            
+            db.commit()
+    finally:
+        db.close()
+
+def process_resume(data: dict, request_id: str = None, db: Session = None) -> dict:
+
     """Process resume in thread pool - this is the CPU-intensive part"""
+    send_progress(request_id, 5, "Starting resume processing...", db)
+    
     resume_json = data.get("resume_data", {})
     job_json = data.get("job_description_data", {})
     mode = data.get("mode", "complete_jd")  # Extract mode, default to 'complete_jd'
@@ -322,6 +587,8 @@ def process_resume(data: dict) -> dict:
     final_json["contact"] = contact
     education = resume_json.get("education", [])
     final_json["education"] = education
+    
+    send_progress(request_id, 10, "Processing basic information...", db)
     
     # Add projects if present and not empty (filter out objects with empty fields)
     projects = resume_json.get("projects", [])
@@ -389,6 +656,7 @@ def process_resume(data: dict) -> dict:
         if mode == "complete_jd":
             # Use GENERATE_FROM_JD_PROMPT for complete JD mode
             logger.info("[SUMMARY] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
+            send_progress(request_id, 40, "Generating summary...", db)
             prompt = GENERATE_FROM_JD_PROMPT.format(
                 jd_hints=jd_hints,
                 section_text=sections["Summary"],
@@ -397,6 +665,7 @@ def process_resume(data: dict) -> dict:
         else:  # resume_jd mode
             # Use APPLY_EDITS_PROMPT for resume + JD mode
             logger.info("[SUMMARY] Using APPLY_EDITS_PROMPT (resume_jd mode)")
+            send_progress(request_id, 40, "Optimizing summary...", db)
             prompt = APPLY_EDITS_PROMPT.format(
                 jd_hints=jd_hints,
                 section_text=sections["Summary"],
@@ -407,6 +676,7 @@ def process_resume(data: dict) -> dict:
         
     # Process Skills section
     if sections.get("Skills"):
+        send_progress(request_id, 60, "Processing skills...", db)
         skills_edits = [e for e in updates if _norm_section_name(e.get("section")) == "skills"]
         logger.info(f"[SKILLS] Found {len(skills_edits)} skills edits from scoring plan")
         
@@ -433,6 +703,7 @@ def process_resume(data: dict) -> dict:
         logger.warning("[SKILLS] No Skills section found in parsed resume sections")
 
     # Process Experience section
+    send_progress(request_id, 75, "Optimizing experience section...", db)
     if sections.get("Experience"):
         experience_edits = [e for e in updates if _norm_section_name(e.get("section")) == "experience"]
         logger.info(f"[EXPERIENCE] Found {len(experience_edits)} experience edits from scoring plan")
@@ -506,13 +777,181 @@ def process_resume(data: dict) -> dict:
         logger.warning("[SKILLS] No Skills section in rewritten content, using original")
         final_json["technical_skills"] = resume_json.get("technical_skills", {})
 
+    send_progress(request_id, 95, "Finalizing resume...", db)
+
     # _save_debug_file(final_json, "final_resume_json.json", prefix="final_resume_json")
 
     comapny_name = job_json.get("company_name", "Company")
     # file name - company_name_date_time.docx
     file_name = f"{comapny_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
 
+    send_progress(request_id, 100, "Resume completed!", db)
+    logger.info(f"[COMPLETE] Resume processing finished successfully")
 
-    create_resume(final_json, file_name)
+    return final_json
 
-    return {"result": "Resume generated successfully", "file_name": file_name}
+
+# --------------------- Job Status & Management Endpoints ---------------------
+
+@app.get("/api/jobs/{request_id}/status")
+async def get_job_status(
+    request_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get job status and progress"""
+    job = db.query(ResumeJob).filter(
+        ResumeJob.request_id == request_id,
+        ResumeJob.user_id == current_user.user_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Get real-time progress from memory if available
+    memory_progress = job_progress.get(request_id, {})
+    
+    return {
+        "job_id": job.id,
+        "request_id": job.request_id,
+        "status": memory_progress.get("status", job.status),
+        "progress": memory_progress.get("progress", job.progress),
+        "company_name": job.company_name,
+        "job_title": job.job_title,
+        "created_at": job.created_at.isoformat(),
+        "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+        "error_message": job.error_message
+    }
+
+@app.get("/api/jobs/{request_id}/result")
+async def get_job_result(
+    request_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get completed resume JSON"""
+    job = db.query(ResumeJob).filter(
+        ResumeJob.request_id == request_id,
+        ResumeJob.user_id == current_user.user_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job.status != "completed":
+        raise HTTPException(status_code=400, detail=f"Job not completed. Status: {job.status}")
+    
+    return {
+        "job_id": job.id,
+        "request_id": job.request_id,
+        "company_name": job.company_name,
+        "job_title": job.job_title,
+        "final_resume": job.final_resume_json,
+        "completed_at": job.completed_at.isoformat()
+    }
+
+@app.get("/api/jobs/{request_id}/download")
+async def download_resume(
+    request_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generate and download resume DOCX on-the-fly"""
+    job = db.query(ResumeJob).filter(
+        ResumeJob.request_id == request_id,
+        ResumeJob.user_id == current_user.user_id
+    ).first()
+    
+    if not job or job.status != "completed":
+        raise HTTPException(status_code=404, detail="Completed job not found")
+    
+    try:
+        # Generate DOCX on-the-fly
+        filename = f"{job.company_name}_{current_user.user_id}_resume.docx"
+        create_resume(job.final_resume_json, filename)
+        
+        # Return file for download
+        file_path = Path(filename)
+        if file_path.exists():
+            return FileResponse(
+                path=file_path,
+                filename=filename,
+                media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        else:
+            raise HTTPException(status_code=500, detail="Failed to generate DOCX")
+            
+    except Exception as e:
+        logger.error(f"Error generating DOCX: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/user/jobs")
+async def get_user_jobs(
+    limit: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's job history"""
+    jobs = db.query(ResumeJob).filter(
+        ResumeJob.user_id == current_user.user_id
+    ).order_by(ResumeJob.created_at.desc()).limit(limit).all()
+    
+    return {
+        "count": len(jobs),
+        "jobs": [
+            {
+                "job_id": job.id,
+                "request_id": job.request_id,
+                "company_name": job.company_name,
+                "job_title": job.job_title,
+                "mode": job.mode,
+                "status": job.status,
+                "progress": job.progress,
+                "created_at": job.created_at.isoformat(),
+                "completed_at": job.completed_at.isoformat() if job.completed_at else None
+            }
+            for job in jobs
+        ]
+    }
+
+@app.get("/api/user/stats")
+async def get_user_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user statistics and limits"""
+    # Refresh user from db to get latest stats
+    user = db.query(User).filter(User.user_id == current_user.user_id).first()
+    
+    # Count today's resumes
+    from datetime import timedelta
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_resumes = db.query(ResumeJob).filter(
+        ResumeJob.user_id == current_user.user_id,
+        ResumeJob.created_at >= today_start,
+        ResumeJob.status == "completed"
+    ).count()
+    
+    # Count active jobs
+    active_jobs = db.query(ResumeJob).filter(
+        ResumeJob.user_id == current_user.user_id,
+        ResumeJob.status.in_(["pending", "processing"])
+    ).count()
+    
+    return {
+        "user_id": user.user_id,
+        "total_resumes": user.total_resumes_generated or 0,
+        "today_resumes": today_resumes,
+        "active_jobs": active_jobs,
+        "limits": {
+            "max_concurrent_jobs": 3,
+            "rate_limit": "5 requests per minute"
+        },
+        "remaining": {
+            "concurrent_slots": max(0, 3 - active_jobs)
+        },
+        "account_created": user.created_at.isoformat(),
+        "last_login": user.last_login.isoformat() if user.last_login else None
+    }
+
