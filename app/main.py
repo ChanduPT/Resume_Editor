@@ -449,23 +449,30 @@ async def register(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/auth/login")
-async def login(
-    credentials: HTTPBasicCredentials = Depends(security),
-    db: Session = Depends(get_db)
-):
-    """Login user"""
-    user = authenticate_user(db, credentials.username, credentials.password)
+async def login(credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
+    """User login endpoint"""
+    username = credentials.username
+    password = credentials.password
+    
+    logger.info(f"[LOGIN ATTEMPT] User: {username}")
+    
+    user = db.query(User).filter(User.username == username).first()
+    
     if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Basic"}
-        )
+        logger.warning(f"[LOGIN FAILED] User not found: {username}")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Verify password
+    if not verify_password(password, user.password_hash):
+        logger.warning(f"[LOGIN FAILED] Invalid password for user: {username}")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    logger.info(f"[LOGIN SUCCESS] User: {username}")
     
     return {
         "message": "Login successful",
-        "user_id": user.user_id,
-        "last_login": user.last_login.isoformat() if user.last_login else None
+        "username": user.username,
+        "user_id": user.user_id
     }
 
 @app.get("/health")
