@@ -10,3 +10,4 @@ docxtpl==0.20.1
 sqlalchemy==2.0.23
 psycopg2-binary==2.9.9
 slowapi==0.1.9
+google-generativeai==0.8.5
