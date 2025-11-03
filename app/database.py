@@ -24,6 +24,18 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
 
+class UserResumeTemplate(Base):
+    __tablename__ = "user_resume_templates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(100), unique=True, index=True)  # One template per user
+    
+    # Resume data (name, contact, summary, skills, experience, education, projects, certifications)
+    resume_data = Column(JSON)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class ResumeJob(Base):
     __tablename__ = "resume_jobs"
     

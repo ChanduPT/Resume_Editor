@@ -28,7 +28,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.create_resume import create_resume
 from app.database import (
-    get_db, init_db, User, ResumeJob, 
+    get_db, init_db, User, ResumeJob, UserResumeTemplate,
     create_user, authenticate_user, SessionLocal
 )
 
@@ -121,10 +121,21 @@ async def serve_index():
 # Global dict to track job progress in memory
 job_progress = {}
 
-def send_progress(request_id: str, progress: int, status: str, db: Session = None):
-    """Update job progress in database and memory"""
-    job_progress[request_id] = {"progress": progress, "status": status}
-    logger.info(f"Job {request_id}: {progress}% - {status}")
+def send_progress(request_id: str, progress: int, status_message: str, db: Session = None):
+    """Update job progress in database and memory
+    
+    Args:
+        request_id: The job request ID
+        progress: Progress percentage (0-100)
+        status_message: Descriptive message about current step
+        db: Database session
+    """
+    # Store progress and message in memory (don't store status state here)
+    job_progress[request_id] = {
+        "progress": progress,
+        "message": status_message
+    }
+    logger.info(f"Job {request_id}: {progress}% - {status_message}")
     
     if db:
         try:
@@ -575,10 +586,25 @@ def process_resume(data: dict, request_id: str = None, db: Session = None) -> di
     send_progress(request_id, 5, "Starting resume processing...", db)
     
     resume_json = data.get("resume_data", {})
-    job_json = data.get("job_description_data", {})
+    
+    # Extract job description - handle both old and new payload formats
+    # New format: { jd: "...", company_name: "...", job_title: "..." }
+    # Old format: { job_description_data: { job_description: "...", company_name: "..." } }
+    if "job_description_data" in data:
+        # Old format for backwards compatibility
+        job_json = data.get("job_description_data", {})
+        jd = job_json.get("job_description", "")
+        company_name = job_json.get("company_name", "")
+    else:
+        # New format - direct fields
+        jd = data.get("jd", "")
+        company_name = data.get("company_name", "")
+    
     mode = data.get("mode", "complete_jd")  # Extract mode, default to 'complete_jd'
     
     logger.info(f"[MODE] Processing resume in '{mode}' mode")
+    logger.info(f"[JD] Job description length: {len(jd)} chars")
+    logger.info(f"[COMPANY] Company name: {company_name}")
 
     final_json = {}
     name = resume_json.get("name", "")
@@ -618,8 +644,8 @@ def process_resume(data: dict, request_id: str = None, db: Session = None) -> di
     # write debug files
     # _save_debug_file(resume_txt, "resume_text.txt", prefix="resume")
 
-    jd = job_json.get("job_description", "")
-    jd_file_name = job_json.get("company_name", "job_description").replace(" ", "_") + ".txt"
+    # jd and company_name already extracted above
+    jd_file_name = company_name.replace(" ", "_") + ".txt" if company_name else "job_description.txt"
     # save jd file
     _save_debug_file(jd, jd_file_name, prefix="job_description")
 
@@ -778,13 +804,6 @@ def process_resume(data: dict, request_id: str = None, db: Session = None) -> di
         final_json["technical_skills"] = resume_json.get("technical_skills", {})
 
     send_progress(request_id, 95, "Finalizing resume...", db)
-
-    # _save_debug_file(final_json, "final_resume_json.json", prefix="final_resume_json")
-
-    comapny_name = job_json.get("company_name", "Company")
-    # file name - company_name_date_time.docx
-    file_name = f"{comapny_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
-
     send_progress(request_id, 100, "Resume completed!", db)
     logger.info(f"[COMPLETE] Resume processing finished successfully")
 
@@ -811,11 +830,17 @@ async def get_job_status(
     # Get real-time progress from memory if available
     memory_progress = job_progress.get(request_id, {})
     
+    # Use database status (processing/completed/failed) not the message
+    # Get progress from memory (more real-time) or database
+    current_progress = memory_progress.get("progress", job.progress)
+    status_message = memory_progress.get("message", "")
+    
     return {
         "job_id": job.id,
         "request_id": job.request_id,
-        "status": memory_progress.get("status", job.status),
-        "progress": memory_progress.get("progress", job.progress),
+        "status": job.status,  # Use DB status (processing/completed/failed)
+        "progress": current_progress,  # Use memory progress for real-time updates
+        "message": status_message,  # Optional: current step message
         "company_name": job.company_name,
         "job_title": job.job_title,
         "created_at": job.created_at.isoformat(),
@@ -856,7 +881,7 @@ async def download_resume(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Generate and download resume DOCX on-the-fly"""
+    """Generate and download resume DOCX on-the-fly (in-memory, no file storage)"""
     job = db.query(ResumeJob).filter(
         ResumeJob.request_id == request_id,
         ResumeJob.user_id == current_user.user_id
@@ -865,26 +890,84 @@ async def download_resume(
     if not job or job.status != "completed":
         raise HTTPException(status_code=404, detail="Completed job not found")
     
+    if not job.final_resume_json:
+        raise HTTPException(status_code=404, detail="Resume data not found")
+    
     try:
-        # Generate DOCX on-the-fly
-        filename = f"{job.company_name}_{current_user.user_id}_resume.docx"
-        create_resume(job.final_resume_json, filename)
+        # Generate DOCX in memory using BytesIO
+        import io
+        from docx import Document
         
-        # Return file for download
-        file_path = Path(filename)
-        if file_path.exists():
-            return FileResponse(
-                path=file_path,
-                filename=filename,
-                media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                headers={"Content-Disposition": f"attachment; filename={filename}"}
-            )
-        else:
-            raise HTTPException(status_code=500, detail="Failed to generate DOCX")
+        # Create a temporary file path for create_resume function
+        # We'll still use the function but read the file into memory
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
+            tmp_path = tmp_file.name
+        
+        # Generate the resume
+        create_resume(job.final_resume_json, tmp_path)
+        
+        # Read the file into memory
+        with open(tmp_path, 'rb') as f:
+            docx_content = f.read()
+        
+        # Delete the temporary file
+        import os
+        os.unlink(tmp_path)
+        
+        # Create filename
+        filename = f"{job.company_name}_{job.job_title}_Resume.docx".replace(" ", "_").replace("/", "_")
+        
+        # Return as streaming response (no file storage needed)
+        from fastapi.responses import Response
+        return Response(
+            content=docx_content,
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
             
     except Exception as e:
         logger.error(f"Error generating DOCX: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to generate DOCX: {str(e)}")
+
+@app.get("/api/jobs/{request_id}/download-jd")
+async def download_job_description(
+    request_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Download the job description as a text file"""
+    job = db.query(ResumeJob).filter(
+        ResumeJob.request_id == request_id,
+        ResumeJob.user_id == current_user.user_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if not job.jd_text:
+        raise HTTPException(status_code=404, detail="Job description not found")
+    
+    try:
+        from fastapi.responses import Response
+        
+        # Create filename
+        filename = f"{job.company_name}_{job.job_title}_JD.txt".replace(" ", "_").replace("/", "_")
+        
+        # Return as text file
+        return Response(
+            content=job.jd_text,
+            media_type='text/plain',
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+            
+    except Exception as e:
+        logger.error(f"Error downloading JD: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to download JD: {str(e)}")
 
 @app.get("/api/user/jobs")
 async def get_user_jobs(
@@ -908,6 +991,7 @@ async def get_user_jobs(
                 "mode": job.mode,
                 "status": job.status,
                 "progress": job.progress,
+                "error_message": job.error_message,
                 "created_at": job.created_at.isoformat(),
                 "completed_at": job.completed_at.isoformat() if job.completed_at else None
             }
@@ -953,5 +1037,89 @@ async def get_user_stats(
         },
         "account_created": user.created_at.isoformat(),
         "last_login": user.last_login.isoformat() if user.last_login else None
+    }
+
+@app.post("/api/user/resume-template")
+async def save_resume_template(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Save or update user's resume template"""
+    try:
+        # Get the request body
+        data = await request.json()
+        
+        # Extract resume_data from the payload
+        # Frontend sends: { resume_data: {...} }
+        resume_data = data.get("resume_data", data)
+        
+        logger.info(f"[SAVE TEMPLATE] User: {current_user.user_id}")
+        logger.info(f"[SAVE TEMPLATE] Resume data keys: {list(resume_data.keys())}")
+        
+        # Check if template already exists
+        template = db.query(UserResumeTemplate).filter(
+            UserResumeTemplate.user_id == current_user.user_id
+        ).first()
+        
+        if template:
+            # Update existing template
+            logger.info(f"[SAVE TEMPLATE] Updating existing template")
+            template.resume_data = resume_data
+            template.updated_at = datetime.utcnow()
+        else:
+            # Create new template
+            logger.info(f"[SAVE TEMPLATE] Creating new template")
+            template = UserResumeTemplate(
+                user_id=current_user.user_id,
+                resume_data=resume_data
+            )
+            db.add(template)
+        
+        db.commit()
+        db.refresh(template)
+        
+        return {
+            "message": "Resume template saved successfully",
+            "updated_at": template.updated_at.isoformat()
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error saving resume template: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to save resume template: {str(e)}")
+
+@app.get("/api/user/resume-template")
+async def get_resume_template(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's saved resume template"""
+    logger.info(f"[LOAD TEMPLATE] User: {current_user.user_id}")
+    
+    template = db.query(UserResumeTemplate).filter(
+        UserResumeTemplate.user_id == current_user.user_id
+    ).first()
+    
+    if not template:
+        logger.info(f"[LOAD TEMPLATE] No template found for user {current_user.user_id}")
+        return {
+            "has_template": False,
+            "resume_data": None
+        }
+    
+    # Handle both old nested format and new flat format
+    resume_data = template.resume_data
+    
+    # If data has "resume_data" key (old nested format), unwrap it
+    if isinstance(resume_data, dict) and "resume_data" in resume_data:
+        logger.info(f"[LOAD TEMPLATE] Unwrapping nested resume_data structure")
+        resume_data = resume_data["resume_data"]
+    
+    logger.info(f"[LOAD TEMPLATE] Template found, keys: {list(resume_data.keys()) if resume_data else 'None'}")
+    
+    return {
+        "has_template": True,
+        "resume_data": resume_data,
+        "updated_at": template.updated_at.isoformat()
     }
 
