@@ -1,13 +1,1684 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=14.0">
+<style>
+  :root {
+    --bg: #fafbfc;
+    --bg-secondary: #ffffff;
+    --text: #0f172a;
+    --text-secondary: #64748b;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --accent-light: #eef2ff;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #10b981;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --bg-secondary: #1e293b;
+    --text: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --card: #1e293b;
+    --border: #334155;
+    --accent: #818cf8;
+    --accent-hover: #6366f1;
+    --accent-light: #312e81;
+    --danger: #f87171;
+    --danger-hover: #ef4444;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== MENU BAR ===== */
+  header {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    right: 0;
+    background: var(--bg-secondary);
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    height: 64px;
+  }
+  
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  #menuActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  /* Buttons & Dropdown Triggers */
+  header button, .dropdown-btn {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+  }
+  
+  header button:hover, .dropdown-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #clearBtn {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+  }
+  
+  #clearBtn:hover {
+    background: var(--danger-hover);
+    border-color: var(--danger-hover);
+  }
+
+  header button[onclick*="generateResume"] {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  header button[onclick*="generateResume"]:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  #toggleTheme {
+    width: auto;
+    min-width: 80px;
+    padding: 8px 14px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  /* ===== Dropdown Menus ===== */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: var(--card);
+    min-width: 180px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1200;
+    overflow: hidden;
+  }
+  
+  .dropdown-content a {
+    color: var(--text);
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+    transition: background 0.15s ease;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: var(--accent-light);
+    color: var(--accent);
+  }
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+    animation: fadeIn 0.15s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== MAIN AREA ===== */
+  main {
+    padding: 80px 40px 40px;
+    max-width: 100%;
+    margin: 0;
+    min-height: calc(100vh - 64px);
+  }
+  
+  h3 {
+    font-weight: 600;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  
+  h3:first-child {
+    margin-top: 0;
+  }
+  
+  label {
+    font-weight: 500;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    margin-top: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.15s ease;
+  }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  
+  textarea::placeholder, input::placeholder {
+    color: var(--text-secondary);
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .entry {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-top: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  
+  .entry:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+  }
+  
+  .bullet {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    gap: 8px;
+  }
+  
+  .bullet input {
+    flex: 1;
+    margin-top: 0;
+  }
+  
+  .remove-btn {
+    margin-left: 0;
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .remove-btn:hover {
+    background: var(--danger-hover);
+    transform: scale(1.05);
+  }
+
+  .sub-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    margin-top: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .sub-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  #result {
+    margin-top: 32px;
+    font-weight: 500;
+    text-align: center;
+    padding: 12px 24px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+  }
+
+  /* Scroll to Top Button */
+  #scrollToTop {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+  }
+
+  #scrollToTop.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #scrollToTop:hover {
+    background: var(--accent-hover);
+    transform: translateY(-3px);
+  }
+
+  /* ===== Modal (About) ===== */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .modal-content {
+    background-color: var(--card);
+    margin: 10% auto;
+    padding: 32px;
+    border: 1px solid var(--border);
+    width: 90%;
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .modal-content p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  
+  .close {
+    color: var(--text-secondary);
+    float: right;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    line-height: 1;
+    margin-top: -8px;
+    margin-right: -8px;
+  }
+
+  .close:hover {
+    color: var(--text);
+  }
+
+  /* ===== Sidebar & Tab Layout ===== */
+  #tabContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    background: var(--bg);
+    position: relative;
+  }
+  
+  #sidebar {
+    position: sticky;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 24px;
+    box-sizing: border-box;
+    gap: 12px;
+    z-index: 998;
+  }
+
+  /* Action Buttons Bar - Remove */
+  .action-buttons-bar {
+    display: none;
+  }
+
+  /* Action Bar */
+  .action-bar {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 999;
+  }
+
+  .action-bar input[type="file"] {
+    display: none;
+  }
+
+  .action-btn {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-lg);
+    white-space: nowrap;
+    min-width: 180px;
+  }
+
+  .action-btn:hover {
+    transform: translateX(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .action-btn .icon {
+    font-size: 20px;
+  }
+
+  .action-btn.danger:hover {
+    background: #e74c3c;
+    border-color: #e74c3c;
+  }
+
+  .action-btn.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .action-btn.primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+
+  /* Download dropdown */
+  .download-group {
+    position: relative;
+  }
+
+  .download-options {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    display: none;
+    flex-direction: column;
+    min-width: 180px;
+    overflow: hidden;
+  }
+
+  .download-options.show {
+    display: flex;
+  }
+
+  .download-option {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    color: var(--text);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .download-option:last-child {
+    border-bottom: none;
+  }
+
+  .download-option:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  .download-option .icon {
+    font-size: 18px;
+  }
+
+  .floating-actions button.upload-btn {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .floating-actions button.download-btn {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .floating-actions button.clear-btn {
+    background: var(--card);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .floating-actions button.upload-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  .floating-actions button.download-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  .floating-actions button.clear-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+  
+  .tab-btn {
+    padding: 12px 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    margin: 0;
+    min-width: 180px;
+  }
+  
+  .tab-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .tab-btn:not(.active):hover {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #tabContentArea {
+    margin-left: 0;
+    flex: 1;
+    padding: 40px 48px;
+    padding-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* Auth Screen Styles */
+  .auth-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 64px);
+    padding: 40px 20px;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+  }
+
+  .auth-container {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 48px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .auth-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .auth-header p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .auth-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  .auth-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .auth-footer p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 8px 0;
+  }
+
+  .user-bar {
+    background: var(--accent-light);
+    padding: 15px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .user-bar #mainUserInfo {
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  #resumeFormContainer, #jobDescTabPanel {
+    width: 100%;
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  #resumeFormContainer.active, #jobDescTabPanel.active {
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  /* Dashboard Tab Panel */
+  #dashboardTabPanel {
+    width: 100%;
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #dashboardTabPanel.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .auth-form {
+    display: none;
+    max-width: 500px;
+  }
+
+  .auth-form.active {
+    display: block;
+  }
+
+  .dash-panel {
+    display: none;
+  }
+
+  .dash-panel.active {
+    display: block;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    color: white;
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-card .stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .job-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.15s ease;
+  }
+
+  .job-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+  }
+
+  .job-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .job-company {
+    color: var(--accent);
+    font-size: 16px;
+  }
+
+  .status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .status-completed { background: #c6f6d5; color: #22543d; }
+  .status-processing { background: #fed7d7; color: #742a2a; }
+  .status-pending { background: #feebc8; color: #744210; }
+  .status-failed { background: #feb2b2; color: #742a2a; }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #8b5cf6 100%);
+    transition: width 0.3s;
+  }
+
+  .job-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  #jobDescTabPanel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-top: 0;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    min-height: 400px;
+    max-width: 100%;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #jobDescTabPanel h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+  
+  #jobDescTabPanel textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 450px;
+    margin-top: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text);
+    padding: 14px;
+    box-sizing: border-box;
+  }
+  
+  #generateJDResumeBtn {
+    margin-top: 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    align-self: flex-start;
+    transition: all 0.15s ease;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #generateJDResumeBtn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  @media (max-width: 1100px) {
+    #tabContentArea {
+      padding: 32px 24px;
+      padding-bottom: 80px;
+    }
+
+    .floating-actions {
+      bottom: 16px;
+      right: 16px;
+    }
+
+    .floating-actions button {
+      width: 48px;
+      height: 48px;
+      font-size: 18px;
+    }
+
+    .floating-actions button::before {
+      font-size: 18px;
+    }
+
+    header {
+      padding: 12px 20px;
+    }
+
+    header h1 {
+      font-size: 18px;
+    }
+
+    #menuActions {
+      gap: 6px;
+    }
+
+    header button, .dropdown-btn {
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+    
+    #toggleTheme {
+      padding: 7px 12px;
+    }
+  }
+  
+  @media (max-width: 850px) {
+    #tabContainer {
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+    }
+    
+    #sidebar {
+      padding: 12px 12px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      padding: 12px 16px;
+    }
+
+    .floating-actions {
+      bottom: 12px;
+      right: 12px;
+      gap: 8px;
+    }
+
+    .floating-actions button {
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+    }
+
+    .floating-actions button::before {
+      font-size: 16px;
+    }
+    
+    #tabContentArea {
+      padding: 24px 16px;
+      padding-bottom: 160px;
+    }
+    
+    #jobDescTabPanel, #resumeFormContainer {
+      padding: 20px 16px;
+    }
+
+    header {
+      padding: 10px 16px;
+      height: auto;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    header h1 {
+      font-size: 16px;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    #menuActions {
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    header button, .dropdown-btn {
+      font-size: 11px;
+      padding: 6px 10px;
+    }
+    
+    #toggleTheme {
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    main {
+      padding: 100px 16px 32px;
+    }
+
+    .entry {
+      padding: 12px;
+    }
+
+    #processingBanner {
+      top: 70px;
+      right: 12px;
+      min-width: 240px;
+      padding: 10px 16px;
+    }
+
+    #processingBanner .message {
+      font-size: 13px;
+    }
+  }
+
+  /* Additional Polish */
+  form {
+    margin-bottom: 24px;
+    max-width: 100%;
+  }
+
+  .entry input {
+    margin-bottom: 8px;
+  }
+
+  .entry input:last-of-type {
+    margin-bottom: 0;
+  }
+
+  /* Skill entries styling */
+  #skillsList .entry {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+  }
+
+  #skillsList .entry input {
+    margin-bottom: 0;
+  }
+  
+  /* Contact entries styling - same as skills */
+  #contactList .entry {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 12px;
+  }
+
+  #contactList .entry input {
+    margin-bottom: 0;
+  }
+  
+  /* Readonly contact labels styling */
+  #contactList .entry input[readonly] {
+    background: var(--bg);
+    border-color: var(--border);
+    cursor: default;
+    opacity: 0.8;
+  }
+  
+  /* Ensure inputs don't overflow */
+  input, textarea {
+    max-width: 100%;
+  }
+
+  /* Form Section Navigation */
+  .form-nav-container {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    margin-top: 16px;
+    align-items: start;
+  }
+
+  .form-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 0px;
+    height: fit-content;
+    align-self: start;
+  }
+  
+  .form-sections {
+    min-height: 500px;
+  }
+
+  .form-nav-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-nav-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .form-nav-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+
+  .form-nav-btn .icon {
+    font-size: 18px;
+  }
+
+  .form-section-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+    min-height: 400px;
+  }
+
+  .form-section-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-section-panel h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Responsive: Stack navigation on mobile */
+  @media (max-width: 850px) {
+    .form-nav-container {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .form-nav {
+      position: static;
+      flex-direction: row;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .form-nav-btn {
+      white-space: nowrap;
+      min-width: fit-content;
+    }
+  }
+
+  /* Better focus states */
+  button:focus-visible, .tab-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* Loading spinner for status modal */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  /* Processing Banner */
+  #processingBanner {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1100;
+    min-width: 320px;
+    max-width: 400px;
+    pointer-events: auto;
+    animation: slideInFromRight 0.3s ease;
+  }
+
+  #processingBanner.active {
+    display: flex;
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  #processingBanner .banner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  #processingBanner .banner-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #processingBanner .close-banner {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+  }
+
+  #processingBanner .close-banner:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  #processingBanner .spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    flex-shrink: 0;
+  }
+
+  #processingBanner .requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  #processingBanner .request-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    transition: all 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+  }
+
+  #processingBanner .request-item.completed {
+    background: var(--accent-light);
+    border-left: 3px solid var(--success);
+  }
+
+  #processingBanner .request-item.failed {
+    background: #fee;
+    border-left: 3px solid var(--danger);
+  }
+
+  #processingBanner .request-item .item-icon {
+    flex-shrink: 0;
+  }
+
+  #processingBanner .request-item .item-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  #processingBanner .request-item .item-company {
+    font-weight: 500;
+    color: var(--text);
+  }
+  
+  #processingBanner .request-item .item-progress {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+  }
+
+  #processingBanner .request-item.completed .item-text {
+    color: var(--success);
+  }
+  
+  #processingBanner .request-item.completed .item-company {
+    color: var(--success);
+  }
+
+  #processingBanner .message {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 3px;
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  #processingBanner .requests-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* ===== FAQ Section ===== */
+  .faq-section {
+    display: none; /* Hidden by default */
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px;
+    max-width: 100%;
+    position: relative;
+  }
+  
+  .faq-section.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .faq-header {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .faq-section h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .faq-close {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .faq-close:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .faq-section .faq-item {
+    max-width: 900px;
+    margin: 0 auto 12px;
+  }
+
+  .faq-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all 0.15s ease;
+  }
+
+  .faq-item:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+  }
+
+  .faq-question {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 18px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.15s ease;
+  }
+
+  .faq-question:hover {
+    color: var(--accent);
+  }
+
+  .faq-icon {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+    color: var(--accent);
+  }
+
+  .faq-item.active .faq-icon {
+    transform: rotate(180deg);
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 24px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .faq-item.active .faq-answer {
+    max-height: 200px;
+    padding: 0 24px 18px;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 48px 32px 24px;
+    margin-top: 0;
+    clear: both;
+    width: 100%;
+    position: relative;
+  }
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+
+  .footer-about h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .footer-about p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .footer-about a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+  }
+
+  .footer-about a:hover {
+    color: var(--accent-hover);
+  }
+
+  .footer-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-links li {
+    margin-bottom: 10px;
+  }
+
+  .footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.15s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent);
+  }
+
+  .social-links {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .social-links a {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 18px;
+    transition: all 0.15s ease;
+  }
+
+  .social-links a:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  [data-theme="dark"] .social-links a:hover {
+    color: white;
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  @media (max-width: 850px) {
+    .footer-content {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .faq-section {
+      padding: 0 16px;
+    }
+
+    .faq-section h2 {
+      font-size: 24px;
+    }
+
+    .faq-question {
+      padding: 14px 16px;
+      font-size: 15px;
+    }
+
+    .faq-answer {
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 32px 16px 16px;
+    }
+  }
+</style>
 </head>
 <body>
-<header id="mainHeader" style="display: none;">
+<header>
   <h1>Resume Builder Pro</h1>
   <div id="menuActions">
     <span id="headerUserInfo" style="margin-right: 15px; color: var(--text-secondary); display: none;"></span>
@@ -19,113 +1690,53 @@
 <main>
   <!-- Login/Register Screen (shown first) -->
   <div id="authScreen" class="auth-screen">
-    <!-- Left Column: Brand/Visual -->
-    <div class="auth-brand">
-      <div class="auth-brand-content">
-        <div class="brand-logo">
-          <h1>Resume Builder Pro</h1>
-          <p class="brand-tagline">AI-Powered Resume Optimization</p>
-        </div>
-        
-        <div class="brand-features">
-          <div class="feature-item">
-            <div class="feature-icon">✨</div>
-            <div class="feature-text">
-              <h3>Smart Tracking</h3>
-              <p>Track all your resume versions in one place</p>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🎯</div>
-            <div class="feature-text">
-              <h3>AI Optimization</h3>
-              <p>Tailor resumes to match job descriptions</p>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">📄</div>
-            <div class="feature-text">
-              <h3>Instant Downloads</h3>
-              <p>Export professional resumes anytime</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="brand-stats">
-          <div class="stat-item">
-            <div class="stat-number">1K+</div>
-            <div class="stat-label">Resumes Created</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">95%</div>
-            <div class="stat-label">Success Rate</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">24/7</div>
-            <div class="stat-label">Available</div>
-          </div>
-        </div>
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1>👋 Welcome to Resume Builder Pro</h1>
+        <p>AI-Powered Resume Optimization & Tracking</p>
       </div>
-    </div>
 
-    <!-- Right Column: Form -->
-    <div class="auth-form-column">
-      <div class="auth-form-container">
-        <div class="auth-header">
-          <h2>Welcome</h2>
-          <p>Enter your credentials to access your account</p>
-        </div>
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="mainLoginTabBtn" onclick="switchMainAuthTab('login')">Login</button>
+        <button class="tab-btn" id="mainRegisterTabBtn" onclick="switchMainAuthTab('register')">Register</button>
+      </div>
 
-        <!-- Login Form -->
-        <div id="mainLoginForm" class="auth-form active">
-          <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainLoginUsername" placeholder="Enter your username">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="mainLoginPassword" placeholder="Enter your password">
-          </div>
-          <button class="primary-btn" style="width: 100%; margin-top: 24px;" onclick="handleMainLogin()">Sign In</button>
-          
-          <div class="auth-switch">
-            <span>Don't have an account?</span>
-            <a href="#" onclick="switchMainAuthTab('register'); return false;">Create account</a>
-          </div>
+      <!-- Login Form -->
+      <div id="mainLoginForm" class="auth-form active">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="mainLoginUsername" placeholder="Enter your username">
         </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="mainLoginPassword" placeholder="Enter your password">
+        </div>
+        <button class="sub-btn" style="width: 100%; margin-top: 10px;" onclick="handleMainLogin()">Login</button>
+      </div>
 
-        <!-- Register Form -->
-        <div id="mainRegisterForm" class="auth-form">
-          <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainRegisterUsername" placeholder="Choose a username">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="mainRegisterPassword" placeholder="Choose a password (min 8 characters)">
-          </div>
-          <div class="form-group">
-            <label>Confirm Password</label>
-            <input type="password" id="mainRegisterPasswordConfirm" placeholder="Confirm your password">
-          </div>
-          <button class="primary-btn" style="width: 100%; margin-top: 24px;" onclick="handleMainRegister()">Create Account</button>
-          
-          <div class="auth-switch">
-            <span>Already have an account?</span>
-            <a href="#" onclick="switchMainAuthTab('login'); return false;">Sign in</a>
-          </div>
+      <!-- Register Form -->
+      <div id="mainRegisterForm" class="auth-form">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="mainRegisterUsername" placeholder="Choose a username">
         </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="mainRegisterPassword" placeholder="Choose a password">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="mainRegisterPasswordConfirm" placeholder="Confirm your password">
+        </div>
+        <button class="sub-btn" style="width: 100%; margin-top: 10px;" onclick="handleMainRegister()">Create Account</button>
+      </div>
 
-        <div id="mainAuthMessage" style="margin-top: 20px; padding: 12px; border-radius: var(--radius-md); display: none;"></div>
-        
-        <!-- Minimal Footer -->
-        <div class="auth-footer-links">
-          <a href="#">Privacy Policy</a>
-          <span>·</span>
-          <a href="#">Terms of Service</a>
-          <span>·</span>
-          <a href="#">Help Center</a>
-        </div>
+      <div id="mainAuthMessage" style="margin-top: 20px; padding: 12px; border-radius: var(--radius-md); display: none;"></div>
+      
+      <div class="auth-footer">
+        <p>✨ Track your resume history</p>
+        <p>📊 Monitor usage statistics</p>
+        <p>🚀 Download resumes anytime</p>
       </div>
     </div>
   </div>
@@ -326,50 +1937,36 @@
 
       <!-- Dashboard Tab Panel -->
       <div id="dashboardTabPanel">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-          <h2>📊 My Dashboard</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0;">📊 My Dashboard</h2>
         </div>
         
         <div id="dashboardMessage" style="margin-bottom: 20px; padding: 12px; border-radius: var(--radius-md); display: none;"></div>
 
         <!-- Stats Cards -->
-        <div id="statsCards" class="stats-grid">
+        <div id="statsCards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
           <!-- Stats will be loaded here -->
         </div>
 
         <!-- Resume History Table -->
-        <div class="resume-table-container">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 24px 16px 24px;">
-            <h3 style="margin: 0; padding: 0;">My Resumes</h3>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 13px; color: var(--text-secondary);">Show:</span>
-              <select id="pageSizeSelect" onchange="changePageSize()" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-          </div>
-          <div class="resume-table-wrapper">
-            <table class="resume-table" id="resumeHistoryTable">
+        <div style="margin-top: 30px;">
+          <h3>My Resumes</h3>
+          <div style="overflow-x: auto; margin-top: 20px;">
+            <table id="resumeHistoryTable" style="width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: var(--radius-md); overflow: hidden;">
               <thead>
-                <tr>
-                  <th>Company</th>
-                  <th>Job Title</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th style="text-align: center;">Actions</th>
+                <tr style="background: var(--accent); color: white;">
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">Company</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">Job Title</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">Status</th>
+                  <th style="padding: 12px; text-align: center; font-weight: 600;">Progress</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">Created At</th>
+                  <th style="padding: 12px; text-align: center; font-weight: 600;">Actions</th>
                 </tr>
               </thead>
               <tbody id="resumeHistoryBody">
                 <!-- Resume rows will be loaded here -->
               </tbody>
             </table>
-          </div>
-          <div class="pagination-container" id="paginationContainer">
-            <!-- Pagination will be loaded here -->
           </div>
         </div>
       </div>
@@ -403,7 +2000,7 @@
 </div>
 
 <!-- ===== FOOTER ===== -->
-<footer id="mainFooter" style="display: none;">
+<footer>
   <!-- FAQ SECTION (collapsible) -->
   <section class="faq-section" id="faqSection">
     <div class="faq-header">
@@ -1622,37 +3219,6 @@
     }
   }
 
-  // Kebab Menu Functions
-  function toggleKebabMenu(event, requestId) {
-    event.stopPropagation();
-    const dropdown = document.getElementById(`kebab-${requestId}`);
-    const allDropdowns = document.querySelectorAll('.kebab-dropdown');
-    
-    // Close all other dropdowns
-    allDropdowns.forEach(d => {
-      if (d !== dropdown) d.style.display = 'none';
-    });
-    
-    // Toggle current dropdown
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-  }
-
-  function closeKebabMenu(requestId) {
-    const dropdown = document.getElementById(`kebab-${requestId}`);
-    if (dropdown) {
-      dropdown.style.display = 'none';
-    }
-  }
-
-  // Close kebab menus when clicking outside
-  document.addEventListener('click', function(event) {
-    if (!event.target.closest('.kebab-menu-btn')) {
-      document.querySelectorAll('.kebab-dropdown').forEach(d => {
-        d.style.display = 'none';
-      });
-    }
-  });
-
   // Start Polling Job Status
   function startDashboardPolling(requestId) {
     // Stop existing polling if it exists
@@ -1663,27 +3229,14 @@
 
     console.log('[POLLING] Starting polling for:', requestId);
     
-    let pollCount = 0;
-    const maxPolls = 150; // 5 minutes max (150 * 2s = 300s)
-    
     dashboardPollIntervals[requestId] = setInterval(async () => {
-      pollCount++;
-      
-      // Stop polling after 5 minutes
-      if (pollCount > maxPolls) {
-        console.log('[POLLING] Max polling duration reached (5 minutes), stopping for:', requestId);
-        clearInterval(dashboardPollIntervals[requestId]);
-        delete dashboardPollIntervals[requestId];
-        showDashMessage('Job is taking longer than expected. Please refresh to check status.', 'warning');
-        return;
-      }
-      
       try {
         const status = await dashApiCall(`/api/jobs/${requestId}/status`);
         console.log('[POLLING] Update received for', requestId);
         console.log('[POLLING] Status:', status.status);
         console.log('[POLLING] Progress:', status.progress);
         console.log('[POLLING] Message:', status.message);
+        console.log('[POLLING] Full data:', JSON.stringify(status, null, 2));
         
         // Update processing banner with progress
         if (status.status === 'processing' && status.progress !== undefined) {
@@ -1712,7 +3265,7 @@
       } catch (error) {
         console.error('[POLLING] Polling error:', error);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 2000);
   }
 
   // Update Job Card/Row
@@ -1778,34 +3331,31 @@
     // Update actions (6th column)
     const actionsCell = row.cells[5];
     if (actionsCell) {
-      const companyName = row.cells[0].textContent;
-      const jobTitle = row.cells[1].textContent;
-      
-      if (data.status === 'completed') {
-        actionsCell.style.position = 'relative';
-        actionsCell.innerHTML = `
-          <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${requestId}')">⋮</button>
-          <div class="kebab-dropdown" id="kebab-${requestId}">
-            <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
-              <span class="menu-icon">📄</span>
-              <span>Download Resume</span>
+      const actionsDiv = actionsCell.querySelector('.job-actions');
+      if (actionsDiv) {
+        const companyName = row.cells[0].textContent;
+        const jobTitle = row.cells[1].textContent;
+        
+        if (data.status === 'completed') {
+          actionsDiv.innerHTML = `
+            <button class="sub-btn" style="padding: 6px 12px; font-size: 0.85em; background: var(--success);" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}')" title="Download Resume">
+              💾 Resume
             </button>
-            <button class="primary" onclick="downloadJobDescription('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
-              <span class="menu-icon">📋</span>
-              <span>View Job Description</span>
+            <button class="sub-btn" style="padding: 6px 12px; font-size: 0.85em; background: var(--accent);" onclick="downloadJobDescription('${requestId}', '${companyName}', '${jobTitle}')" title="Download Job Description">
+              📄 JD
             </button>
-            <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${requestId}'); closeKebabMenu('${requestId}'); }">
-              <span class="menu-icon">🗑️</span>
-              <span>Delete</span>
-            </button>
-          </div>
-        `;
-      } else if (data.status === 'failed') {
-        actionsCell.innerHTML = `
-          <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${data.error_message || 'Generation failed'}">
-            ❌ Error
-          </div>
-        `;
+          `;
+          actionsDiv.style.display = 'flex';
+          actionsDiv.style.gap = '8px';
+          actionsDiv.style.justifyContent = 'center';
+          actionsDiv.style.flexWrap = 'wrap';
+        } else if (data.status === 'failed') {
+          actionsDiv.innerHTML = `
+            <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${data.error_message || 'Generation failed'}">
+              ❌ Error
+            </div>
+          `;
+        }
       }
     }
   }
@@ -1846,32 +3396,25 @@
             ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}<br>
             ${new Date(job.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
           </td>
-          <td style="padding: 12px; text-align: center; position: relative;">
-            ${job.status === 'completed' ? `
-              <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${job.request_id}')">⋮</button>
-              <div class="kebab-dropdown" id="kebab-${job.request_id}">
-                <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📄</span>
-                  <span>Download Resume</span>
+          <td style="padding: 12px; text-align: center;">
+            <div class="job-actions" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+              ${job.status === 'completed' ? `
+                <button class="sub-btn" style="padding: 6px 12px; font-size: 0.85em; background: var(--success);" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}')" title="Download Resume">
+                  💾 Resume
                 </button>
-                <button class="primary" onclick="downloadJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📋</span>
-                  <span>View Job Description</span>
+                <button class="sub-btn" style="padding: 6px 12px; font-size: 0.85em; background: var(--accent);" onclick="downloadJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}')" title="Download Job Description">
+                  📄 JD
                 </button>
-                <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${job.request_id}'); closeKebabMenu('${job.request_id}'); }">
-                  <span class="menu-icon">�️</span>
-                  <span>Delete</span>
+              ` : job.status === 'processing' || job.status === 'pending' ? `
+                <button class="sub-btn" style="padding: 6px 16px; font-size: 0.9em;" onclick="checkDashboardStatus('${job.request_id}')">
+                  🔄 Refresh
                 </button>
-              </div>
-            ` : job.status === 'processing' || job.status === 'pending' ? `
-              <button class="sub-btn" style="padding: 6px 16px; font-size: 0.9em;" onclick="checkDashboardStatus('${job.request_id}')">
-                🔄 Refresh
-              </button>
-            ` : `
-              <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${job.error_message || 'Generation failed'}">
-                ❌ Error
-              </div>
-            `}
+              ` : `
+                <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${job.error_message || 'Generation failed'}">
+                  ❌ Error
+                </div>
+              `}
+            </div>
           </td>
         </tr>
       `).join('');
@@ -1959,38 +3502,6 @@
     }
   }
 
-  // Delete Resume
-  async function deleteResume(requestId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${requestId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to delete resume');
-      }
-
-      // Remove the row from the table
-      const row = document.querySelector(`tr[data-request-id="${requestId}"]`);
-      if (row) {
-        row.remove();
-      }
-
-      // Reload dashboard stats and history
-      loadDashboardStats();
-      loadDashboardHistory();
-      
-      showDashMessage('Resume deleted successfully!', 'success');
-    } catch (error) {
-      console.error('Delete failed:', error);
-      showDashMessage(error.message || 'Failed to delete resume', 'error');
-    }
-  }
-
   // Check Status
   async function checkDashboardStatus(requestId) {
     console.log('Checking status for:', requestId);
@@ -2058,15 +3569,21 @@
 
   /* ---------- MAIN AUTH FUNCTIONALITY ---------- */
   
-  // Switch Main Auth Forms
+  // Switch Main Auth Tabs
   function switchMainAuthTab(tab) {
+    const loginBtn = document.getElementById('mainLoginTabBtn');
+    const registerBtn = document.getElementById('mainRegisterTabBtn');
     const loginForm = document.getElementById('mainLoginForm');
     const registerForm = document.getElementById('mainRegisterForm');
 
     if (tab === 'login') {
+      loginBtn.classList.add('active');
+      registerBtn.classList.remove('active');
       loginForm.classList.add('active');
       registerForm.classList.remove('active');
     } else {
+      registerBtn.classList.add('active');
+      loginBtn.classList.remove('active');
       registerForm.classList.add('active');
       loginForm.classList.remove('active');
     }
@@ -2143,10 +3660,6 @@
       document.getElementById('headerUserInfo').style.display = 'inline';
       document.getElementById('logoutBtn').style.display = 'inline-block';
       
-      // Show header and footer
-      document.getElementById('mainHeader').style.display = 'flex';
-      document.getElementById('mainFooter').style.display = 'block';
-      
       // Load stats (for dashboard tab)
       loadDashboardStats();
       loadDashboardHistory();
@@ -2172,16 +3685,12 @@
     currentPassword = null;
     
     // Show auth screen, hide main app
-    document.getElementById('authScreen').style.display = 'grid';
+    document.getElementById('authScreen').style.display = 'flex';
     document.getElementById('mainApp').style.display = 'none';
     
     // Hide logout button and username in header
     document.getElementById('headerUserInfo').style.display = 'none';
     document.getElementById('logoutBtn').style.display = 'none';
-    
-    // Hide header and footer
-    document.getElementById('mainHeader').style.display = 'none';
-    document.getElementById('mainFooter').style.display = 'none';
     
     // Clear forms
     document.getElementById('mainLoginUsername').value = '';
@@ -2204,5 +3713,6 @@
   });
 
 </script>
-<script src="/static/js/main.js?v=14.0"></script>
-</html>
+
+
+</body></html>

@@ -296,14 +296,20 @@ def create_resume(data, file_name):
     
     for exp in data["experience"]:
         company_para = doc.add_paragraph()
-        run = company_para.add_run(f"{exp['company']} | {exp['title']} | {exp['dates']}")
+        # Handle both 'role' and 'title' field names
+        job_title = exp.get('role') or exp.get('title', 'Position')
+        # Handle both 'period' and 'dates' field names
+        dates = exp.get('period') or exp.get('dates', '')
+        run = company_para.add_run(f"{exp['company']} | {job_title} | {dates}")
         run.bold = True
         run.font.name = "Times New Roman"
         run.font.size = Pt(11)
         set_paragraph_format(company_para, font_size=10, spacing=1.0)
 
         # Bullets aligned full width
-        for point in exp["bullets"]:
+        # Handle both 'points' and 'bullets' field names
+        bullets = exp.get('points') or exp.get('bullets', [])
+        for point in bullets:
             bullet = doc.add_paragraph(point, style="List Bullet")
             set_paragraph_format(bullet, font_size=10, spacing=1.0, alignment=WD_ALIGN_PARAGRAPH.JUSTIFY)
 

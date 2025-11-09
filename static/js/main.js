@@ -1,558 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=14.0">
-</head>
-<body>
-<header id="mainHeader" style="display: none;">
-  <h1>Resume Builder Pro</h1>
-  <div id="menuActions">
-    <span id="headerUserInfo" style="margin-right: 15px; color: var(--text-secondary); display: none;"></span>
-    <button id="logoutBtn" onclick="handleMainLogout()" style="background: var(--danger); display: none;">🚪 Logout</button>
-    <button id="toggleTheme">🌙 Dark</button>
-  </div>
-</header>
-
-<main>
-  <!-- Login/Register Screen (shown first) -->
-  <div id="authScreen" class="auth-screen">
-    <!-- Left Column: Brand/Visual -->
-    <div class="auth-brand">
-      <div class="auth-brand-content">
-        <div class="brand-logo">
-          <h1>Resume Builder Pro</h1>
-          <p class="brand-tagline">AI-Powered Resume Optimization</p>
-        </div>
-        
-        <div class="brand-features">
-          <div class="feature-item">
-            <div class="feature-icon">✨</div>
-            <div class="feature-text">
-              <h3>Smart Tracking</h3>
-              <p>Track all your resume versions in one place</p>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🎯</div>
-            <div class="feature-text">
-              <h3>AI Optimization</h3>
-              <p>Tailor resumes to match job descriptions</p>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">📄</div>
-            <div class="feature-text">
-              <h3>Instant Downloads</h3>
-              <p>Export professional resumes anytime</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="brand-stats">
-          <div class="stat-item">
-            <div class="stat-number">1K+</div>
-            <div class="stat-label">Resumes Created</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">95%</div>
-            <div class="stat-label">Success Rate</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">24/7</div>
-            <div class="stat-label">Available</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Column: Form -->
-    <div class="auth-form-column">
-      <div class="auth-form-container">
-        <div class="auth-header">
-          <h2>Welcome</h2>
-          <p>Enter your credentials to access your account</p>
-        </div>
-
-        <!-- Login Form -->
-        <div id="mainLoginForm" class="auth-form active">
-          <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainLoginUsername" placeholder="Enter your username">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="mainLoginPassword" placeholder="Enter your password">
-          </div>
-          <button class="primary-btn" style="width: 100%; margin-top: 24px;" onclick="handleMainLogin()">Sign In</button>
-          
-          <div class="auth-switch">
-            <span>Don't have an account?</span>
-            <a href="#" onclick="switchMainAuthTab('register'); return false;">Create account</a>
-          </div>
-        </div>
-
-        <!-- Register Form -->
-        <div id="mainRegisterForm" class="auth-form">
-          <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainRegisterUsername" placeholder="Choose a username">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="mainRegisterPassword" placeholder="Choose a password (min 8 characters)">
-          </div>
-          <div class="form-group">
-            <label>Confirm Password</label>
-            <input type="password" id="mainRegisterPasswordConfirm" placeholder="Confirm your password">
-          </div>
-          <button class="primary-btn" style="width: 100%; margin-top: 24px;" onclick="handleMainRegister()">Create Account</button>
-          
-          <div class="auth-switch">
-            <span>Already have an account?</span>
-            <a href="#" onclick="switchMainAuthTab('login'); return false;">Sign in</a>
-          </div>
-        </div>
-
-        <div id="mainAuthMessage" style="margin-top: 20px; padding: 12px; border-radius: var(--radius-md); display: none;"></div>
-        
-        <!-- Minimal Footer -->
-        <div class="auth-footer-links">
-          <a href="#">Privacy Policy</a>
-          <span>·</span>
-          <a href="#">Terms of Service</a>
-          <span>·</span>
-          <a href="#">Help Center</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main App (hidden until login) -->
-  <div id="mainApp" style="display: none;">
-    <div id="tabContainer">
-      <nav id="sidebar">
-        <button class="tab-btn active" id="tabResumeBtn" type="button">View Resume</button>
-        <button class="tab-btn" id="tabEditJDBtn" type="button">Generate Resume</button>
-        <button class="tab-btn" id="tabDashboardBtn" type="button">My Dashboard</button>
-      </nav>
-
-      <section id="tabContentArea">
-      <div id="resumeFormContainer" class="active">
-        <form id="resumeForm">
-          <!-- Side Navigation & Content -->
-          <div class="form-nav-container">
-            <!-- Side Navigation -->
-            <div class="form-nav">
-              <button type="button" class="form-nav-btn active" onclick="showFormSection('basic')">
-                <span class="icon">📝</span>
-                <span>Basic Info</span>
-              </button>
-              <button type="button" class="form-nav-btn" onclick="showFormSection('contact')">
-                <span class="icon">📞</span>
-                <span>Contact</span>
-              </button>
-              <button type="button" class="form-nav-btn" onclick="showFormSection('skills')">
-                <span class="icon">🛠️</span>
-                <span>Skills</span>
-              </button>
-              <button type="button" class="form-nav-btn" onclick="showFormSection('experience')">
-                <span class="icon">💼</span>
-                <span>Experience</span>
-              </button>
-              <button type="button" class="form-nav-btn" onclick="showFormSection('education')">
-                <span class="icon">🎓</span>
-                <span>Education</span>
-              </button>
-              <button type="button" class="form-nav-btn" onclick="showFormSection('projects')">
-                <span class="icon">🚀</span>
-                <span>Projects</span>
-              </button>
-              <button type="button" class="form-nav-btn" onclick="showFormSection('certifications')">
-                <span class="icon">🏆</span>
-                <span>Certifications</span>
-              </button>
-            </div>
-
-            <!-- Content Panels -->
-            <div class="form-sections">
-              <!-- Basic Information Section -->
-              <div id="section-basic" class="form-section-panel active">
-                <h3><span>📝</span> Basic Information</h3>
-                <label>Name</label>
-                <input name="name" placeholder="e.g., Gachibowli Diwakar" required="">
-                
-                <label style="margin-top: 12px;">Summary</label>
-                <textarea name="summary" rows="10" placeholder="Professional summary ..." required=""></textarea>
-              </div>
-
-              <!-- Contact Information Section -->
-              <div id="section-contact" class="form-section-panel">
-                <h3><span>📞</span> Contact Information</h3>
-                <div id="contactList"><div class="entry"><input placeholder="Label (e.g., phone, email, linkedin)" class="contact-key" value="">
-    <input placeholder="Value" class="contact-value" value=""></div></div>
-                <button type="button" class="sub-btn" onclick="addContact()">+ Add Contact Field</button>
-              </div>
-
-              <!-- Technical Skills Section -->
-              <div id="section-skills" class="form-section-panel">
-                <h3><span>🛠️</span> Technical Skills</h3>
-                <div id="skillsList"><div class="entry"><input placeholder="Category" class="skill-key" value="">
-    <input placeholder="Values (comma-separated)" class="skill-value" value=""></div></div>
-                <button type="button" class="sub-btn" onclick="addSkill()">+ Add Skill</button>
-              </div>
-
-              <!-- Experience Section -->
-              <div id="section-experience" class="form-section-panel">
-                <h3><span>💼</span> Experience</h3>
-                <div id="experienceList"><div class="entry"><input placeholder="Company" class="exp-company" value="">
-  <input placeholder="Role" class="exp-role" value="">
-  <input placeholder="Period" class="exp-period" value="">
-  <div class="bullets"><div class="bullet"><input placeholder="Achievement..." class="exp-point" value="">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button></div></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button></div></div>
-                <button type="button" class="sub-btn" onclick="addExperience()">+ Add Experience</button>
-              </div>
-
-              <!-- Education Section -->
-              <div id="section-education" class="form-section-panel">
-                <h3><span>🎓</span> Education</h3>
-                <div id="educationList"><div class="entry"><input placeholder="Degree" class="edu-degree" value="">
-    <input placeholder="Institution" class="edu-inst" value="">
-    <input placeholder="Year" class="edu-year" value=""></div></div>
-                <button type="button" class="sub-btn" onclick="addEducation()">+ Add Education</button>
-              </div>
-
-              <!-- Projects Section -->
-              <div id="section-projects" class="form-section-panel">
-                <h3><span>🚀</span> Projects</h3>
-                <div id="projectsList"></div>
-                <button type="button" class="sub-btn" onclick="addProject()">+ Add Project</button>
-              </div>
-
-              <!-- Certifications Section -->
-              <div id="section-certifications" class="form-section-panel">
-                <h3><span>🏆</span> Certifications</h3>
-                <div id="certificationsList"></div>
-                <button type="button" class="sub-btn" onclick="addCertification()">+ Add Certification</button>
-              </div>
-            </div>
-          </div>
-        </form>
-
-        <!-- Scroll to Top Button -->
-        <button id="scrollToTop" onclick="scrollToTop()">↑</button>
-        
-        <!-- Action Bar (shown in View Resume tab) -->
-        <div class="action-bar" id="actionBar">
-          <input type="file" id="uploadJSON" accept=".json">
-          
-          <!-- Save Template Button -->
-          <button class="action-btn primary" onclick="saveResumeTemplate()">
-            <span class="icon">💾</span>
-            <span>Save Template</span>
-          </button>
-          
-          <!-- Upload Button -->
-          <button class="action-btn" onclick="triggerUpload()">
-            <span class="icon">📂</span>
-            <span>Upload JSON</span>
-          </button>
-          
-          <!-- Download Group with Dropdown -->
-          <div class="download-group">
-            <div class="download-options" id="downloadOptions">
-              <button class="download-option" onclick="downloadJSON(); toggleDownloadMenu();">
-                <span class="icon">📄</span>
-                <span>Download JSON</span>
-              </button>
-              <button class="download-option" onclick="downloadWordDoc(); toggleDownloadMenu();">
-                <span class="icon">📝</span>
-                <span>Download Word</span>
-              </button>
-            </div>
-            <button class="action-btn" onclick="toggleDownloadMenu()">
-              <span class="icon">⬇️</span>
-              <span>Download</span>
-            </button>
-          </div>
-          
-          <!-- Clear All Button -->
-          <button class="action-btn danger" onclick="clearAll()">
-            <span class="icon">🧹</span>
-            <span>Clear All</span>
-          </button>
-        </div>
-        
-        <!-- Status Modal Popup -->
-        <div id="statusModal" class="modal" style="display:none;z-index:3000;">
-          <div class="modal-content" style="width:280px;min-height:80px;padding:24px;">
-            <span id="statusText" style="font-weight:600; color:var(--accent); font-size:15px;"></span>
-          </div>
-        </div>
-      </div>
-
-      <div id="jobDescTabPanel">
-        <h3>Edit Resume Based on Job Description</h3>
-        <label for="companyNameJD"><b>Company Name *</b></label>
-        <input id="companyNameJD" name="companyNameJD" placeholder="e.g., Microsoft, Google, etc." type="text" style="margin-bottom:10px;" required>
-        
-        <label for="jobTitleJD"><b>Job Title *</b></label>
-        <input id="jobTitleJD" name="jobTitleJD" placeholder="e.g., Software Engineer, Product Manager" type="text" style="margin-bottom:10px;" required>
-        
-        <!-- Mode Selection -->
-        <div style="margin: 16px 0; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Resume Generation Mode:</label>
-          <div style="display: flex; gap: 24px; align-items: center;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400;">
-              <input type="radio" name="resumeMode" value="resume_jd" style="width: auto; cursor: pointer;">
-              <span>Resume + JD</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400;">
-              <input type="radio" name="resumeMode" value="complete_jd" checked style="width: auto; cursor: pointer;">
-              <span>Complete JD</span>
-            </label>
-          </div>
-          <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-secondary);">
-            <b>Complete JD:</b> Generate resume entirely from job description.<br>
-            <b>Resume + JD:</b> Apply edits to existing resume based on job description.
-          </p>
-        </div>
-        
-        <textarea id="jobDescriptionTab" placeholder="Paste Job Description here..."></textarea>
-        <button id="generateJDResumeBtn" type="button">Generate Resume Based on JD</button>
-      </div>
-
-      <!-- Dashboard Tab Panel -->
-      <div id="dashboardTabPanel">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-          <h2>📊 My Dashboard</h2>
-        </div>
-        
-        <div id="dashboardMessage" style="margin-bottom: 20px; padding: 12px; border-radius: var(--radius-md); display: none;"></div>
-
-        <!-- Stats Cards -->
-        <div id="statsCards" class="stats-grid">
-          <!-- Stats will be loaded here -->
-        </div>
-
-        <!-- Resume History Table -->
-        <div class="resume-table-container">
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 24px 16px 24px;">
-            <h3 style="margin: 0; padding: 0;">My Resumes</h3>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 13px; color: var(--text-secondary);">Show:</span>
-              <select id="pageSizeSelect" onchange="changePageSize()" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-          </div>
-          <div class="resume-table-wrapper">
-            <table class="resume-table" id="resumeHistoryTable">
-              <thead>
-                <tr>
-                  <th>Company</th>
-                  <th>Job Title</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th style="text-align: center;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="resumeHistoryBody">
-                <!-- Resume rows will be loaded here -->
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination-container" id="paginationContainer">
-            <!-- Pagination will be loaded here -->
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-  </div> <!-- Close mainApp -->
-</main>
-
-<!-- Processing Banner -->
-<div id="processingBanner">
-  <div class="banner-header">
-    <div class="banner-title">
-      <div class="spinner-small"></div>
-      <span id="bannerCount">Processing resumes...</span>
-    </div>
-    <button class="close-banner" onclick="closeProcessingBanner()" title="Minimize">×</button>
-  </div>
-  <div class="requests-list" id="requestsList">
-    <!-- Request items will be added here dynamically -->
-  </div>
-</div>
-
-<!-- ===== ABOUT MODAL ===== -->
-<div id="aboutModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeAbout()">×</span>
-    <h3>About Resume Builder Pro</h3>
-    <p>Created by Sushmitha for generating professional Word resumes with FastAPI backend integration.</p>
-    <p>Version: 1.0.0</p>
-  </div>
-</div>
-
-<!-- ===== FOOTER ===== -->
-<footer id="mainFooter" style="display: none;">
-  <!-- FAQ SECTION (collapsible) -->
-  <section class="faq-section" id="faqSection">
-    <div class="faq-header">
-      <h2>Frequently Asked Questions</h2>
-      <button class="faq-close" onclick="toggleFAQSection()">✕</button>
-    </div>
-    
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>How does Resume Builder Pro work?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        Resume Builder Pro uses AI to tailor your resume to specific job descriptions. Fill in your resume details, paste a job description, and our AI will analyze and optimize your resume content to match the job requirements using advanced LLM technology.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>What's the difference between "Complete JD" and "Resume + JD" modes?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        <strong>Complete JD Mode:</strong> Generates brand new content from scratch using the job description, preserving only company names, dates, and titles. Best for maximum ATS alignment.<br><br>
-        <strong>Resume + JD Mode:</strong> Makes targeted edits to your existing resume content while keeping most of your original writing. Best when you have a strong resume that needs minor adjustments.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>How many resumes can I generate at once?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        You can generate up to 4 resumes concurrently! Just fill in different job descriptions and click "Generate Resume" multiple times. The processing banner in the top-right corner shows all active requests.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>Can I save and reuse my resume data?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        Yes! Use the floating "Download JSON" button (💾) to save your resume data as a JSON file. Later, use "Upload JSON" (📂) to reload all your information instantly. This lets you maintain multiple resume versions for different roles.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>What format is the generated resume?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        Resumes are generated as professional Microsoft Word (.docx) files with proper formatting, including clickable hyperlinks for emails and URLs in the contact section. Download from the "generated_resumes" folder.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>How does the AI optimize my resume?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        The AI analyzes the job description to extract keywords, required skills, and responsibilities. It then rewrites your Summary, Skills, and Experience sections to align with these requirements while maintaining truthfulness. Each experience role gets 6-8 optimized bullet points with measurable impacts.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>What LLM provider is used?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        Currently configured to use Google Gemini (gemini-2.5-flash) via the Google Generative AI API. The system is provider-agnostic and can be configured to use OpenAI or other LLM providers through the .env file.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>How do I clear all my data?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        Click the floating "Clear All" button (🧹) at the bottom right. This will reset all fields in both the Resume and Job Description tabs. Make sure to download your JSON first if you want to save your data!
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFAQ(this)">
-        <span>Is my information private?</span>
-        <span class="faq-icon">▼</span>
-      </button>
-      <div class="faq-answer">
-        Yes, we take your privacy seriously. Your data is never shared, and all resume content is processed securely. We don't store any personal information on our servers.
-      </div>
-    </div>
-  </section>
-
-  <div class="footer-content">
-    <div class="footer-about">
-      <h3>Resume Builder Pro</h3>
-      <p>Create stunning, professional resumes in minutes. Our intuitive platform helps you showcase your skills and experience with beautifully designed templates.</p>
-      <a href="#" onclick="openAbout(); return false;">Learn More →</a>
-      <div class="social-links">
-        <a href="https://linkedin.com" target="_blank" title="LinkedIn">💼</a>
-        <a href="https://github.com" target="_blank" title="GitHub">🐙</a>
-        <a href="https://twitter.com" target="_blank" title="Twitter">🐦</a>
-        <a href="mailto:support@resumebuilder.pro" title="Email">📧</a>
-      </div>
-    </div>
-
-    <div class="footer-section">
-      <h4>Product</h4>
-      <ul class="footer-links">
-        <li><a href="#" onclick="document.querySelector('.dropdown-btn').click(); return false;">Templates</a></li>
-        <li><a href="#" onclick="switchTab('resume'); return false;">View Resume</a></li>
-        <li><a href="#" onclick="switchTab('jd'); return false;">Generate Resume</a></li>
-        <li><a href="#" onclick="toggleFAQSection(); return false;">FAQ</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-section">
-      <h4>Legal</h4>
-      <ul class="footer-links">
-        <li><a href="#privacy">Privacy Policy</a></li>
-        <li><a href="#terms">Terms of Service</a></li>
-        <li><a href="#cookies">Cookie Policy</a></li>
-        <li><a href="#license">License</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-section">
-      <h4>Support</h4>
-      <ul class="footer-links">
-        <li><a href="#contact">Contact Us</a></li>
-        <li><a href="#help">Help Center</a></li>
-        <li><a href="#feedback">Send Feedback</a></li>
-        <li><a href="#report">Report Issue</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2025 Resume Builder Pro. All Rights Reserved.</p>
-  </div>
-</footer>
-
-<script>
   /* ---------- REQUEST TRACKING ---------- */
   // Track all active resume generation requests
   const activeRequests = new Map(); // key: requestId, value: {company, status, element}
@@ -1532,16 +977,23 @@
     try {
       const stats = await dashApiCall('/api/user/stats');
       
+      // Hide "Processing Now" card if zero, otherwise highlight it
+      const processingClass = stats.active_jobs === 0 ? 'stat-card zero-data' : 'stat-card';
+      const processingDisplay = stats.active_jobs === 0 ? 'style="display: none;"' : '';
+      
       document.getElementById('statsCards').innerHTML = `
-        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
           <div class="stat-value">${stats.total_resumes}</div>
-          <div class="stat-label">Total Resumes Generated</div>
+          <div class="stat-label">Total Resumes</div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <div class="stat-card">
+          <div class="stat-icon">✨</div>
           <div class="stat-value">${stats.today_resumes}</div>
-          <div class="stat-label">Resumes Today</div>
+          <div class="stat-label">Generated Today</div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+        <div class="${processingClass}" ${processingDisplay}>
+          <div class="stat-icon">⚡</div>
           <div class="stat-value">${stats.active_jobs}</div>
           <div class="stat-label">Processing Now</div>
         </div>
@@ -1622,37 +1074,6 @@
     }
   }
 
-  // Kebab Menu Functions
-  function toggleKebabMenu(event, requestId) {
-    event.stopPropagation();
-    const dropdown = document.getElementById(`kebab-${requestId}`);
-    const allDropdowns = document.querySelectorAll('.kebab-dropdown');
-    
-    // Close all other dropdowns
-    allDropdowns.forEach(d => {
-      if (d !== dropdown) d.style.display = 'none';
-    });
-    
-    // Toggle current dropdown
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-  }
-
-  function closeKebabMenu(requestId) {
-    const dropdown = document.getElementById(`kebab-${requestId}`);
-    if (dropdown) {
-      dropdown.style.display = 'none';
-    }
-  }
-
-  // Close kebab menus when clicking outside
-  document.addEventListener('click', function(event) {
-    if (!event.target.closest('.kebab-menu-btn')) {
-      document.querySelectorAll('.kebab-dropdown').forEach(d => {
-        d.style.display = 'none';
-      });
-    }
-  });
-
   // Start Polling Job Status
   function startDashboardPolling(requestId) {
     // Stop existing polling if it exists
@@ -1663,27 +1084,14 @@
 
     console.log('[POLLING] Starting polling for:', requestId);
     
-    let pollCount = 0;
-    const maxPolls = 150; // 5 minutes max (150 * 2s = 300s)
-    
     dashboardPollIntervals[requestId] = setInterval(async () => {
-      pollCount++;
-      
-      // Stop polling after 5 minutes
-      if (pollCount > maxPolls) {
-        console.log('[POLLING] Max polling duration reached (5 minutes), stopping for:', requestId);
-        clearInterval(dashboardPollIntervals[requestId]);
-        delete dashboardPollIntervals[requestId];
-        showDashMessage('Job is taking longer than expected. Please refresh to check status.', 'warning');
-        return;
-      }
-      
       try {
         const status = await dashApiCall(`/api/jobs/${requestId}/status`);
         console.log('[POLLING] Update received for', requestId);
         console.log('[POLLING] Status:', status.status);
         console.log('[POLLING] Progress:', status.progress);
         console.log('[POLLING] Message:', status.message);
+        console.log('[POLLING] Full data:', JSON.stringify(status, null, 2));
         
         // Update processing banner with progress
         if (status.status === 'processing' && status.progress !== undefined) {
@@ -1712,7 +1120,7 @@
       } catch (error) {
         console.error('[POLLING] Polling error:', error);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 2000);
   }
 
   // Update Job Card/Row
@@ -1775,106 +1183,214 @@
       }
     }
 
-    // Update actions (6th column)
+    // Update actions (6th column) - using kebab menu
     const actionsCell = row.cells[5];
     if (actionsCell) {
       const companyName = row.cells[0].textContent;
       const jobTitle = row.cells[1].textContent;
       
       if (data.status === 'completed') {
-        actionsCell.style.position = 'relative';
+        // Replace entire cell with kebab menu
+        actionsCell.className = 'actions-cell';
         actionsCell.innerHTML = `
           <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${requestId}')">⋮</button>
           <div class="kebab-dropdown" id="kebab-${requestId}">
-            <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
+            <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}')">
               <span class="menu-icon">📄</span>
               <span>Download Resume</span>
             </button>
-            <button class="primary" onclick="downloadJobDescription('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
+            <button class="primary" onclick="downloadJobDescription('${requestId}', '${companyName}', '${jobTitle}')">
               <span class="menu-icon">📋</span>
               <span>View Job Description</span>
             </button>
-            <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${requestId}'); closeKebabMenu('${requestId}'); }">
+            <button class="danger" onclick="deleteResume('${requestId}')">
               <span class="menu-icon">🗑️</span>
               <span>Delete</span>
             </button>
           </div>
         `;
       } else if (data.status === 'failed') {
+        // Show failed state in kebab menu
+        actionsCell.className = 'actions-cell';
         actionsCell.innerHTML = `
-          <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${data.error_message || 'Generation failed'}">
-            ❌ Error
+          <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${requestId}')">⋮</button>
+          <div class="kebab-dropdown" id="kebab-${requestId}">
+            <button disabled style="opacity: 0.5; cursor: not-allowed;">
+              <span class="menu-icon">❌</span>
+              <span>Generation Failed</span>
+            </button>
+            <button class="danger" onclick="deleteResume('${requestId}')">
+              <span class="menu-icon">🗑️</span>
+              <span>Delete</span>
+            </button>
           </div>
         `;
       }
     }
   }
 
-  // Load Job History
+  // Pagination state
+  let currentPage = 1;
+  let pageSize = 20;
+  let totalResumes = 0;
+
+  // Helper: Get relative time
+  function getRelativeTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // Change page size
+  function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    loadDashboardHistory();
+  }
+
+  // Change page
+  function goToPage(page) {
+    currentPage = page;
+    loadDashboardHistory();
+  }
+
+  // Render pagination
+  function renderPagination(total, current, size) {
+    const totalPages = Math.ceil(total / size);
+    const paginationContainer = document.getElementById('paginationContainer');
+    
+    if (totalPages <= 1) {
+      paginationContainer.style.display = 'none';
+      return;
+    }
+
+    paginationContainer.style.display = 'flex';
+
+    const start = (current - 1) * size + 1;
+    const end = Math.min(current * size, total);
+
+    let paginationHTML = `
+      <div class="pagination-info">
+        Showing ${start}-${end} of ${total} resumes
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn" onclick="goToPage(1)" ${current === 1 ? 'disabled' : ''}>
+          «
+        </button>
+        <button class="pagination-btn" onclick="goToPage(${current - 1})" ${current === 1 ? 'disabled' : ''}>
+          ‹
+        </button>
+    `;
+
+    // Show page numbers
+    const maxButtons = 5;
+    let startPage = Math.max(1, current - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+    
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      paginationHTML += `
+        <button class="pagination-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">
+          ${i}
+        </button>
+      `;
+    }
+
+    paginationHTML += `
+        <button class="pagination-btn" onclick="goToPage(${current + 1})" ${current === totalPages ? 'disabled' : ''}>
+          ›
+        </button>
+        <button class="pagination-btn" onclick="goToPage(${totalPages})" ${current === totalPages ? 'disabled' : ''}>
+          »
+        </button>
+      </div>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
+  }
+  
+  // Load Job History - Modern Clean Table with Pagination
   async function loadDashboardHistory() {
     try {
-      const data = await dashApiCall('/api/user/jobs?limit=50');
+      const offset = (currentPage - 1) * pageSize;
+      const data = await dashApiCall(`/api/user/jobs?limit=${pageSize}&offset=${offset}`);
       const tbody = document.getElementById('resumeHistoryBody');
+      
+      totalResumes = data.count;
 
       if (data.count === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">📄 No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 60px 20px; color: var(--text-secondary);"><p style="font-size: 1.1em; margin: 0; font-weight: 500;">📄 No resumes yet</p><p style="margin: 8px 0 0 0; font-size: 0.9em;">Start creating your first resume!</p></td></tr>';
         return;
       }
 
-      tbody.innerHTML = data.jobs.map(job => `
-        <tr data-request-id="${job.request_id}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseenter="this.style.background='var(--card)'" onmouseleave="this.style.background=''">
-          <td style="padding: 12px; color: var(--text-primary); font-weight: 500;">${job.company_name}</td>
-          <td style="padding: 12px; color: var(--text-primary);">${job.job_title}</td>
-          <td style="padding: 12px;">
-            <span class="status-badge status-${job.status}" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">${job.status}</span>
-          </td>
-          <td style="padding: 12px; text-align: center;">
-            ${job.status === 'processing' || job.status === 'pending' ? `
-              <div style="width: 100%; max-width: 150px; margin: 0 auto;">
-                <div class="progress-bar" style="height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
-                  <div class="progress-fill" style="width: ${job.progress}%; height: 100%; background: var(--accent); transition: width 0.3s;"></div>
-                </div>
-                <div class="progress-text" style="font-size: 0.75em; color: var(--text-secondary); margin-top: 4px;">${job.progress}%</div>
+      tbody.innerHTML = data.jobs.map(job => {
+        const statusClass = job.status.toLowerCase();
+        const statusText = job.status.charAt(0).toUpperCase() + job.status.slice(1);
+        const relativeTime = getRelativeTime(job.created_at);
+        
+        // Determine status display
+        let statusContent = '';
+        if (job.status === 'processing' || job.status === 'pending') {
+          statusContent = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="status-badge status-${statusClass}">${statusText}</span>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${job.progress}%"></div>
               </div>
-            ` : job.status === 'completed' ? `
-              <span style="color: var(--success); font-weight: 600;">✓ 100%</span>
-            ` : `
-              <span style="color: var(--danger);">✗ Failed</span>
-            `}
-          </td>
-          <td style="padding: 12px; font-size: 0.9em; color: var(--text-secondary);">
-            ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}<br>
-            ${new Date(job.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
-          </td>
-          <td style="padding: 12px; text-align: center; position: relative;">
-            ${job.status === 'completed' ? `
+              <span style="font-size: 12px; color: var(--text-secondary);">${job.progress}%</span>
+            </div>
+          `;
+        } else {
+          statusContent = `<span class="status-badge status-${statusClass}">${statusText}</span>`;
+        }
+        
+        return `
+          <tr data-request-id="${job.request_id}">
+            <td>${job.company_name || 'N/A'}</td>
+            <td>${job.job_title || 'N/A'}</td>
+            <td>${statusContent}</td>
+            <td style="color: var(--text-secondary);">${relativeTime}</td>
+            <td class="actions-cell">
               <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${job.request_id}')">⋮</button>
               <div class="kebab-dropdown" id="kebab-${job.request_id}">
-                <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📄</span>
-                  <span>Download Resume</span>
-                </button>
-                <button class="primary" onclick="downloadJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📋</span>
-                  <span>View Job Description</span>
-                </button>
-                <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${job.request_id}'); closeKebabMenu('${job.request_id}'); }">
-                  <span class="menu-icon">�️</span>
+                ${job.status === 'completed' ? `
+                  <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}')">
+                    <span class="menu-icon">📄</span>
+                    <span>Download Resume</span>
+                  </button>
+                  <button class="primary" onclick="downloadJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}')">
+                    <span class="menu-icon">📋</span>
+                    <span>View Job Description</span>
+                  </button>
+                ` : job.status === 'processing' || job.status === 'pending' ? `
+                  <button class="primary" onclick="checkDashboardStatus('${job.request_id}')">
+                    <span class="menu-icon">🔄</span>
+                    <span>Refresh Status</span>
+                  </button>
+                ` : `
+                  <button disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <span class="menu-icon">❌</span>
+                    <span>Generation Failed</span>
+                  </button>
+                `}
+                <button class="danger" onclick="deleteResume('${job.request_id}')">
+                  <span class="menu-icon">🗑️</span>
                   <span>Delete</span>
                 </button>
               </div>
-            ` : job.status === 'processing' || job.status === 'pending' ? `
-              <button class="sub-btn" style="padding: 6px 16px; font-size: 0.9em;" onclick="checkDashboardStatus('${job.request_id}')">
-                🔄 Refresh
-              </button>
-            ` : `
-              <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${job.error_message || 'Generation failed'}">
-                ❌ Error
-              </div>
-            `}
-          </td>
-        </tr>
-      `).join('');
+            </td>
+
+      // Render pagination
+      renderPagination(totalResumes, currentPage, pageSize);
 
       // Start polling for active jobs
       data.jobs.forEach(job => {
@@ -1885,6 +1401,42 @@
 
     } catch (error) {
       console.error('Failed to load history:', error);
+    }
+  }
+
+  // Toggle Kebab Menu
+  function toggleKebabMenu(event, requestId) {
+    event.stopPropagation();
+    const dropdown = document.getElementById(`kebab-${requestId}`);
+    const allDropdowns = document.querySelectorAll('.kebab-dropdown');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+      if (d !== dropdown) d.classList.remove('show');
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('show');
+  }
+  
+  // Close kebab menus when clicking outside
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.kebab-dropdown').forEach(d => d.classList.remove('show'));
+  });
+  
+  // Delete Resume
+  async function deleteResume(requestId) {
+    if (!confirm('Are you sure you want to delete this resume? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      await dashApiCall(`/api/jobs/${requestId}`, { method: 'DELETE' });
+      showDashMessage('Resume deleted successfully', 'success');
+      await loadDashboardHistory(); // Reload the list
+    } catch (error) {
+      console.error('Delete failed:', error);
+      showDashMessage('Failed to delete resume', 'error');
     }
   }
 
@@ -1959,38 +1511,6 @@
     }
   }
 
-  // Delete Resume
-  async function deleteResume(requestId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${requestId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to delete resume');
-      }
-
-      // Remove the row from the table
-      const row = document.querySelector(`tr[data-request-id="${requestId}"]`);
-      if (row) {
-        row.remove();
-      }
-
-      // Reload dashboard stats and history
-      loadDashboardStats();
-      loadDashboardHistory();
-      
-      showDashMessage('Resume deleted successfully!', 'success');
-    } catch (error) {
-      console.error('Delete failed:', error);
-      showDashMessage(error.message || 'Failed to delete resume', 'error');
-    }
-  }
-
   // Check Status
   async function checkDashboardStatus(requestId) {
     console.log('Checking status for:', requestId);
@@ -2058,15 +1578,21 @@
 
   /* ---------- MAIN AUTH FUNCTIONALITY ---------- */
   
-  // Switch Main Auth Forms
+  // Switch Main Auth Tabs
   function switchMainAuthTab(tab) {
+    const loginBtn = document.getElementById('mainLoginTabBtn');
+    const registerBtn = document.getElementById('mainRegisterTabBtn');
     const loginForm = document.getElementById('mainLoginForm');
     const registerForm = document.getElementById('mainRegisterForm');
 
     if (tab === 'login') {
+      loginBtn.classList.add('active');
+      registerBtn.classList.remove('active');
       loginForm.classList.add('active');
       registerForm.classList.remove('active');
     } else {
+      registerBtn.classList.add('active');
+      loginBtn.classList.remove('active');
       registerForm.classList.add('active');
       loginForm.classList.remove('active');
     }
@@ -2203,6 +1729,3 @@
     // Auth screen is shown by default (no auto-login)
   });
 
-</script>
-<script src="/static/js/main.js?v=14.0"></script>
-</html>
