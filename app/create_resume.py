@@ -188,6 +188,20 @@ def add_structured_contact(paragraph, contact_data):
 
 
 def create_resume(data, file_name):
+    """
+    Create a resume document from structured data.
+    Raises ValueError if required fields are missing.
+    """
+    # Validate required fields
+    if not data.get("name"):
+        raise ValueError("Name is required to generate resume")
+    if not data.get("summary"):
+        raise ValueError("Professional summary is required to generate resume")
+    if not data.get("experience") or len(data.get("experience", [])) == 0:
+        raise ValueError("At least one experience entry is required to generate resume")
+    if not data.get("education") or len(data.get("education", [])) == 0:
+        raise ValueError("At least one education entry is required to generate resume")
+    
     doc = Document()
 
     # --- Name ---

@@ -413,50 +413,96 @@ Now reorganize the following skills JSON with MAXIMUM 6-8 broad categories:
 """
 
 
+PARSE_RESUME_TEXT_PROMPT = """
+You are an expert resume parser. Extract structured information from the resume text below and return ONLY valid JSON.
 
-# ORGANIZE_SKILLS_PROMPT = """
-# You are an expert technical knowledge organizer.
+CRITICAL INSTRUCTIONS:
+1. Output ONLY valid JSON inside triple backticks
+2. No markdown formatting, no explanations, no extra text
+3. Follow the exact schema provided below
+4. Extract ALL information you can find
+5. If a field is not found, use null or empty array/object as appropriate
 
-# Task:
-# Take the following JSON of raw skills grouped loosely by category.
-# Your job is to deeply understand each skill and reorganize them into a clean, structured JSON
-# that groups related items together based on their function or purpose.
+REQUIRED JSON SCHEMA:
+```json
+{{
+  "name": "Full Name",
+  "summary": "Professional summary or objective statement",
+  "contact": {{
+    "Email": "email@example.com",
+    "Phone": "+1-234-567-8900",
+    "LinkedIn": "linkedin.com/in/username",
+    "GitHub": "github.com/username",
+    "Location": "City, State/Country"
+  }},
+  "technical_skills": {{
+    "Programming Languages": ["Python", "Java"],
+    "Frameworks": ["React", "Django"],
+    "Tools": ["Git", "Docker"],
+    "Cloud": ["AWS", "Azure"]
+  }},
+  "experience": [
+    {{
+      "company": "Company Name",
+      "role": "Job Title",
+      "duration": "Jan 2020 - Present",
+      "location": "City, State",
+      "points": [
+        "Achievement or responsibility 1",
+        "Achievement or responsibility 2"
+      ]
+    }}
+  ],
+  "education": [
+    {{
+      "degree": "Bachelor of Science in Computer Science",
+      "institution": "University Name",
+      "year": "2020",
+      "location": "City, State",
+      "details": "GPA: 3.8/4.0, Honors, etc."
+    }}
+  ],
+  "certifications": [
+    {{
+      "name": "AWS Certified Solutions Architect",
+      "issuer": "Amazon Web Services",
+      "year": "2023",
+      "id": "Certificate ID if available"
+    }}
+  ],
+  "projects": [
+    {{
+      "name": "Project Name",
+      "description": "Brief description",
+      "technologies": ["Tech1", "Tech2"],
+      "points": [
+        "Key accomplishment or feature 1",
+        "Key accomplishment or feature 2"
+      ]
+    }}
+  ]
+}}
+```
 
-# Instructions:
-# - Analyze the meaning of each skill (programming language, framework, cloud service, database, tool, library, methodology, etc.).
-# - Create logical, human-readable groupings — name the categories yourself based on what makes sense semantically.
-# - You may introduce new categories or merge existing ones if appropriate.
-# - Remove duplicates, fix inconsistent naming, and sort alphabetically within each list.
-# - The output **must be valid JSON only**, with no extra text.
-# - After grouping, **order the top-level categories logically** in this priority (if applicable):
-#    1. Programming Languages
-#    2. Tools & Frameworks
-#    3. Cloud / Infrastructure
-#    4. Databases / Data Platforms
-#    5. Data Processing / Orchestration
-#    6. Analytics / Machine Learning
-#    7. DevOps / CI-CD / Version Control
-#    8. Business Intelligence / Visualization
-#    9. Testing / Quality Assurance
-#    10. Methodologies / Practices
-#    11. Other or Domain-specific categories (last)
+EXTRACTION RULES:
+1. **Name**: Extract from header, usually the largest/first text
+2. **Summary**: Look for "Summary", "Objective", "Profile", or introductory paragraph
+3. **Contact**: Extract all contact information (email, phone, LinkedIn, GitHub, location, etc.)
+4. **Technical Skills**: Group skills into logical categories (max 6-8 categories)
+5. **Experience**: Extract company, role, duration, location, and bullet points for each job
+6. **Education**: Extract degree, institution, graduation year, location, and any honors/GPA
+7. **Certifications**: Extract certification name, issuer, year, and ID if present
+8. **Projects**: Extract project name, description, technologies used, and accomplishments
 
-# Example input:
-# {{
-#   "Programming Languages": ["Python", "SQL"],
-#   "Tools": ["AWS", "Airflow", "Docker", "TensorFlow"]
-# }}
+FORMAT RULES:
+- All bullet points should be complete sentences
+- Preserve original wording as much as possible
+- Group skills logically (Programming Languages, Frameworks, Cloud, Databases, Tools, etc.)
+- Maintain chronological order for experience and education (newest first)
+- If a section doesn't exist, use empty array [] or empty object {{}}
 
-# Example output:
-# {{
-#   "Programming Languages": ["Python", "SQL"],
-#   "Cloud Platforms": ["AWS"],
-#   "Data Orchestration": ["Airflow"],
-#   "ML Frameworks": ["TensorFlow"],
-#   "DevOps / Containers": ["Docker"]
-# }}
+RESUME TEXT:
+{resume_text}
 
-# Now reorganize the following skills JSON:
-
-# {skills_json}
-# """
+Output only the JSON inside triple backticks.
+"""

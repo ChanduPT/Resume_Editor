@@ -21,6 +21,86 @@ from app.job_processing import process_resume_parallel, job_progress
 logger = logging.getLogger(__name__)
 
 
+def validate_resume_payload(data: dict) -> list:
+    """
+    Validate the resume generation payload.
+    Returns a list of error messages (empty if valid).
+    """
+    errors = []
+    
+    mode = data.get("mode", "complete_jd")
+    job_data = data.get("job_description_data", {})
+    resume_data = data.get("resume_data", {})
+    
+    # Validate Job Description (required for all modes)
+    jd_text = job_data.get("job_description", "").strip()
+    if not jd_text or len(jd_text) < 50:
+        errors.append("Job Description must be at least 50 characters")
+    
+    company_name = job_data.get("company_name", "").strip()
+    if not company_name:
+        errors.append("Company Name is required")
+    
+    job_title = job_data.get("job_title", "").strip()
+    if not job_title:
+        errors.append("Job Title is required")
+    
+    # Validate Resume Data (only for resume+jd mode)
+    if mode == "resume_jd":
+        name = resume_data.get("name", "").strip()
+        if not name:
+            errors.append("Name is required in Resume+JD mode")
+        
+        summary = resume_data.get("summary", "").strip()
+        if not summary or len(summary) < 50:
+            errors.append("Professional Summary must be at least 50 characters")
+        
+        # Check contact
+        contact = resume_data.get("contact", {})
+        if isinstance(contact, dict):
+            if not contact.get("email") and not contact.get("phone"):
+                errors.append("At least one contact method (Email or Phone) is required")
+        
+        # Check technical skills
+        skills = resume_data.get("technical_skills", {})
+        if not skills or not isinstance(skills, dict):
+            errors.append("Technical Skills are required")
+        else:
+            has_skills = any(
+                isinstance(v, list) and len(v) > 0 
+                for v in skills.values()
+            )
+            if not has_skills:
+                errors.append("Technical Skills must have at least one skill listed")
+        
+        # Check experience
+        experience = resume_data.get("experience", [])
+        if not experience or not isinstance(experience, list) or len(experience) == 0:
+            errors.append("At least one Experience entry is required")
+        else:
+            for idx, exp in enumerate(experience):
+                if not exp.get("company"):
+                    errors.append(f"Experience {idx + 1}: Company name is required")
+                if not (exp.get("role") or exp.get("title") or exp.get("job_title")):
+                    errors.append(f"Experience {idx + 1}: Job title is required")
+                bullets = exp.get("bullets", exp.get("points", exp.get("responsibilities", [])))
+                if not bullets or len(bullets) == 0:
+                    errors.append(f"Experience {idx + 1}: At least one responsibility is required")
+        
+        # Check education
+        education = resume_data.get("education", [])
+        if not education or not isinstance(education, list) or len(education) == 0:
+            errors.append("At least one Education entry is required")
+        else:
+            for idx, edu in enumerate(education):
+                if not edu.get("degree"):
+                    errors.append(f"Education {idx + 1}: Degree is required")
+                if not edu.get("institution"):
+                    errors.append(f"Education {idx + 1}: Institution is required")
+    
+    return errors
+
+
 def process_resume_background(data: dict, request_id: str, job_id: int):
     """Background task to process resume"""
     db = SessionLocal()
@@ -76,6 +156,12 @@ async def generate_resume_json(
         if active_jobs >= MAX_CONCURRENT_JOBS:
             raise HTTPException(status_code=429, detail=f"Too many concurrent jobs")
         data = await request.json()
+        
+        # Validate input payload
+        validation_errors = validate_resume_payload(data)
+        if validation_errors:
+            raise HTTPException(status_code=400, detail=f"Validation failed: {'; '.join(validation_errors)}")
+        
         request_id = data.get("request_id", f"req_{int(time.time())}_{current_user.user_id}")
         resume_job = ResumeJob(
             user_id=current_user.user_id,
@@ -116,6 +202,30 @@ async def get_job_result(request_id: str, current_user: User = Depends(get_curre
     return {"job_id": job.id, "request_id": job.request_id, "company_name": job.company_name, "job_title": job.job_title, "final_resume": job.final_resume_json, "completed_at": job.completed_at.isoformat()}
 
 
+async def update_job_resume(request_id: str, request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id, ResumeJob.user_id == current_user.user_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status != "completed":
+        raise HTTPException(status_code=400, detail=f"Job not completed, cannot update")
+    
+    try:
+        body = await request.json()
+        updated_resume = body.get("final_resume")
+        
+        if not updated_resume:
+            raise HTTPException(status_code=400, detail="No resume data provided")
+        
+        # Update the resume JSON in the database
+        job.final_resume_json = updated_resume
+        db.commit()
+        
+        return {"success": True, "message": "Resume updated successfully", "request_id": request_id}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update resume: {str(e)}")
+
+
 async def download_resume(request_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id, ResumeJob.user_id == current_user.user_id).first()
     if not job or job.status != "completed":
@@ -144,12 +254,31 @@ async def download_job_description(request_id: str, current_user: User = Depends
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def get_user_jobs(limit: int = 20, offset: int = 0, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Get total count
-    total_count = db.query(ResumeJob).filter(ResumeJob.user_id == current_user.user_id).count()
+async def get_user_jobs(
+    limit: int = 20, 
+    offset: int = 0, 
+    company: str = None,
+    job_title: str = None,
+    status: str = None,
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    # Base query
+    query = db.query(ResumeJob).filter(ResumeJob.user_id == current_user.user_id)
+    
+    # Apply filters
+    if company:
+        query = query.filter(ResumeJob.company_name.ilike(f"%{company}%"))
+    if job_title:
+        query = query.filter(ResumeJob.job_title.ilike(f"%{job_title}%"))
+    if status:
+        query = query.filter(ResumeJob.status == status)
+    
+    # Get total count with filters applied
+    total_count = query.count()
     
     # Get paginated jobs
-    jobs = db.query(ResumeJob).filter(ResumeJob.user_id == current_user.user_id).order_by(ResumeJob.created_at.desc()).offset(offset).limit(limit).all()
+    jobs = query.order_by(ResumeJob.created_at.desc()).offset(offset).limit(limit).all()
     
     return {
         "count": total_count,
@@ -281,3 +410,68 @@ def cleanup_stale_jobs(db: Session):
     except Exception as e:
         logger.error(f"[CLEANUP] Error during cleanup: {str(e)}")
         db.rollback()
+
+
+async def parse_resume_document(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Parse uploaded resume document (PDF/DOCX) and convert to JSON.
+    Extracts text from document and uses LLM to structure it.
+    """
+    from app.document_parser import extract_text_from_document
+    from app.utils import parse_resume_text_to_json
+    
+    try:
+        # Parse multipart form data
+        form = await request.form()
+        
+        # Get the uploaded file
+        file = form.get("file")
+        if not file:
+            raise HTTPException(status_code=400, detail="No file uploaded")
+        
+        # Read file content
+        file_content = await file.read()
+        filename = file.filename or "resume.pdf"
+        
+        logger.info(f"[PARSE_RESUME] User {current_user.user_id} uploading: {filename} ({len(file_content)} bytes)")
+        
+        # Validate file size (max 10MB)
+        if len(file_content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB.")
+        
+        # Extract text from document
+        try:
+            extracted_text = extract_text_from_document(file_content, filename)
+            logger.info(f"[PARSE_RESUME] Extracted {len(extracted_text)} characters from document")
+        except ValueError as e:
+            logger.error(f"[PARSE_RESUME] Document extraction failed: {str(e)}")
+            raise HTTPException(status_code=400, detail=str(e))
+        
+        # Convert text to structured JSON using LLM
+        try:
+            resume_json = parse_resume_text_to_json(extracted_text)
+            logger.info(f"[PARSE_RESUME] Successfully parsed resume to JSON")
+            
+            return {
+                "success": True,
+                "message": "Resume parsed successfully",
+                "resume_data": resume_json,
+                "extracted_text_length": len(extracted_text)
+            }
+            
+        except ValueError as e:
+            logger.error(f"[PARSE_RESUME] LLM parsing failed: {str(e)}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to parse resume content: {str(e)}"
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"[PARSE_RESUME] Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

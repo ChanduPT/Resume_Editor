@@ -4,13 +4,283 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=14.0">
+<link rel="stylesheet" href="/static/css/main.css?v=39.0">
 </head>
 <body>
+<!-- Loading Overlay for Document Parsing -->
+<div id="parseLoadingOverlay" class="parse-loading-overlay" style="display: none;">
+  <div class="parse-loading-content">
+    <div class="parse-loading-spinner"></div>
+    <h2 class="parse-loading-title">Parsing Your Resume</h2>
+    <p class="parse-loading-message">Extracting text and structuring your resume data...</p>
+    <div class="parse-loading-progress">
+      <div class="parse-progress-bar">
+        <div id="parseProgressFill" class="parse-progress-fill"></div>
+      </div>
+      <p id="parseProgressText" class="parse-progress-text">0%</p>
+    </div>
+  </div>
+</div>
+
+<!-- Resume/JD View Modal -->
+<div id="viewModal" class="view-modal" style="display: none;">
+  <div class="view-modal-content">
+    <div class="view-modal-header">
+      <div class="view-modal-title-section">
+        <h2 id="viewModalTitle"></h2>
+        <p id="viewModalSubtitle"></p>
+      </div>
+      <button class="view-modal-close" onclick="closeViewModal()">✕</button>
+    </div>
+    <div class="view-modal-body" id="viewModalBody">
+      <!-- Content will be loaded here -->
+    </div>
+    <div class="view-modal-footer">
+      <button id="viewModalEditBtn" class="view-modal-btn primary" style="display: none;" onclick="toggleEditMode()">
+        <span class="btn-icon">✏️</span>
+        <span id="editBtnText">Edit</span>
+      </button>
+      <button id="viewModalSaveBtn" class="view-modal-btn primary" style="display: none;" onclick="saveResumeChanges()">
+        <span class="btn-icon">💾</span>
+        <span>Save Changes</span>
+      </button>
+      <button id="viewModalDownloadResume" class="view-modal-btn success" style="display: none;">
+        <span class="btn-icon">📄</span>
+        <span>Download Resume</span>
+      </button>
+      <button id="viewModalDownloadJD" class="view-modal-btn success" style="display: none;">
+        <span class="btn-icon">📋</span>
+        <span>Download JD</span>
+      </button>
+      <button class="view-modal-btn cancel" onclick="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help/Tutorial Modal -->
+<div id="helpModal" class="view-modal" style="display: none;">
+  <div class="view-modal-content" style="max-width: 900px;">
+    <div class="view-modal-header">
+      <h2>📚 How to Use Resume Builder Pro</h2>
+      <button class="view-modal-close" onclick="closeHelpModal()">✕</button>
+    </div>
+    <div class="view-modal-body" style="max-height: 70vh; overflow-y: auto;">
+      <div style="padding: 20px; color: var(--text-primary);">
+        
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
+          <h3 style="margin-top: 0; color: var(--primary);">🎯 Welcome to Resume Builder Pro!</h3>
+          <p style="line-height: 1.6;">An AI-powered platform that helps you create perfectly tailored resumes for every job application. Our intelligent system analyzes job descriptions and optimizes your resume to match exactly what employers are looking for.</p>
+          <p style="line-height: 1.6; margin-top: 10px;"><strong>✨ New Features:</strong> View & edit generated resumes, manage technical skills, track all applications in your personal dashboard!</p>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">1</span>
+            Choose Your Generation Mode
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            <p><strong>📝 Complete JD Mode:</strong> Generate a resume entirely from a job description. Best when starting from scratch.</p>
+            <p><strong>🔄 Resume + JD Mode:</strong> Apply targeted edits to your existing resume based on a job description. Best for tailoring an existing resume.</p>
+            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>Tip: Use Resume + JD mode for better results when you have an existing resume!</em></p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">2</span>
+            Fill in Job Description
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            <p>Paste the complete job description including:</p>
+            <ul style="line-height: 1.8;">
+              <li>📋 Job responsibilities and requirements</li>
+              <li>🔧 Required skills and technologies</li>
+              <li>🎓 Qualifications and experience needed</li>
+            </ul>
+            <p style="margin-top: 10px;"><strong>Company Name:</strong> Enter the company name</p>
+            <p><strong>Job Title:</strong> Enter the exact position title</p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">3</span>
+            Add Your Resume Data (Resume + JD Mode)
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            <p>If using <strong>Resume + JD Mode</strong>, fill in your resume sections:</p>
+            <ul style="line-height: 1.8;">
+              <li>👤 <strong>Personal Info:</strong> Name, email, phone, LinkedIn, location</li>
+              <li>📝 <strong>Summary:</strong> Professional summary (50+ characters)</li>
+              <li>💻 <strong>Technical Skills:</strong> Add categories (e.g., Languages, Frameworks) and skills</li>
+              <li>💼 <strong>Experience:</strong> Add roles with bullet points describing achievements</li>
+              <li>🎓 <strong>Education:</strong> Add degrees and institutions</li>
+              <li>🚀 <strong>Projects:</strong> Optional - showcase your work</li>
+              <li>📜 <strong>Certifications:</strong> Optional - add relevant certifications</li>
+            </ul>
+            <p style="margin-top: 10px; padding: 10px; background: var(--warning-bg); border-radius: 4px; border-left: 4px solid #f59e0b;">
+              ⚠️ <strong>Important:</strong> All required fields must be filled (minimum 50 characters for summary and job description).
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">4</span>
+            Generate Your Resume
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            <p>Click <strong>"🚀 Generate Resume"</strong> to start processing.</p>
+            <p style="margin-top: 10px;">⏱️ Generation takes <strong>30-90 seconds</strong>. You'll see:</p>
+            <ul style="line-height: 1.8;">
+              <li>✅ Green notification when ready</li>
+              <li>📊 Progress in the dashboard</li>
+              <li>🔔 Real-time status updates</li>
+            </ul>
+            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>You can generate up to 2 resumes simultaneously! Additional requests will queue automatically.</em></p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">5</span>
+            View, Edit & Download Your Resume
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            <p><strong>🎉 Your resume is ready!</strong> Access it from the dashboard with these powerful options:</p>
+            
+            <p style="margin-top: 15px;"><strong>📋 Dashboard Actions (⋮ Menu):</strong></p>
+            <ul style="line-height: 1.8;">
+              <li>👁️ <strong>View Resume:</strong> Opens an interactive preview modal</li>
+              <li>👁️ <strong>View Job Description:</strong> Review the original JD you submitted</li>
+              <li>� <strong>Download Resume:</strong> Get your DOCX file instantly</li>
+              <li>� <strong>Download JD:</strong> Save the job description as text</li>
+              <li>🗑️ <strong>Delete:</strong> Remove entries you no longer need</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>✏️ Edit Mode (NEW!):</strong></p>
+            <p style="margin-top: 10px;">Click the <strong>"Edit"</strong> button in the view modal to unlock powerful editing:</p>
+            <ul style="line-height: 1.8;">
+              <li>✅ <strong>All Text Fields:</strong> Click any text to edit (name, email, phone, LinkedIn, summary, etc.)</li>
+              <li>💼 <strong>Experience Bullets:</strong> Modify job descriptions and achievements</li>
+              <li>🎓 <strong>Education & Certifications:</strong> Update degrees, schools, dates</li>
+              <li>🚀 <strong>Projects:</strong> Edit project descriptions and details</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>🔧 Advanced Technical Skills Editing:</strong></p>
+            <ul style="line-height: 1.8;">
+              <li>📝 <strong>Edit Category Names:</strong> Click skill category names (e.g., "Programming Languages") to rename them</li>
+              <li>💡 <strong>Edit Skills:</strong> Click skill values to add/remove/modify skills</li>
+              <li>➕ <strong>Add Categories:</strong> Click "Add Category" button to create new skill groups</li>
+              <li>🗑️ <strong>Remove Categories:</strong> Delete unwanted skill categories with one click</li>
+            </ul>
+            
+            <p style="margin-top: 15px; padding: 12px; background: var(--success-bg); border-radius: 6px; border-left: 4px solid #10b981;">
+              💾 <strong>Auto-Save:</strong> Click "Save Changes" to persist all edits to the database. Changes are permanent and will reflect in future downloads!
+            </p>
+            
+            <p style="margin-top: 15px; padding: 12px; background: var(--bg); border-radius: 6px;">
+              📥 <strong>Download Anytime:</strong> Both Resume and Job Description can be downloaded from the view modal or dashboard menu.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            ⚙️ Additional Features
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            
+            <p><strong>📂 Import/Export JSON:</strong> Reuse your resume data across applications</p>
+            <ul style="line-height: 1.8;">
+              <li>💾 <strong>Download JSON:</strong> Export your resume data to save locally</li>
+              <li>📂 <strong>Upload JSON:</strong> Import previously saved data instantly</li>
+              <li>🔄 <strong>Version Control:</strong> Maintain different resume versions for different roles</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>🔍 Dashboard Search & Filter:</strong></p>
+            <ul style="line-height: 1.8;">
+              <li>🔎 <strong>Search:</strong> Find resumes by company name or job title</li>
+              <li>📊 <strong>Filter by Status:</strong> View All, Completed, Processing, or Failed jobs</li>
+              <li>📅 <strong>Sort by Date:</strong> Most recent resumes appear first</li>
+              <li>🔄 <strong>Real-time Updates:</strong> Dashboard refreshes automatically</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>👤 User Account Management:</strong></p>
+            <ul style="line-height: 1.8;">
+              <li>🔐 <strong>Secure Login:</strong> Your resumes are private and secure</li>
+              <li>👥 <strong>Multi-User:</strong> Each user has isolated resume history</li>
+              <li>🚪 <strong>Logout:</strong> End session securely anytime</li>
+              <li>📊 <strong>Job Limits:</strong> Up to 2 concurrent generations per user</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>🎨 Customization:</strong></p>
+            <ul style="line-height: 1.8;">
+              <li>🌙 <strong>Dark Mode:</strong> Toggle between light/dark themes</li>
+              <li>💫 <strong>Smooth Animations:</strong> Polished UI with transitions</li>
+              <li>📱 <strong>Responsive:</strong> Works on desktop, tablet, and mobile</li>
+            </ul>
+            
+            <p style="margin-top: 20px;"><strong>🔔 Notifications & Feedback:</strong></p>
+            <ul style="line-height: 1.8;">
+              <li>✅ <strong>Success Messages:</strong> Confirmation for all actions</li>
+              <li>❌ <strong>Error Alerts:</strong> Clear explanations when issues occur</li>
+              <li>⏱️ <strong>Progress Indicators:</strong> Visual feedback during generation</li>
+              <li>🎯 <strong>Status Badges:</strong> Color-coded job statuses</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); padding: 20px; border-radius: 8px; color: white; margin-top: 30px;">
+          <h3 style="margin-top: 0; color: white;">💡 Pro Tips for Best Results</h3>
+          <ul style="line-height: 2;">
+            <li>🎯 <strong>Use Resume + JD Mode:</strong> Better results when you have existing resume data</li>
+            <li>📝 <strong>Complete Job Descriptions:</strong> Paste entire job postings for best AI matching</li>
+            <li>💪 <strong>Action Verbs:</strong> Use Led, Developed, Achieved, Implemented, Increased in bullets</li>
+            <li>📊 <strong>Quantify Everything:</strong> Add numbers, percentages, and metrics (e.g., "Increased sales by 40%")</li>
+            <li>🔄 <strong>Try Multiple Times:</strong> Each generation varies - regenerate if not satisfied</li>
+            <li>✏️ <strong>Edit Mode is Powerful:</strong> Fine-tune AI content, rename skill categories, add new sections</li>
+            <li>💾 <strong>Save Best Versions:</strong> Export winning resumes as JSON to reuse structure</li>
+            <li>🔍 <strong>Review Before Download:</strong> Use view mode to check everything before downloading DOCX</li>
+            <li>🎨 <strong>Customize Skills:</strong> Add niche technologies and tools employers mention</li>
+            <li>� <strong>Track Applications:</strong> Use dashboard to remember which companies you've applied to</li>
+            <li>⚡ <strong>Concurrent Jobs:</strong> Generate 2 resumes at once for different applications</li>
+            <li>🛡️ <strong>Fill Required Fields:</strong> Summary and JD need 50+ characters to pass validation</li>
+          </ul>
+        </div>
+
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-top: 30px; border: 2px solid var(--border);">
+          <h3 style="color: var(--primary); margin-top: 0;">⚠️ Important Notes</h3>
+          <ul style="line-height: 1.8;">
+            <li>⏱️ <strong>Generation Time:</strong> Expect 30-90 seconds per resume</li>
+            <li>🔢 <strong>Concurrent Limits:</strong> Maximum 2 active jobs per user (additional requests queue automatically)</li>
+            <li>✅ <strong>Validation Required:</strong> Summary and Job Description must be 50+ characters</li>
+            <li>💾 <strong>Changes Are Permanent:</strong> Edit mode saves directly to database - no undo!</li>
+            <li>📱 <strong>Browser Required:</strong> Works best in Chrome, Firefox, Safari, or Edge</li>
+            <li>🔒 <strong>Private & Secure:</strong> Your data is isolated per user account</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 2px solid var(--border);">
+          <p style="color: var(--text-secondary); font-size: 16px;">
+            📖 Need more help? Check the <strong>README.md</strong> file for technical details, API configuration, and troubleshooting.<br>
+            ❓ Questions? Re-open this guide anytime by clicking the <strong>❓ Help</strong> button in the header!
+          </p>
+        </div>
+
+      </div>
+    </div>
+    <div class="view-modal-footer">
+      <button class="view-modal-btn success" onclick="closeHelpModal()">Got it! Let's Start</button>
+    </div>
+  </div>
+</div>
+
 <header id="mainHeader" style="display: none;">
   <h1>Resume Builder Pro</h1>
   <div id="menuActions">
     <span id="headerUserInfo" style="margin-right: 15px; color: var(--text-secondary); display: none;"></span>
+    <button id="helpBtn" onclick="showHelpModal()" style="background: var(--primary); margin-right: 10px;">❓ Help</button>
     <button id="logoutBtn" onclick="handleMainLogout()" style="background: var(--danger); display: none;">🚪 Logout</button>
     <button id="toggleTheme">🌙 Dark</button>
   </div>
@@ -141,6 +411,44 @@
 
       <section id="tabContentArea">
       <div id="resumeFormContainer" class="active">
+        <input type="file" id="uploadJSON" accept=".json" style="display: none;">
+        <input type="file" id="uploadResume" accept=".pdf,.docx" style="display: none;">
+        
+        <!-- Action Buttons - Top Right -->
+        <div class="top-action-buttons">
+          <button class="top-action-btn primary" onclick="saveResumeTemplate()" title="Save current resume as template">
+            <span class="icon">💾</span>
+            <span>Save</span>
+          </button>
+          
+          <button class="top-action-btn" onclick="triggerResumeUpload()" title="Upload resume from PDF/DOCX file">
+            <span class="icon">📂</span>
+            <span>Upload</span>
+          </button>
+          
+          <div class="download-group-top">
+            <div class="download-options-top" id="downloadOptionsTop">
+              <button class="download-option-top" onclick="downloadJSON(); toggleDownloadMenuTop();">
+                <span class="icon">📄</span>
+                <span>Download JSON</span>
+              </button>
+              <button class="download-option-top" onclick="downloadWordDoc(); toggleDownloadMenuTop();">
+                <span class="icon">📝</span>
+                <span>Download Word</span>
+              </button>
+            </div>
+            <button class="top-action-btn" onclick="toggleDownloadMenuTop()" title="Download resume">
+              <span class="icon">⬇️</span>
+              <span>Download</span>
+            </button>
+          </div>
+          
+          <button class="top-action-btn danger" onclick="clearAll()" title="Clear all form fields">
+            <span class="icon">🧹</span>
+            <span>Clear All</span>
+          </button>
+        </div>
+
         <form id="resumeForm">
           <!-- Side Navigation & Content -->
           <div class="form-nav-container">
@@ -251,7 +559,7 @@
           <!-- Save Template Button -->
           <button class="action-btn primary" onclick="saveResumeTemplate()">
             <span class="icon">💾</span>
-            <span>Save Template</span>
+            <span>Save</span>
           </button>
           
           <!-- Upload Button -->
@@ -294,34 +602,51 @@
       </div>
 
       <div id="jobDescTabPanel">
-        <h3>Edit Resume Based on Job Description</h3>
-        <label for="companyNameJD"><b>Company Name *</b></label>
-        <input id="companyNameJD" name="companyNameJD" placeholder="e.g., Microsoft, Google, etc." type="text" style="margin-bottom:10px;" required>
-        
-        <label for="jobTitleJD"><b>Job Title *</b></label>
-        <input id="jobTitleJD" name="jobTitleJD" placeholder="e.g., Software Engineer, Product Manager" type="text" style="margin-bottom:10px;" required>
-        
-        <!-- Mode Selection -->
-        <div style="margin: 16px 0; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Resume Generation Mode:</label>
-          <div style="display: flex; gap: 24px; align-items: center;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400;">
-              <input type="radio" name="resumeMode" value="resume_jd" style="width: auto; cursor: pointer;">
-              <span>Resume + JD</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400;">
-              <input type="radio" name="resumeMode" value="complete_jd" checked style="width: auto; cursor: pointer;">
-              <span>Complete JD</span>
-            </label>
+        <div class="jd-form-container">
+          <!-- Compact Top Section with Input Fields -->
+          <div class="jd-form-header">
+            <div class="jd-input-row">
+              <div class="jd-input-col">
+                <label for="companyNameJD"><b>Company Name *</b></label>
+                <input id="companyNameJD" name="companyNameJD" placeholder="e.g., Microsoft, Google" type="text" required>
+              </div>
+              <div class="jd-input-col">
+                <label for="jobTitleJD"><b>Job Title *</b></label>
+                <input id="jobTitleJD" name="jobTitleJD" placeholder="e.g., Software Engineer" type="text" required>
+              </div>
+            </div>
+            
+            <!-- Compact Mode Selection with Generate Button -->
+            <div class="jd-mode-generate-row">
+              <div class="jd-mode-section">
+                <label class="mode-label">Mode:</label>
+                <div class="mode-options">
+                  <label class="mode-option">
+                    <input type="radio" name="resumeMode" value="resume_jd" onchange="updateModeDescription()">
+                    <span>Resume + JD</span>
+                  </label>
+                  <label class="mode-option">
+                    <input type="radio" name="resumeMode" value="complete_jd" checked onchange="updateModeDescription()">
+                    <span>Complete JD</span>
+                  </label>
+                </div>
+                <p id="modeDescription" class="mode-description">
+                  Creates a complete resume from scratch using only the job description
+                </p>
+              </div>
+              <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
+                <span class="btn-icon">🚀</span>
+                <span class="btn-text">Generate Resume</span>
+              </button>
+            </div>
           </div>
-          <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-secondary);">
-            <b>Complete JD:</b> Generate resume entirely from job description.<br>
-            <b>Resume + JD:</b> Apply edits to existing resume based on job description.
-          </p>
+          
+          <!-- Job Description Text Area - Takes Most Space -->
+          <div class="jd-textarea-container">
+            <label for="jobDescriptionTab"><b>Job Description *</b></label>
+            <textarea id="jobDescriptionTab" placeholder="Paste the job description here...&#10;&#10;Include:&#10;• Job responsibilities&#10;• Required skills & qualifications&#10;• Nice-to-have skills&#10;• Company information"></textarea>
+          </div>
         </div>
-        
-        <textarea id="jobDescriptionTab" placeholder="Paste Job Description here..."></textarea>
-        <button id="generateJDResumeBtn" type="button">Generate Resume Based on JD</button>
       </div>
 
       <!-- Dashboard Tab Panel -->
@@ -341,7 +666,10 @@
         <!-- Resume History Table -->
         <div class="resume-table-container">
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 24px 16px 24px;">
-            <h3 style="margin: 0; padding: 0;">My Resumes</h3>
+            <div>
+              <h3 style="margin: 0; padding: 0;">My Resumes</h3>
+              <span id="resultCount" style="font-size: 13px; color: var(--text-secondary); display: block; margin-top: 4px;"></span>
+            </div>
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="font-size: 13px; color: var(--text-secondary);">Show:</span>
               <select id="pageSizeSelect" onchange="changePageSize()" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
@@ -352,15 +680,42 @@
               </select>
             </div>
           </div>
+          
+          <!-- Filter Section -->
+          <div style="padding: 0 24px 16px 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="filterCompany" placeholder="🔍 Filter by Company" 
+              oninput="filterDashboardTable()" 
+              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; flex: 1; min-width: 150px;">
+            
+            <input type="text" id="filterJobTitle" placeholder="🔍 Filter by Job Title" 
+              oninput="filterDashboardTable()" 
+              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; flex: 1; min-width: 150px;">
+            
+            <select id="filterStatus" onchange="filterDashboardTable()" 
+              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
+              <option value="">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="processing">Processing</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+            
+            <button onclick="clearDashboardFilters()" 
+              style="padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; white-space: nowrap;">
+              ✕ Clear Filters
+            </button>
+          </div>
+          
           <div class="resume-table-wrapper">
             <table class="resume-table" id="resumeHistoryTable">
               <thead>
                 <tr>
-                  <th>Company</th>
-                  <th>Job Title</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th style="text-align: center;">Actions</th>
+                  <th style="padding: 12px 16px;">Company</th>
+                  <th style="padding: 12px 16px;">Job Title</th>
+                  <th style="padding: 12px 16px;">Status</th>
+                  <th style="padding: 12px 16px; text-align: center;">Progress</th>
+                  <th style="padding: 12px 16px;">Created</th>
+                  <th style="padding: 12px 16px; text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="resumeHistoryBody">
@@ -895,7 +1250,7 @@
       console.log('Template saved:', result);
       
     } catch (error) {
-      console.error('Save template failed:', error);
+      console.error('Save failed:', error);
       alert(`❌ Error saving template: ${error.message}`);
     }
   }
@@ -933,6 +1288,7 @@
     }
   }
 
+  // Trigger JSON upload (legacy)
   function triggerUpload(){document.getElementById('uploadJSON').click();}
   document.getElementById('uploadJSON').addEventListener('change', e=>{
     const file=e.target.files[0];if(!file)return;
@@ -947,6 +1303,587 @@
       // Do NOT populate job description fields from upload
       showResult('✅ Resume JSON Uploaded');
     }catch{alert("Invalid JSON");}};r.readAsText(file);});
+
+  // Trigger resume document upload (PDF/DOCX)
+  function triggerResumeUpload() {
+    document.getElementById('uploadResume').click();
+  }
+
+  // Handle resume document upload with loading screen
+  document.getElementById('uploadResume').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['.pdf', '.docx'];
+    const fileName = file.name.toLowerCase();
+    const isValid = validTypes.some(type => fileName.endsWith(type));
+    
+    if (!isValid) {
+      alert('Please upload a PDF or DOCX file');
+      e.target.value = ''; // Clear the input
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File too large. Maximum size is 10MB');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      // Show loading overlay
+      showParseLoading();
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Simulate progress
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += 5;
+        if (progress <= 90) {
+          updateParseProgress(progress, 'Extracting text from document...');
+        }
+      }, 200);
+
+      // Upload and parse
+      const response = await fetch('/api/parse-resume', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword)
+        },
+        body: formData
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to parse resume' }));
+        throw new Error(errorData.detail || `Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      updateParseProgress(100, 'Parsing complete!');
+
+      if (data.success && data.resume_data) {
+        // Populate form with parsed data
+        setTimeout(() => {
+          populateForm(data.resume_data);
+          hideParseLoading();
+          showResult('✅ Resume uploaded and parsed successfully!');
+          e.target.value = ''; // Clear the input
+        }, 500);
+      } else {
+        throw new Error(data.message || 'Failed to parse resume');
+      }
+
+    } catch (error) {
+      hideParseLoading();
+      console.error('Resume upload error:', error);
+      alert(`Failed to parse resume: ${error.message || 'Unknown error'}`);
+      e.target.value = '';
+    }
+  });
+
+  // Loading overlay functions
+  function showParseLoading() {
+    const overlay = document.getElementById('parseLoadingOverlay');
+    overlay.style.display = 'flex';
+    updateParseProgress(0, 'Uploading document...');
+  }
+
+  function hideParseLoading() {
+    const overlay = document.getElementById('parseLoadingOverlay');
+    overlay.style.display = 'none';
+  }
+
+  function updateParseProgress(percent, message) {
+    const fill = document.getElementById('parseProgressFill');
+    const text = document.getElementById('parseProgressText');
+    const messageEl = document.querySelector('.parse-loading-message');
+    
+    fill.style.width = `${percent}%`;
+    text.textContent = `${Math.round(percent)}%`;
+    if (message) {
+      messageEl.textContent = message;
+    }
+  }
+
+  // Update mode description based on selected mode
+  function updateModeDescription() {
+    const modeDescription = document.getElementById('modeDescription');
+    const selectedMode = document.querySelector('input[name="resumeMode"]:checked').value;
+    
+    if (selectedMode === 'complete_jd') {
+      modeDescription.innerHTML = '📝 <strong>Complete JD:</strong> Creates a complete resume from scratch using only the job description';
+    } else {
+      modeDescription.innerHTML = '✏️ <strong>Resume + JD:</strong> Takes your existing resume data and tailors it to match the job description';
+    }
+  }
+
+  // Global variables for edit mode
+  let currentResumeData = null;
+  let currentRequestId = null;
+  let isEditMode = false;
+
+  // View modal functions
+  async function viewResumeContent(requestId, company, title) {
+    try {
+      currentRequestId = requestId;
+      isEditMode = false;
+      
+      const modal = document.getElementById('viewModal');
+      const modalTitle = document.getElementById('viewModalTitle');
+      const modalSubtitle = document.getElementById('viewModalSubtitle');
+      const modalBody = document.getElementById('viewModalBody');
+      const downloadResumeBtn = document.getElementById('viewModalDownloadResume');
+      const downloadJDBtn = document.getElementById('viewModalDownloadJD');
+      const editBtn = document.getElementById('viewModalEditBtn');
+      const saveBtn = document.getElementById('viewModalSaveBtn');
+      
+      // Show modal with loading state
+      modalTitle.textContent = 'Resume Preview';
+      modalSubtitle.textContent = `${company} - ${title}`;
+      modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="parse-loading-spinner" style="margin: 0 auto;"></div><p style="margin-top: 20px;">Loading resume...</p></div>';
+      modal.style.display = 'flex';
+      
+      // Set up buttons
+      downloadResumeBtn.onclick = () => downloadResumeDocx(requestId, company, title);
+      downloadResumeBtn.style.display = 'inline-block';
+      downloadJDBtn.style.display = 'inline-block';
+      downloadJDBtn.onclick = () => downloadJobDescription(requestId, company, title);
+      editBtn.style.display = 'inline-block';
+      saveBtn.style.display = 'none';
+      document.getElementById('editBtnText').textContent = 'Edit';
+      
+      // Fetch resume data
+      const response = await fetch(`/api/jobs/${requestId}/result`, {
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword)
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to load resume');
+      
+      const result = await response.json();
+      const data = result.final_resume || result; // Handle both nested and direct format
+      currentResumeData = data; // Store for editing
+      
+      // Render the resume
+      renderResumeContent(data);
+      
+    } catch (error) {
+      console.error('Error viewing resume:', error);
+      document.getElementById('viewModalBody').innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--danger);">
+          <p>❌ Failed to load resume content</p>
+          <p style="font-size: 14px; color: var(--text-secondary);">${error.message}</p>
+        </div>
+      `;
+    }
+  }
+
+  function renderResumeContent(data) {
+    const modalBody = document.getElementById('viewModalBody');
+    let html = '<div id="resumeContentWrapper" style="max-width: 800px; margin: 0 auto; padding: 20px; font-size: 14px; line-height: 1.6; color: var(--text-primary);">';
+    
+    if (data.name) {
+      html += `<h2 contenteditable="${isEditMode}" data-field="name" style="margin-top: 0; color: var(--accent); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '4px' : '0'};">${data.name}</h2>`;
+    }
+    
+    if (data.contact) {
+      html += '<div style="margin-bottom: 20px; color: var(--text-secondary);">';
+      if (data.contact.email) html += `<span contenteditable="${isEditMode}" data-field="contact.email" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.email}</span> `;
+      if (data.contact.phone) html += `<span contenteditable="${isEditMode}" data-field="contact.phone" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.phone}</span> `;
+      if (data.contact.linkedin) html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">🔗 ${data.contact.linkedin}</span>`;
+      html += '</div>';
+    }
+    
+    if (data.summary) {
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Professional Summary</h3>`;
+      html += `<p contenteditable="${isEditMode}" data-field="summary" style="color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '4px' : '0'};">${data.summary}</p>`;
+    }
+    
+    if (data.technical_skills) {
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Technical Skills ${isEditMode ? '<button onclick="addSkillCategory()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">➕ Add Category</button>' : ''}</h3>`;
+      html += '<div id="technicalSkillsContainer">';
+      let skillIndex = 0;
+      for (const [category, skills] of Object.entries(data.technical_skills)) {
+        if (Array.isArray(skills) && skills.length > 0) {
+          html += `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;" data-skill-category="${category}" data-skill-index="${skillIndex}">`;
+          html += `<p style="flex: 1; color: var(--text-primary); margin: 0;">`;
+          html += `<strong contenteditable="${isEditMode}" data-field="technical_skills_key.${skillIndex}" data-original-key="${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${category}</strong>: `;
+          html += `<span contenteditable="${isEditMode}" data-field="technical_skills.${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${skills.join(', ')}</span>`;
+          html += `</p>`;
+          if (isEditMode) {
+            html += `<button onclick="removeSkillCategory('${category}')" style="padding: 4px 8px; font-size: 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">🗑️</button>`;
+          }
+          html += `</div>`;
+          skillIndex++;
+        }
+      }
+      html += '</div>';
+    }
+    
+    if (data.experience && data.experience.length > 0) {
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Experience</h3>`;
+      data.experience.forEach((exp, idx) => {
+        html += `<div style="margin-bottom: 15px;" data-exp-index="${idx}">`;
+        const jobTitle = exp.job_title || exp.title || exp.role || 'Position';
+        const company = exp.company || exp.organization || 'Company';
+        const duration = exp.duration || exp.dates || exp.period || '';
+        
+        html += `<h4 contenteditable="${isEditMode}" data-field="experience.${idx}.title" style="margin: 5px 0; color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${jobTitle}</h4>`;
+        html += `<p style="color: var(--text-secondary); margin: 3px 0;"><span contenteditable="${isEditMode}" data-field="experience.${idx}.company" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${company}</span>${duration ? ' | ' : ''}<span contenteditable="${isEditMode}" data-field="experience.${idx}.duration" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${duration}</span></p>`;
+        
+        const bullets = exp.bullets || exp.points || exp.responsibilities || [];
+        if (bullets && bullets.length > 0) {
+          html += '<ul style="margin: 8px 0 8px 20px; color: var(--text-primary); padding-left: 0;">';
+          bullets.forEach((bullet, bidx) => {
+            html += `<li contenteditable="${isEditMode}" data-field="experience.${idx}.bullets.${bidx}" style="margin-bottom: 4px; outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${bullet}</li>`;
+          });
+          html += '</ul>';
+        }
+        html += `</div>`;
+      });
+    }
+    
+    if (data.education && data.education.length > 0) {
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Education</h3>`;
+      data.education.forEach((edu, idx) => {
+        html += `<p contenteditable="${isEditMode}" data-field="education.${idx}" style="color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};"><strong>${edu.degree}</strong> - ${edu.institution} (${edu.year || edu.graduation_date})</p>`;
+      });
+    }
+    
+    if (data.certifications && data.certifications.length > 0) {
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Certifications</h3>`;
+      html += '<ul style="color: var(--text-primary);">';
+      data.certifications.forEach((cert, idx) => {
+        html += `<li contenteditable="${isEditMode}" data-field="certifications.${idx}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${typeof cert === 'string' ? cert : cert.name}</li>`;
+      });
+      html += '</ul>';
+    }
+    
+    if (data.projects && data.projects.length > 0) {
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Projects</h3>`;
+      data.projects.forEach((proj, idx) => {
+        html += `<div style="margin-bottom: 15px;">`;
+        html += `<h4 contenteditable="${isEditMode}" data-field="projects.${idx}.name" style="margin: 5px 0; color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${proj.name}</h4>`;
+        if (proj.description) html += `<p contenteditable="${isEditMode}" data-field="projects.${idx}.description" style="color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${proj.description}</p>`;
+        if (proj.technologies) html += `<p style="color: var(--text-secondary);"><em>Technologies: <span contenteditable="${isEditMode}" data-field="projects.${idx}.technologies" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}</span></em></p>`;
+        html += `</div>`;
+      });
+    }
+    
+    html += '</div>';
+    modalBody.innerHTML = html;
+  }
+
+  function toggleEditMode() {
+    isEditMode = !isEditMode;
+    const editBtn = document.getElementById('viewModalEditBtn');
+    const saveBtn = document.getElementById('viewModalSaveBtn');
+    const editBtnText = document.getElementById('editBtnText');
+    
+    if (isEditMode) {
+      editBtnText.textContent = 'Cancel';
+      saveBtn.style.display = 'inline-block';
+      renderResumeContent(currentResumeData);
+    } else {
+      editBtnText.textContent = 'Edit';
+      saveBtn.style.display = 'none';
+      renderResumeContent(currentResumeData);
+    }
+  }
+
+  async function saveResumeChanges() {
+    try {
+      // First, rebuild technical_skills from scratch to handle key renames
+      const newTechnicalSkills = {};
+      const skillContainers = document.querySelectorAll('[data-skill-category]');
+      
+      skillContainers.forEach(container => {
+        const keyElem = container.querySelector('[data-field^="technical_skills_key"]');
+        const valueElem = container.querySelector('[data-field^="technical_skills."]');
+        
+        if (keyElem && valueElem) {
+          const newKey = keyElem.textContent.trim();
+          const valuesText = valueElem.textContent.trim();
+          
+          if (newKey && valuesText) {
+            const values = valuesText.split(',').map(s => s.trim()).filter(s => s);
+            if (values.length > 0) {
+              newTechnicalSkills[newKey] = values;
+            }
+          }
+        }
+      });
+      
+      // Update technical_skills in currentResumeData
+      if (Object.keys(newTechnicalSkills).length > 0) {
+        currentResumeData.technical_skills = newTechnicalSkills;
+      }
+      
+      // Collect all other edited content
+      const editableElements = document.querySelectorAll('[contenteditable="true"]');
+      
+      editableElements.forEach(elem => {
+        const field = elem.getAttribute('data-field');
+        const value = elem.textContent.trim();
+        
+        // Skip technical_skills fields as we've already handled them above
+        if (!field || field.includes('technical_skills')) return;
+        
+        // Parse nested field paths like "experience.0.title" or "experience.0.bullets.1"
+        const parts = field.split('.');
+        let current = currentResumeData;
+        
+        for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          const nextPart = parts[i + 1];
+          
+          // Check if next part is an array index
+          if (!isNaN(nextPart)) {
+            // Ensure current[part] is an array
+            if (!Array.isArray(current[part])) {
+              current[part] = [];
+            }
+            const index = parseInt(nextPart);
+            // Ensure the array element exists
+            if (!current[part][index]) {
+              current[part][index] = {};
+            }
+            current = current[part][index];
+            i++; // Skip the index in next iteration
+          } else {
+            // Regular object property
+            if (!current[part]) {
+              current[part] = {};
+            }
+            current = current[part];
+          }
+        }
+        
+        const lastPart = parts[parts.length - 1];
+        
+        // Handle special cases
+        if (field.includes('bullets') && !isNaN(lastPart)) {
+          // Updating a specific bullet point in an array
+          const bulletIndex = parseInt(lastPart);
+          // The current object should have a 'bullets' array
+          const parentKey = parts[parts.length - 2]; // Should be 'bullets'
+          // Go back one level to set the array element
+          const parentParts = parts.slice(0, -2);
+          let parent = currentResumeData;
+          
+          for (let i = 0; i < parentParts.length; i++) {
+            const part = parentParts[i];
+            const nextPart = parentParts[i + 1];
+            
+            if (!isNaN(nextPart)) {
+              parent = parent[part][parseInt(nextPart)];
+              i++;
+            } else {
+              parent = parent[part];
+            }
+          }
+          
+          // Ensure bullets array exists
+          if (!Array.isArray(parent.bullets)) {
+            parent.bullets = [];
+          }
+          parent.bullets[bulletIndex] = value;
+        } else {
+          // Regular field update
+          current[lastPart] = value;
+        }
+      });
+      
+      // Send update to server
+      const resultDiv = document.getElementById('result');
+      if (resultDiv) {
+        resultDiv.textContent = '💾 Saving changes...';
+        resultDiv.style.display = 'block';
+      }
+      
+      const response = await fetch(`/api/jobs/${currentRequestId}/update`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ final_resume: currentResumeData })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save changes');
+      }
+      
+      if (resultDiv) {
+        resultDiv.textContent = '✅ Changes saved successfully!';
+        setTimeout(() => {
+          resultDiv.style.display = 'none';
+        }, 3000);
+      }
+      
+      isEditMode = false;
+      const editBtnText = document.getElementById('editBtnText');
+      if (editBtnText) {
+        editBtnText.textContent = 'Edit';
+      }
+      const saveBtn = document.getElementById('viewModalSaveBtn');
+      if (saveBtn) {
+        saveBtn.style.display = 'none';
+      }
+      renderResumeContent(currentResumeData);
+      
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert(`Failed to save changes: ${error.message}`);
+    }
+  }
+
+  async function viewJobDescription(requestId, company, title) {
+    try {
+      const modal = document.getElementById('viewModal');
+      const modalTitle = document.getElementById('viewModalTitle');
+      const modalSubtitle = document.getElementById('viewModalSubtitle');
+      const modalBody = document.getElementById('viewModalBody');
+      const downloadResumeBtn = document.getElementById('viewModalDownloadResume');
+      const downloadJDBtn = document.getElementById('viewModalDownloadJD');
+      
+      // Show modal with loading state
+      modalTitle.textContent = 'Job Description';
+      modalSubtitle.textContent = `${company} - ${title}`;
+      modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="parse-loading-spinner" style="margin: 0 auto;"></div><p style="margin-top: 20px;">Loading job description...</p></div>';
+      modal.style.display = 'flex';
+      
+      // Set up download buttons
+      downloadResumeBtn.onclick = () => downloadResumeDocx(requestId, company, title);
+      downloadResumeBtn.style.display = 'inline-block';
+      downloadJDBtn.style.display = 'inline-block';
+      downloadJDBtn.onclick = () => downloadJobDescription(requestId, company, title);
+      
+      // Fetch JD data
+      const response = await fetch(`/api/jobs/${requestId}/download-jd`, {
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword)
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to load job description');
+      
+      const text = await response.text();
+      
+      // Format JD text for display (preserve line breaks)
+      const formattedText = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => `<p style="color: var(--text-primary);">${line}</p>`)
+        .join('');
+      
+      modalBody.innerHTML = `
+        <div style="max-width: 800px; margin: 0 auto; padding: 20px; font-size: 14px; line-height: 1.8; color: var(--text-primary);">
+          ${formattedText}
+        </div>
+      `;
+      
+    } catch (error) {
+      console.error('Error viewing job description:', error);
+      document.getElementById('viewModalBody').innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--danger);">
+          <p>❌ Failed to load job description</p>
+          <p style="font-size: 14px; color: var(--text-secondary);">${error.message}</p>
+        </div>
+      `;
+    }
+  }
+
+  function closeViewModal() {
+    document.getElementById('viewModal').style.display = 'none';
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('viewModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'viewModal') {
+      closeViewModal();
+    }
+  });
+
+  // Add new skill category
+  function addSkillCategory() {
+    const categoryName = prompt('Enter new skill category name (e.g., "Frameworks", "Cloud Platforms"):');
+    
+    if (!categoryName || categoryName.trim() === '') {
+      return; // User cancelled or entered empty name
+    }
+    
+    const trimmedCategory = categoryName.trim();
+    
+    // Check if category already exists
+    if (currentResumeData.technical_skills && currentResumeData.technical_skills[trimmedCategory]) {
+      alert('⚠️ This category already exists!');
+      return;
+    }
+    
+    // Get skills for this category
+    const skillsInput = prompt(`Enter skills for "${trimmedCategory}" (comma-separated):`);
+    
+    if (!skillsInput || skillsInput.trim() === '') {
+      return; // User cancelled or entered empty skills
+    }
+    
+    const skills = skillsInput.split(',').map(s => s.trim()).filter(s => s);
+    
+    if (skills.length === 0) {
+      alert('⚠️ Please enter at least one skill!');
+      return;
+    }
+    
+    // Add to data
+    if (!currentResumeData.technical_skills) {
+      currentResumeData.technical_skills = {};
+    }
+    currentResumeData.technical_skills[trimmedCategory] = skills;
+    
+    // Re-render to show the new category
+    renderResumeContent(currentResumeData);
+  }
+
+  // Remove skill category
+  function removeSkillCategory(category) {
+    if (!confirm(`Are you sure you want to remove "${category}"?`)) {
+      return;
+    }
+    
+    // Remove from data
+    if (currentResumeData.technical_skills && currentResumeData.technical_skills[category]) {
+      delete currentResumeData.technical_skills[category];
+    }
+    
+    // Re-render to reflect changes
+    renderResumeContent(currentResumeData);
+  }
+
+  // Help modal functions
+  function showHelpModal() {
+    document.getElementById('helpModal').style.display = 'flex';
+  }
+
+  function closeHelpModal() {
+    document.getElementById('helpModal').style.display = 'none';
+  }
+
+  // Close help modal when clicking outside
+  document.getElementById('helpModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'helpModal') {
+      closeHelpModal();
+    }
+  });
 
   function populateForm(d){
     const f = document.getElementById('resumeForm');
@@ -1064,6 +2001,11 @@
     menu.classList.toggle('show');
   }
 
+  function toggleDownloadMenuTop() {
+    const menu = document.getElementById('downloadOptionsTop');
+    menu.classList.toggle('show');
+  }
+
   // Close download menu when clicking outside
   document.addEventListener('click', function(event) {
     const downloadGroup = document.querySelector('.download-group');
@@ -1072,7 +2014,111 @@
     if (menu && downloadGroup && !downloadGroup.contains(event.target)) {
       menu.classList.remove('show');
     }
+
+    // Close top download menu when clicking outside
+    const downloadGroupTop = document.querySelector('.download-group-top');
+    const menuTop = document.getElementById('downloadOptionsTop');
+    
+    if (menuTop && downloadGroupTop && !downloadGroupTop.contains(event.target)) {
+      menuTop.classList.remove('show');
+    }
   });
+
+  function validateResumeInput(resumeData, jobData, mode) {
+    const errors = [];
+    
+    // Validate Job Description (required for both modes)
+    if (!jobData.job_description || jobData.job_description.trim().length < 50) {
+      errors.push('• Job Description must be at least 50 characters long');
+    }
+    
+    if (!jobData.company_name || jobData.company_name.trim().length === 0) {
+      errors.push('• Company Name is required');
+    }
+    
+    if (!jobData.job_title || jobData.job_title.trim().length === 0) {
+      errors.push('• Job Title is required');
+    }
+    
+    // Validate Resume Data (only for resume+jd mode)
+    if (mode === 'resume_jd') {
+      if (!resumeData.name || resumeData.name.trim().length === 0) {
+        errors.push('• Name is required in Resume+JD mode');
+      }
+      
+      if (!resumeData.summary || resumeData.summary.trim().length < 50) {
+        errors.push('• Professional Summary must be at least 50 characters long');
+      }
+      
+      // Check contact info
+      const contact = resumeData.contact || {};
+      if (!contact.email && !contact.phone) {
+        errors.push('• At least one contact method (Email or Phone) is required');
+      }
+      
+      // Validate email format if provided
+      if (contact.email && !isValidEmail(contact.email)) {
+        errors.push('• Email format is invalid');
+      }
+      
+      // Check technical skills
+      const skills = resumeData.technical_skills || {};
+      if (Object.keys(skills).length === 0) {
+        errors.push('• At least one Technical Skill category is required');
+      } else {
+        // Check if any skill category has values
+        let hasSkills = false;
+        for (const category in skills) {
+          if (Array.isArray(skills[category]) && skills[category].length > 0) {
+            hasSkills = true;
+            break;
+          }
+        }
+        if (!hasSkills) {
+          errors.push('• Technical Skills must have at least one skill listed');
+        }
+      }
+      
+      // Check experience
+      if (!resumeData.experience || resumeData.experience.length === 0) {
+        errors.push('• At least one Experience entry is required');
+      } else {
+        resumeData.experience.forEach((exp, idx) => {
+          if (!exp.company || exp.company.trim().length === 0) {
+            errors.push(`• Experience ${idx + 1}: Company name is required`);
+          }
+          if (!exp.role && !exp.title && !exp.job_title) {
+            errors.push(`• Experience ${idx + 1}: Job title/role is required`);
+          }
+          const bullets = exp.bullets || exp.points || exp.responsibilities || [];
+          if (bullets.length === 0) {
+            errors.push(`• Experience ${idx + 1}: At least one responsibility/bullet point is required`);
+          }
+        });
+      }
+      
+      // Check education
+      if (!resumeData.education || resumeData.education.length === 0) {
+        errors.push('• At least one Education entry is required');
+      } else {
+        resumeData.education.forEach((edu, idx) => {
+          if (!edu.degree || edu.degree.trim().length === 0) {
+            errors.push(`• Education ${idx + 1}: Degree is required`);
+          }
+          if (!edu.institution || edu.institution.trim().length === 0) {
+            errors.push(`• Education ${idx + 1}: Institution is required`);
+          }
+        });
+      }
+    }
+    
+    return errors;
+  }
+  
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
 
   async function generateResume(){
     console.log('[DEBUG] Generate Resume clicked');
@@ -1082,6 +2128,15 @@
     const resumeMode = resumeModeRadio ? resumeModeRadio.value : 'complete_jd'; // Default to complete_jd
     
     const {resume_data: resumeObj, job_description_data: jobObj} = buildJSON();
+    
+    // Validate based on mode
+    const validationErrors = validateResumeInput(resumeObj, jobObj, resumeMode);
+    if (validationErrors.length > 0) {
+      const errorMessage = '❌ Validation Failed:\n\n' + validationErrors.join('\n');
+      alert(errorMessage);
+      showResult('❌ Please fix validation errors and try again');
+      return;
+    }
     
     // Generate unique request ID
     const requestId = generateRequestId();
@@ -1369,6 +2424,123 @@
   let dashboardPollIntervals = {};
   let currentUsername = null;
   let currentPassword = null;
+  let dashboardPageSize = 20; // Default page size
+  let currentPage = 1; // Current page number
+  let totalJobs = 0; // Total number of jobs
+  let allDashboardJobs = []; // Store all jobs for filtering
+
+  // Change page size function
+  function changePageSize() {
+    const select = document.getElementById('pageSizeSelect');
+    dashboardPageSize = parseInt(select.value);
+    currentPage = 1; // Reset to first page when changing page size
+    loadDashboardHistory();
+  }
+
+  // Change page function
+  function changePage(page) {
+    currentPage = page;
+    loadDashboardHistory();
+  }
+
+  // Render pagination controls
+  function renderPagination() {
+    const totalPages = Math.ceil(totalJobs / dashboardPageSize);
+    const paginationContainer = document.getElementById('paginationContainer');
+    
+    if (totalPages <= 1) {
+      paginationContainer.innerHTML = '';
+      return;
+    }
+
+    let paginationHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 20px;">';
+    
+    // Previous button
+    paginationHTML += `
+      <button onclick="changePage(${currentPage - 1})" 
+        ${currentPage === 1 ? 'disabled' : ''} 
+        style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: ${currentPage === 1 ? 'not-allowed' : 'pointer'}; opacity: ${currentPage === 1 ? '0.5' : '1'};">
+        ← Previous
+      </button>
+    `;
+    
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // First page
+    if (startPage > 1) {
+      paginationHTML += `
+        <button onclick="changePage(1)" 
+          style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: pointer;">
+          1
+        </button>
+      `;
+      if (startPage > 2) {
+        paginationHTML += '<span style="padding: 8px;">...</span>';
+      }
+    }
+    
+    // Visible page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      paginationHTML += `
+        <button onclick="changePage(${i})" 
+          style="padding: 8px 12px; border: 1px solid ${i === currentPage ? 'var(--accent)' : 'var(--border)'}; border-radius: var(--radius-sm); background: ${i === currentPage ? 'var(--accent)' : 'var(--bg)'}; color: ${i === currentPage ? 'white' : 'var(--text)'}; cursor: pointer; font-weight: ${i === currentPage ? '600' : '400'};">
+          ${i}
+        </button>
+      `;
+    }
+    
+    // Last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        paginationHTML += '<span style="padding: 8px;">...</span>';
+      }
+      paginationHTML += `
+        <button onclick="changePage(${totalPages})" 
+          style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: pointer;">
+          ${totalPages}
+        </button>
+      `;
+    }
+    
+    // Next button
+    paginationHTML += `
+      <button onclick="changePage(${currentPage + 1})" 
+        ${currentPage === totalPages ? 'disabled' : ''} 
+        style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: ${currentPage === totalPages ? 'not-allowed' : 'pointer'}; opacity: ${currentPage === totalPages ? '0.5' : '1'};">
+        Next →
+      </button>
+    `;
+    
+    paginationHTML += '</div>';
+    paginationHTML += `<div style="text-align: center; padding: 0 0 20px 0; font-size: 13px; color: var(--text-secondary);">
+      Page ${currentPage} of ${totalPages} (${totalJobs} total results)
+    </div>`;
+    
+    paginationContainer.innerHTML = paginationHTML;
+  }
+
+  // Filter dashboard table - reload from server with filters
+  function filterDashboardTable() {
+    currentPage = 1; // Reset to first page when filtering
+    loadDashboardHistory();
+  }
+
+  // Clear all filters
+  function clearDashboardFilters() {
+    document.getElementById('filterCompany').value = '';
+    document.getElementById('filterJobTitle').value = '';
+    document.getElementById('filterStatus').value = '';
+    currentPage = 1; // Reset to first page when clearing filters
+    filterDashboardTable();
+  }
 
   // Auth Tab Switching
   function switchAuthTab(tab) {
@@ -1532,18 +2704,46 @@
     try {
       const stats = await dashApiCall('/api/user/stats');
       
+      // Calculate progress percentages for visual effect
+      const totalProgress = Math.min((stats.total_resumes / 50) * 100, 100); // Scale to 50 resumes
+      const todayProgress = Math.min((stats.today_resumes / 10) * 100, 100); // Scale to 10 per day
+      const activeProgress = (stats.active_jobs / stats.limits.max_concurrent_jobs) * 100;
+      
       document.getElementById('statsCards').innerHTML = `
-        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-          <div class="stat-value">${stats.total_resumes}</div>
-          <div class="stat-label">Total Resumes Generated</div>
+        <div class="stat-card-modern">
+          <div class="stat-ring-container">
+            <svg class="stat-ring" viewBox="0 0 120 120">
+              <circle class="stat-ring-bg" cx="60" cy="60" r="52" />
+              <circle class="stat-ring-progress" cx="60" cy="60" r="52" 
+                style="stroke: #667eea; stroke-dashoffset: ${327 - (327 * totalProgress / 100)};" />
+            </svg>
+            <div class="stat-value-inside">${stats.total_resumes}</div>
+          </div>
+          <div class="stat-label-modern">TOTAL RESUMES</div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-          <div class="stat-value">${stats.today_resumes}</div>
-          <div class="stat-label">Resumes Today</div>
+        
+        <div class="stat-card-modern">
+          <div class="stat-ring-container">
+            <svg class="stat-ring" viewBox="0 0 120 120">
+              <circle class="stat-ring-bg" cx="60" cy="60" r="52" />
+              <circle class="stat-ring-progress" cx="60" cy="60" r="52" 
+                style="stroke: #f5576c; stroke-dashoffset: ${327 - (327 * todayProgress / 100)};" />
+            </svg>
+            <div class="stat-value-inside">${stats.today_resumes}</div>
+          </div>
+          <div class="stat-label-modern">TODAY</div>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
-          <div class="stat-value">${stats.active_jobs}</div>
-          <div class="stat-label">Processing Now</div>
+        
+        <div class="stat-card-modern">
+          <div class="stat-ring-container">
+            <svg class="stat-ring" viewBox="0 0 120 120">
+              <circle class="stat-ring-bg" cx="60" cy="60" r="52" />
+              <circle class="stat-ring-progress" cx="60" cy="60" r="52" 
+                style="stroke: #00f2fe; stroke-dashoffset: ${327 - (327 * activeProgress / 100)};" />
+            </svg>
+            <div class="stat-value-inside">${stats.active_jobs}</div>
+          </div>
+          <div class="stat-label-modern">PROCESSING</div>
         </div>
       `;
     } catch (error) {
@@ -1786,13 +2986,17 @@
         actionsCell.innerHTML = `
           <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${requestId}')">⋮</button>
           <div class="kebab-dropdown" id="kebab-${requestId}">
-            <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
-              <span class="menu-icon">📄</span>
-              <span>Download Resume</span>
+            <button class="primary" onclick="viewResumeContent('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
+              <span class="menu-icon">�️</span>
+              <span>View Resume</span>
             </button>
-            <button class="primary" onclick="downloadJobDescription('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
+            <button class="secondary" onclick="viewJobDescription('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
               <span class="menu-icon">📋</span>
               <span>View Job Description</span>
+            </button>
+            <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
+              <span class="menu-icon">📥</span>
+              <span>Download Resume</span>
             </button>
             <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${requestId}'); closeKebabMenu('${requestId}'); }">
               <span class="menu-icon">🗑️</span>
@@ -1813,22 +3017,50 @@
   // Load Job History
   async function loadDashboardHistory() {
     try {
-      const data = await dashApiCall('/api/user/jobs?limit=50');
+      // Build query params with filters and pagination
+      const params = new URLSearchParams();
+      params.append('limit', dashboardPageSize);
+      params.append('offset', (currentPage - 1) * dashboardPageSize);
+      
+      const companyFilter = document.getElementById('filterCompany')?.value || '';
+      const jobTitleFilter = document.getElementById('filterJobTitle')?.value || '';
+      const statusFilter = document.getElementById('filterStatus')?.value || '';
+      
+      if (companyFilter) params.append('company', companyFilter);
+      if (jobTitleFilter) params.append('job_title', jobTitleFilter);
+      if (statusFilter) params.append('status', statusFilter);
+      
+      const data = await dashApiCall(`/api/user/jobs?${params.toString()}`);
+      
+      // Store total count for pagination
+      totalJobs = data.count;
       const tbody = document.getElementById('resumeHistoryBody');
+      const resultCount = document.getElementById('resultCount');
+
+      // Update result count display
+      const isFiltered = companyFilter || jobTitleFilter || statusFilter;
+      if (isFiltered) {
+        resultCount.textContent = `Found ${data.count} resume${data.count !== 1 ? 's' : ''} matching your search`;
+      } else {
+        resultCount.textContent = data.count > 0 ? `Total: ${data.count} resume${data.count !== 1 ? 's' : ''}` : '';
+      }
 
       if (data.count === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">📄 No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
+        const noResultsMsg = isFiltered 
+          ? '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">🔍 No resumes match your search</p><p style="margin: 8px 0 0 0;">Try different search terms or clear filters</p></td></tr>'
+          : '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">📄 No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
+        tbody.innerHTML = noResultsMsg;
         return;
       }
 
       tbody.innerHTML = data.jobs.map(job => `
         <tr data-request-id="${job.request_id}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseenter="this.style.background='var(--card)'" onmouseleave="this.style.background=''">
-          <td style="padding: 12px; color: var(--text-primary); font-weight: 500;">${job.company_name}</td>
-          <td style="padding: 12px; color: var(--text-primary);">${job.job_title}</td>
-          <td style="padding: 12px;">
+          <td style="padding: 12px 16px; color: var(--text-primary); font-weight: 500;">${job.company_name}</td>
+          <td style="padding: 12px 16px; color: var(--text-primary);">${job.job_title}</td>
+          <td style="padding: 12px 16px;">
             <span class="status-badge status-${job.status}" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">${job.status}</span>
           </td>
-          <td style="padding: 12px; text-align: center;">
+          <td style="padding: 12px 16px; text-align: center;">
             ${job.status === 'processing' || job.status === 'pending' ? `
               <div style="width: 100%; max-width: 150px; margin: 0 auto;">
                 <div class="progress-bar" style="height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
@@ -1842,24 +3074,27 @@
               <span style="color: var(--danger);">✗ Failed</span>
             `}
           </td>
-          <td style="padding: 12px; font-size: 0.9em; color: var(--text-secondary);">
-            ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}<br>
-            ${new Date(job.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          <td style="padding: 12px 16px; font-size: 0.85em; color: var(--text-secondary); white-space: nowrap;">
+            ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ${new Date(job.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
           </td>
-          <td style="padding: 12px; text-align: center; position: relative;">
+          <td style="padding: 12px 16px; text-align: right; position: relative;">
             ${job.status === 'completed' ? `
               <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${job.request_id}')">⋮</button>
               <div class="kebab-dropdown" id="kebab-${job.request_id}">
-                <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📄</span>
-                  <span>Download Resume</span>
+                <button class="primary" onclick="viewResumeContent('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
+                  <span class="menu-icon">�️</span>
+                  <span>View Resume</span>
                 </button>
-                <button class="primary" onclick="downloadJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
+                <button class="secondary" onclick="viewJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
                   <span class="menu-icon">📋</span>
                   <span>View Job Description</span>
                 </button>
+                <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
+                  <span class="menu-icon">📥</span>
+                  <span>Download Resume</span>
+                </button>
                 <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${job.request_id}'); closeKebabMenu('${job.request_id}'); }">
-                  <span class="menu-icon">�️</span>
+                  <span class="menu-icon">🗑️</span>
                   <span>Delete</span>
                 </button>
               </div>
@@ -1868,7 +3103,7 @@
                 🔄 Refresh
               </button>
             ` : `
-              <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${job.error_message || 'Generation failed'}">
+              <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px; display: inline-block;" title="${job.error_message || 'Generation failed'}">
                 ❌ Error
               </div>
             `}
@@ -1882,6 +3117,9 @@
           startDashboardPolling(job.request_id);
         }
       });
+
+      // Render pagination controls
+      renderPagination();
 
     } catch (error) {
       console.error('Failed to load history:', error);
@@ -2204,5 +3442,5 @@
   });
 
 </script>
-<script src="/static/js/main.js?v=14.0"></script>
+<script src="/static/js/main.js?v=23.0"></script>
 </html>

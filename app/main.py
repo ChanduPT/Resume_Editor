@@ -23,11 +23,11 @@ from slowapi.errors import RateLimitExceeded
 from app.database import init_db
 from app.auth import register_user, login_user
 from app.endpoints import (
-    generate_resume_json, get_job_status, get_job_result,
+    generate_resume_json, get_job_status, get_job_result, update_job_resume,
     download_resume, download_job_description,
     get_user_jobs, get_user_stats,
     save_resume_template, get_resume_template,
-    delete_job, cleanup_stale_jobs
+    delete_job, cleanup_stale_jobs, parse_resume_document
 )
 
 # --------------------- App Setup ---------------------
@@ -146,6 +146,7 @@ app.post("/api/generate_resume_json")(limiter.limit("5/minute")(generate_resume_
 
 app.get("/api/jobs/{request_id}/status")(get_job_status)
 app.get("/api/jobs/{request_id}/result")(get_job_result)
+app.put("/api/jobs/{request_id}/update")(update_job_resume)
 app.get("/api/jobs/{request_id}/download")(download_resume)
 app.get("/api/jobs/{request_id}/download-jd")(download_job_description)
 app.delete("/api/jobs/{request_id}")(delete_job)
@@ -168,3 +169,7 @@ app.get("/api/user/jobs")(get_user_jobs)
 app.get("/api/user/stats")(get_user_stats)
 app.post("/api/user/resume-template")(save_resume_template)
 app.get("/api/user/resume-template")(get_resume_template)
+
+# --------------------- Resume Parsing Endpoint ---------------------
+
+app.post("/api/parse-resume")(limiter.limit("3/minute")(parse_resume_document))
