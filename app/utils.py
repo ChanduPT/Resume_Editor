@@ -488,4 +488,80 @@ def parse_experience_to_json(experience_text: str) -> List[Dict[str, str]]:
         logger.error("Input text preview:")
         logger.error(experience_text[:500] if experience_text else "None")
         return []
+
+
+def parse_resume_text_to_json(resume_text: str) -> dict:
+    """
+    Convert extracted resume text to structured JSON using LLM.
+    
+    Args:
+        resume_text: Raw text extracted from resume document
+        
+    Returns:
+        Structured resume data as dict matching the application's format
+        
+    Raises:
+        ValueError: If parsing fails or LLM returns invalid JSON
+    """
+    from .prompts import PARSE_RESUME_TEXT_PROMPT
+    
+    if not resume_text or not resume_text.strip():
+        raise ValueError("Resume text is empty")
+    
+    try:
+        prompt = PARSE_RESUME_TEXT_PROMPT.format(resume_text=resume_text)
+        logger.info("Calling LLM to parse resume text to JSON")
+        
+        response = chat_completion(prompt)
+        
+        # Extract JSON from response
+        logger.debug("=== Raw LLM Response ===")
+        logger.debug(response[:500] if len(response) > 500 else response)
+        logger.debug("========================")
+        
+        # Clean response - remove markdown code blocks
+        response_text = response.strip()
+        if response_text.startswith('```json'):
+            response_text = response_text[7:]
+        elif response_text.startswith('```'):
+            response_text = response_text[3:]
+        if response_text.endswith('```'):
+            response_text = response_text[:-3]
+        response_text = response_text.strip()
+        
+        # Parse JSON
+        try:
+            parsed_data = json.loads(response_text)
+            logger.info("Successfully parsed resume to JSON")
+            
+            # Validate required fields
+            if not isinstance(parsed_data, dict):
+                raise ValueError("Parsed data is not a dictionary")
+            
+            # Ensure required top-level keys exist
+            required_keys = ['name', 'contact', 'technical_skills', 'experience', 'education']
+            for key in required_keys:
+                if key not in parsed_data:
+                    logger.warning(f"Missing required key: {key}")
+                    if key in ['contact', 'technical_skills']:
+                        parsed_data[key] = {}
+                    elif key in ['experience', 'education', 'certifications', 'projects']:
+                        parsed_data[key] = []
+                    else:
+                        parsed_data[key] = ""
+            
+            return parsed_data
+            
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing failed: {str(je)}")
+            logger.error(f"Position: {je.pos}, Line: {je.lineno}, Column: {je.colno}")
+            logger.error("Response that failed to parse:")
+            logger.error(response_text)
+            raise ValueError(f"Failed to parse LLM response as JSON: {str(je)}")
+            
+    except Exception as e:
+        logger.exception("Error in parse_resume_text_to_json:")
+        logger.error(f"Error type: {type(e)}")
+        logger.error(f"Error message: {str(e)}")
+        raise ValueError(f"Failed to parse resume: {str(e)}")
     
