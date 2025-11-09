@@ -163,13 +163,20 @@ async def generate_resume_json(
             raise HTTPException(status_code=400, detail=f"Validation failed: {'; '.join(validation_errors)}")
         
         request_id = data.get("request_id", f"req_{int(time.time())}_{current_user.user_id}")
+        
+        # Extract job description data (support both formats)
+        job_data = data.get("job_description_data", {})
+        company_name = job_data.get("company_name") or data.get("company_name", "Unknown")
+        job_title = job_data.get("job_title") or data.get("job_title", "Unknown")
+        jd_text = job_data.get("job_description") or data.get("jd", "")
+        
         resume_job = ResumeJob(
             user_id=current_user.user_id,
             request_id=request_id,
-            company_name=data.get("company_name", "Unknown"),
-            job_title=data.get("job_title", "Unknown"),
+            company_name=company_name,
+            job_title=job_title,
             mode=data.get("mode", "complete_jd"),
-            jd_text=data.get("jd", ""),
+            jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
             status="pending",
             progress=0
