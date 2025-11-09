@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=39.0">
+<link rel="stylesheet" href="/static/css/main.css?v=44.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -1206,10 +1206,12 @@
       resume_data.certifications.push({name:x.querySelector('.cert-name').value,
         organization:x.querySelector('.cert-org').value,year:x.querySelector('.cert-year').value});});
     const companyNameJD = document.getElementById('companyNameJD') ? document.getElementById('companyNameJD').value : '';
+    const jobTitleJD = document.getElementById('jobTitleJD') ? document.getElementById('jobTitleJD').value : '';
     const jobDescriptionElem = document.getElementById('jobDescriptionTab');
     const job_description_data = {
       job_description: jobDescriptionElem ? jobDescriptionElem.value : '',
-      company_name: companyNameJD
+      company_name: companyNameJD,
+      job_title: jobTitleJD
     };
     return {resume_data, job_description_data};
   }
@@ -2345,11 +2347,13 @@
       // Generate using authenticated endpoint
       try {
         const requestData = {
-          company_name: companyName,
-          job_title: jobTitle,
           mode: "complete_jd",
-          jd: jdText,
           resume_data: resumeData,
+          job_description_data: {
+            company_name: companyName,
+            job_title: jobTitle,
+            job_description: jdText
+          },
           request_id: `req_${Date.now()}_${dashboardCredentials.username}`
         };
 
@@ -2785,14 +2789,12 @@
     }
 
     const requestData = {
-      company_name: companyName,
-      job_title: jobTitle,
       mode: mode,
-      jd: jd,
       resume_data: resumeData,
       job_description_data: {
         company_name: companyName,
-        job_title: jobTitle
+        job_title: jobTitle,
+        job_description: jd
       }
     };
 

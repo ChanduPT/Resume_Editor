@@ -141,6 +141,10 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         logger.error(f"[JD_HINTS] Error: {str(e)}")
         raise Exception(f"Failed to analyze job description: {str(e)}")
     
+    # Get mode from data
+    mode = data.get("mode", "complete_jd")
+    logger.info(f"[MODE] Processing in '{mode}' mode")
+    
     send_progress(request_id, 25, "JD analysis complete. Starting parallel optimization...", db)
     
     # STEP 2: Generate summary, experience, skills in PARALLEL
@@ -148,10 +152,19 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         """Generate professional summary from JD hints"""
         try:
             original_summary = resume_json.get("summary", "")
-            prompt = GENERATE_SUMMARY_FROM_JD_PROMPT.format(
-                jd_hints=json.dumps(jd_hints, ensure_ascii=False),
-                original_summary=original_summary
-            )
+            
+            # Use different prompts based on mode
+            if mode == "complete_jd":
+                logger.info("[SUMMARY] Using GENERATE_SUMMARY_FROM_JD_PROMPT (complete_jd mode)")
+                prompt = GENERATE_SUMMARY_FROM_JD_PROMPT.format(
+                    jd_hints=json.dumps(jd_hints, ensure_ascii=False),
+                    original_summary=original_summary
+                )
+            else:  # resume_jd mode
+                logger.info("[SUMMARY] Using original summary (resume_jd mode)")
+                # In resume_jd mode, keep original summary or lightly optimize
+                return original_summary if original_summary else "Professional with relevant experience"
+            
             result_raw = await chat_completion_async(prompt, response_schema=summary_response_schema, timeout=60)
             result = json.loads(result_raw)
             logger.info("[SUMMARY] Generated successfully")
@@ -167,12 +180,21 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         """Generate optimized experience bullets from JD hints"""
         try:
             experience_data = resume_json.get("experience", [])
-            prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
-                technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
-                soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
-                phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
-                experience_data=json.dumps(experience_data, ensure_ascii=False, indent=2)
-            )
+            
+            # Use different prompts based on mode
+            if mode == "complete_jd":
+                logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_FROM_JD_PROMPT (complete_jd mode)")
+                prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
+                    technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
+                    soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
+                    phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
+                    experience_data=json.dumps(experience_data, ensure_ascii=False, indent=2)
+                )
+            else:  # resume_jd mode
+                logger.info("[EXPERIENCE] Using original experience (resume_jd mode - applying light edits)")
+                # In resume_jd mode, keep original experience
+                return experience_data if experience_data else []
+            
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
             result = json.loads(result_raw)
             experience_result = result.get("experience", [])
@@ -193,10 +215,19 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         """Generate technical skills categorized by JD requirements"""
         try:
             existing_skills = resume_json.get("technical_skills", {})
-            prompt = GENERATE_TECHNICAL_SKILLS_FROM_JD.format(
-                jd_technical_keywords=", ".join(jd_hints.get("technical_keywords", [])),
-                existing_skills=json.dumps(existing_skills, ensure_ascii=False, indent=2)
-            )
+            
+            # Use different prompts based on mode
+            if mode == "complete_jd":
+                logger.info("[SKILLS] Using GENERATE_TECHNICAL_SKILLS_FROM_JD (complete_jd mode)")
+                prompt = GENERATE_TECHNICAL_SKILLS_FROM_JD.format(
+                    jd_technical_keywords=", ".join(jd_hints.get("technical_keywords", [])),
+                    existing_skills=json.dumps(existing_skills, ensure_ascii=False, indent=2)
+                )
+            else:  # resume_jd mode
+                logger.info("[SKILLS] Using original skills (resume_jd mode)")
+                # In resume_jd mode, keep original skills
+                return existing_skills if existing_skills else {}
+            
             result_raw = await chat_completion_async(prompt, response_schema=skills_response_schema, timeout=60)
             
             # Log raw response to see what model returns
