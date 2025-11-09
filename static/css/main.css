@@ -1357,7 +1357,7 @@
     background: var(--card);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--border);
   }
   
@@ -1371,6 +1371,7 @@
   
   .resume-table-wrapper {
     overflow-x: auto;
+    overflow-y: visible;
   }
   
   .resume-table {
@@ -1464,6 +1465,11 @@
     position: relative;
     text-align: center;
   }
+
+  .resume-table tbody td:last-child {
+    position: relative;
+    overflow: visible;
+  }
   
   .kebab-menu-btn {
     background: var(--bg);
@@ -1487,17 +1493,18 @@
   .kebab-dropdown {
     position: absolute;
     right: 0;
-    top: 100%;
+    top: auto;
+    bottom: auto;
     margin-top: 8px;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     min-width: 200px;
-    z-index: 100;
+    z-index: 1000;
     display: none;
     animation: slideDown 0.2s ease;
-    overflow: hidden;
+    overflow: visible;
   }
   
   .kebab-dropdown.show {
@@ -1713,7 +1720,7 @@
   
   .jd-mode-generate-row {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     gap: 16px;
     padding: 12px;
     background: var(--card);
@@ -1726,6 +1733,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
   }
   
   .mode-label {
@@ -1772,6 +1780,8 @@
     border-radius: var(--radius-sm);
     border-left: 3px solid var(--accent);
     line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .mode-description strong {
@@ -1795,8 +1805,8 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     white-space: nowrap;
     min-width: 180px;
-    height: auto;
-    align-self: center;
+    height: fit-content;
+    flex-shrink: 0;
   }
   
   .generate-btn-inline:hover {
