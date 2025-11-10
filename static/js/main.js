@@ -1388,6 +1388,9 @@
                 </button>
               </div>
             </td>
+          </tr>
+        `;
+      }).join('');
 
       // Render pagination
       renderPagination(totalResumes, currentPage, pageSize);
