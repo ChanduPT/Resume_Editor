@@ -18,8 +18,7 @@ KEYWORD REUSE POLICY (CRITICAL):
   * Track which soft skills you've used to avoid duplicates
   
 - KEY PHRASES: Each phrase should be used ONLY ONCE across all bullets
-  * Use exact JD phrases verbatim but don't repeat them
-  * Distribute phrases across different roles/bullets
+
 
 INPUTS USAGE RULES:
 1. PRESERVE ONLY: Company names, job titles, employment periods (exact from input).

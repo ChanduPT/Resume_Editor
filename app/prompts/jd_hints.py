@@ -39,11 +39,9 @@ JD_HINTS_PROMPT = """
     Focus on phrases that highlight:
         - Exact responsibilities or requirements statements
         - Project or achievement descriptions
-        - Technical workflow or process descriptions
-        - Key performance indicators or metrics mentioned
         - Specific domain expertise descriptions
         - Team collaboration and leadership descriptions
-    Keep only top 12 phrases that are most relevant and of high value to include in a resume to get an ATS score of 95+.
+    Keep only top 10 phrases that are most relevant and of high value to include in a resume to get an ATS score of 95+.
 
     Instructions:
         - Return ONLY valid JSON matching the provided schema
