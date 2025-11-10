@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=54.0">
+<link rel="stylesheet" href="/static/css/main.css?v=55.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -2529,6 +2529,36 @@
   let totalJobs = 0; // Total number of jobs
   let allDashboardJobs = []; // Store all jobs for filtering
 
+  // Format UTC datetime to local timezone
+  function formatLocalDateTime(utcDateString) {
+    if (!utcDateString) return 'N/A';
+    
+    // Create date object - if the string ends with 'Z' it's already marked as UTC
+    // If not, we need to treat it as UTC
+    let date;
+    if (utcDateString.endsWith('Z')) {
+      date = new Date(utcDateString);
+    } else {
+      // Assume UTC if no timezone marker
+      date = new Date(utcDateString + 'Z');
+    }
+    
+    // Format to local timezone
+    const dateStr = date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+    
+    return `${dateStr} ${timeStr}`;
+  }
+
   // Change page size function
   function changePageSize() {
     const select = document.getElementById('pageSizeSelect');
@@ -3173,7 +3203,7 @@
             `}
           </td>
           <td style="padding: 12px 16px; font-size: 0.85em; color: var(--text-secondary); white-space: nowrap;">
-            ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ${new Date(job.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+            ${formatLocalDateTime(job.created_at)}
           </td>
           <td style="padding: 12px 16px; text-align: right; position: relative;">
             ${job.status === 'completed' ? `
