@@ -276,9 +276,9 @@ def chat_completion(prompt: str, model: Optional[str] = None) -> str:
         return resp.choices[0].message.content.strip()
 
 
-async def chat_completion_async(prompt: str, response_schema: Optional[dict] = None, model: Optional[str] = None, timeout: int = 120) -> str:
+async def chat_completion_async(prompt: str, response_schema: Optional[dict] = None, model: Optional[str] = None, timeout: int = 120, max_retries: int = 3) -> str:
     """
-    Async version of chat_completion for parallel API calls.
+    Async version of chat_completion for parallel API calls with retry logic.
     Supports structured JSON output via response_schema parameter.
     
     Args:
@@ -286,12 +286,14 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
         response_schema: Optional JSON schema to enforce structured output (Gemini only)
         model: Optional model override
         timeout: Timeout in seconds (default: 120)
+        max_retries: Maximum number of retry attempts (default: 3)
     
     Returns:
         str: LLM response text (JSON string if response_schema is provided)
     
     Raises:
-        asyncio.TimeoutError: If the LLM call exceeds the timeout
+        asyncio.TimeoutError: If the LLM call exceeds the timeout after all retries
+        RuntimeError: If all retries fail
     """
     import asyncio
     provider = _provider()
@@ -324,30 +326,52 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
             generation_config=generation_config
         )
         
-        # Run in thread pool to avoid blocking with timeout
-        loop = asyncio.get_event_loop()
-        try:
-            response = await asyncio.wait_for(
-                loop.run_in_executor(None, gmodel.generate_content, prompt),
-                timeout=timeout
-            )
-        except asyncio.TimeoutError:
-            raise asyncio.TimeoutError(f"LLM call timed out after {timeout} seconds")
-
-        # Primary text
-        text = getattr(response, "text", None)
-        if text:
-            return text.strip()
-
-        # Fallback extraction if needed
-        candidates = getattr(response, "candidates", None)
-        if candidates:
-            parts = []
-            for cand in candidates:
-                content = getattr(cand, "content", None)
-                if content and hasattr(content, "parts"):
-                    parts.extend([str(p) for p in content.parts])
-            return "\n".join(parts).strip()
+        # Retry logic with exponential backoff
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                loop = asyncio.get_event_loop()
+                response = await asyncio.wait_for(
+                    loop.run_in_executor(None, gmodel.generate_content, prompt),
+                    timeout=timeout
+                )
+                
+                # Success - return response
+                text = getattr(response, "text", None)
+                if text:
+                    return text.strip()
+                    
+                # Fallback extraction
+                candidates = getattr(response, "candidates", None)
+                if candidates:
+                    parts = []
+                    for cand in candidates:
+                        content = getattr(cand, "content", None)
+                        if content and hasattr(content, "parts"):
+                            parts.extend([str(p) for p in content.parts])
+                    result = "\n".join(parts).strip()
+                    if result:
+                        return result
+                        
+            except asyncio.TimeoutError as e:
+                last_error = e
+                if attempt < max_retries - 1:
+                    wait_time = (2 ** attempt) * 1  # 1s, 2s, 4s
+                    logger.warning(f"LLM timeout on attempt {attempt + 1}/{max_retries}, retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                continue
+            except Exception as e:
+                last_error = e
+                if attempt < max_retries - 1:
+                    wait_time = (2 ** attempt) * 1
+                    logger.warning(f"LLM error on attempt {attempt + 1}/{max_retries}: {str(e)}, retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                continue
+        
+        # All retries failed
+        if last_error:
+            raise RuntimeError(f"LLM call failed after {max_retries} attempts: {str(last_error)}")
+        raise RuntimeError(f"LLM call returned no content after {max_retries} attempts")
 
         return ""
 

@@ -19,38 +19,22 @@ EXPERIENCE BULLET GENERATION RULES:
 
 1. Structure Per Company:
    - Most Recent Role (Current/Last Job): Generate 7-8 bullets using 50% of total JD keywords
-     * Focus on most relevant technical_keywords from JD
-     * Use advanced key_phrases and recent technologies
    - Second Most Recent Role: Generate 6-7 bullets using 30% of JD keywords
-     * Mix of relevant technical_keywords
-     * Use supporting key_phrases
    - Older Roles: Generate 5-6 bullets each using remaining 20% of JD keywords
-     * Use foundational technical_keywords
-     * Basic key_phrases that show progression
    - MUST distribute ALL provided keywords across bullets - aim to use every keyword at least once
 
 2. Bullet Format:
    - Start with strong action verb from soft_skills (e.g., "Led", "Developed", "Collaborated", "Optimized")
    - Include 1-2 technical_keywords per bullet (specific tools/technologies from JD)
-   - Weave in 1 key_phrase naturally in the middle or end of bullet
+   - Weave in 1 key_phrase naturally in the middle or end of bullet where possible
    - Keep each bullet 1-2 lines (20-25 words)
    - Keep everything in past tense
    - Use natural, conversational language
-   - Example: "Developed scalable microservices using Python and Docker, enabling real-time data processing for 10M+ daily transactions"
-     * Action verb: "Developed" (soft skill)
-     * Technical keywords: "Python", "Docker" (technical_keywords)
-     * Key phrase: "real-time data processing" (phrases)
 
 3. Keyword Distribution Strategy:
    - TECHNICAL KEYWORDS: Use for specific technologies, tools, frameworks, programming languages, databases, cloud platforms
-     * Examples: "Python", "AWS", "PostgreSQL", "Docker", "React", "Kubernetes", "Azure", "SQL"
-     * Place in technical implementation details: "Developed using Python and PostgreSQL", "Deployed on AWS"
    - SOFT SKILLS: Use for behavioral competencies, work style, leadership qualities
-     * Examples: "collaborated", "led", "mentored", "problem-solving", "analytical", "communication"
-     * Place in action verbs and team dynamics: "Led cross-functional team", "Collaborated with stakeholders"
    - KEY PHRASES: Use exact phrases from JD for role-specific terminology and domain concepts
-     * Examples: "data-driven decisions", "scalable solutions", "CI/CD pipeline", "real-time processing"
-     * Place throughout bullet for ATS matching: "Enhanced data-driven decision making through automated dashboards"
    - Distribute all three types across all roles and bullets for maximum keyword coverage
    - Each bullet MUST contain: 1-2 technical keywords + 1 soft skill + 1 key phrase (naturally integrated)
 
@@ -66,8 +50,7 @@ EXPERIENCE BULLET GENERATION RULES:
    - Use soft_skills as action verbs and for describing work style/collaboration
    - Show progression: simpler tech in older roles, advanced technical_keywords in recent roles
    - Balance quantified achievements with technical capability demonstrations
-   - CRITICAL: Every bullet must have at least ONE technical keyword from the JD's technical_keywords list
-
+   
 6. Technical Accuracy:
    - Keep technology combinations realistic for each time period
    - Don't claim expertise in JD tools if period predates their existence
@@ -82,9 +65,6 @@ EXPERIENCE BULLET GENERATION RULES:
    - Generic bullets ("Worked on", "Responsible for", "Helped with")
    - Repeating same accomplishment across multiple roles
    - Using ALL JD keywords in one bullet (spread them out)
-   - Outdated technologies not in JD
-   - Passive voice ("Was responsible for" → "Led")
-   - Excessive metrics - Don't force percentages into every bullet
 
 8. Text Formatting Rules:
    - Use plain text only - no bold, italic, or special formatting
