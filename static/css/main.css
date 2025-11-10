@@ -1665,9 +1665,12 @@
     margin-bottom: 0;
     box-sizing: border-box;
     max-width: 100%;
+    width: 100%;
     box-shadow: var(--shadow-sm);
     height: calc(100vh - 180px);
+    min-height: 400px;
     overflow: hidden;
+    position: relative;
   }
   
   .jd-form-container {
@@ -1684,8 +1687,11 @@
     border-bottom: 1px solid var(--border);
     background: var(--bg);
     flex-shrink: 0;
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .jd-input-row {
@@ -1693,6 +1699,8 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .jd-input-col {
@@ -1714,6 +1722,8 @@
     background: var(--card);
     color: var(--text);
     transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .jd-input-col input:focus {
@@ -1730,6 +1740,8 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .jd-mode-section {
@@ -1827,7 +1839,7 @@
   }
   
   .jd-textarea-container {
-    flex: 1;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     padding: 20px 24px;
@@ -1836,6 +1848,8 @@
     position: relative;
     z-index: 1;
     background: var(--bg);
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .jd-textarea-container label {
@@ -1846,8 +1860,9 @@
   }
   
   #jobDescriptionTab {
-    flex: 1;
+    flex: 1 1 auto;
     width: 100%;
+    max-width: 100%;
     resize: none;
     font-family: inherit;
     font-size: 14px;
@@ -1858,8 +1873,10 @@
     color: var(--text);
     padding: 12px;
     min-height: 200px;
+    max-height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
   }
   
   #jobDescriptionTab:focus {
