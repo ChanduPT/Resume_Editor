@@ -126,6 +126,8 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
     # STEP 1: Extract JD hints (SEQUENTIAL - required first)
     send_progress(request_id, 15, "Analyzing job description...", db)
     
+    import time
+    jd_start = time.time()
     try:
         jd_hints_raw = await chat_completion_async(
             JD_HINTS_PROMPT.format(jd_text=jd),
@@ -133,7 +135,8 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             timeout=90  # 90 seconds timeout for JD analysis
         )
         jd_hints = json.loads(jd_hints_raw)
-        logger.info(f"[JD_HINTS] Extracted {len(jd_hints.get('technical_keywords', []))} technical keywords")
+        jd_duration = time.time() - jd_start
+        logger.info(f"[PERF] JD analysis took {jd_duration:.2f}s - extracted {len(jd_hints.get('technical_keywords', []))} keywords")
     except asyncio.TimeoutError:
         logger.error(f"[JD_HINTS] Timeout after 90 seconds")
         raise Exception("Job description analysis timed out. Please try again.")
