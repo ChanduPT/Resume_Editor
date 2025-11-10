@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=46.0">
+<link rel="stylesheet" href="/static/css/main.css?v=48.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -358,9 +358,35 @@
           </div>
           <button class="primary-btn" style="width: 100%; margin-top: 24px;" onclick="handleMainLogin()">Sign In</button>
           
+          <div style="text-align: center; margin-top: 12px;">
+            <a href="#" onclick="switchMainAuthTab('reset'); return false;" style="font-size: 13px; color: var(--accent); text-decoration: none;">Forgot Password?</a>
+          </div>
+          
           <div class="auth-switch">
             <span>Don't have an account?</span>
             <a href="#" onclick="switchMainAuthTab('register'); return false;">Create account</a>
+          </div>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="mainResetForm" class="auth-form">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="mainResetUsername" placeholder="Enter your username">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="mainResetNewPassword" placeholder="Enter new password (min 8 characters)">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="mainResetConfirmPassword" placeholder="Confirm new password">
+          </div>
+          <button class="primary-btn" style="width: 100%; margin-top: 24px;" onclick="handlePasswordReset()">Reset Password</button>
+          
+          <div class="auth-switch">
+            <span>Remember your password?</span>
+            <a href="#" onclick="switchMainAuthTab('login'); return false;">Sign in</a>
           </div>
         </div>
 
@@ -3302,13 +3328,20 @@
   function switchMainAuthTab(tab) {
     const loginForm = document.getElementById('mainLoginForm');
     const registerForm = document.getElementById('mainRegisterForm');
+    const resetForm = document.getElementById('mainResetForm');
 
+    // Hide all forms
+    loginForm.classList.remove('active');
+    registerForm.classList.remove('active');
+    resetForm.classList.remove('active');
+
+    // Show selected form
     if (tab === 'login') {
       loginForm.classList.add('active');
-      registerForm.classList.remove('active');
-    } else {
+    } else if (tab === 'register') {
       registerForm.classList.add('active');
-      loginForm.classList.remove('active');
+    } else if (tab === 'reset') {
+      resetForm.classList.add('active');
     }
   }
 
@@ -3350,6 +3383,53 @@
       document.getElementById('mainLoginUsername').value = username;
     } catch (error) {
       showMainAuthMessage(error.message, 'error');
+    }
+  }
+
+  // Handle Password Reset
+  async function handlePasswordReset() {
+    const username = document.getElementById('mainResetUsername').value;
+    const newPassword = document.getElementById('mainResetNewPassword').value;
+    const confirmPassword = document.getElementById('mainResetConfirmPassword').value;
+
+    if (!username || !newPassword || !confirmPassword) {
+      showMainAuthMessage('Please fill in all fields', 'error');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      showMainAuthMessage('Password must be at least 8 characters', 'error');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showMainAuthMessage('Passwords do not match', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, new_password: newPassword })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showMainAuthMessage('Password reset successful! Please sign in.', 'success');
+        // Clear form
+        document.getElementById('mainResetUsername').value = '';
+        document.getElementById('mainResetNewPassword').value = '';
+        document.getElementById('mainResetConfirmPassword').value = '';
+        // Switch to login after 2 seconds
+        setTimeout(() => switchMainAuthTab('login'), 2000);
+      } else {
+        showMainAuthMessage(result.detail || 'Password reset failed', 'error');
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      showMainAuthMessage('Password reset failed', 'error');
     }
   }
 

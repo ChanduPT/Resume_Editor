@@ -103,3 +103,45 @@ async def login_user(
         "username": user.user_id,
         "user_id": user.user_id
     }
+
+
+@limiter.limit("3/minute")
+async def reset_password(request: Request, db: Session = Depends(get_db)):
+    """Reset password endpoint"""
+    try:
+        body = await request.json()
+        username = body.get("username")
+        new_password = body.get("new_password")
+        
+        if not username or not new_password:
+            raise HTTPException(status_code=400, detail="Username and new password are required")
+        
+        # Validate password strength
+        if len(new_password) < 8:
+            raise HTTPException(
+                status_code=400,
+                detail="Password must be at least 8 characters long"
+            )
+        
+        # Check if user exists
+        user = db.query(User).filter(User.user_id == username).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Update password
+        from app.database import get_password_hash
+        user.password_hash = get_password_hash(new_password)
+        db.commit()
+        
+        logger.info(f"[PASSWORD RESET] User: {username}")
+        
+        return {
+            "message": "Password reset successful",
+            "username": username
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Password reset error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Password reset failed: {str(e)}")
