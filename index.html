@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=49.0">
+<link rel="stylesheet" href="/static/css/main.css?v=51.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -349,8 +349,8 @@
         <!-- Login Form -->
         <div id="mainLoginForm" class="auth-form active">
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainLoginUsername" placeholder="Enter your username">
+            <label>Email / Username</label>
+            <input type="text" id="mainLoginUsername" placeholder="Enter your email or username">
           </div>
           <div class="form-group">
             <label>Password</label>
@@ -371,8 +371,8 @@
         <!-- Reset Password Form -->
         <div id="mainResetForm" class="auth-form">
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainResetUsername" placeholder="Enter your username">
+            <label>Email / Username</label>
+            <input type="text" id="mainResetUsername" placeholder="Enter your email or username">
           </div>
           <div class="form-group">
             <label>New Password</label>
@@ -393,12 +393,18 @@
         <!-- Register Form -->
         <div id="mainRegisterForm" class="auth-form">
           <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="mainRegisterUsername" placeholder="Choose a username">
+            <label>Email</label>
+            <input type="email" id="mainRegisterUsername" placeholder="Enter your email address">
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" id="mainRegisterPassword" placeholder="Choose a password (min 8 characters)">
+            <input type="password" id="mainRegisterPassword" placeholder="Choose a strong password" oninput="validatePasswordStrength()">
+            <div id="passwordStrength" style="margin-top: 8px; font-size: 12px;"></div>
+            <small style="display: block; margin-top: 6px; color: var(--text-secondary); font-size: 12px; line-height: 1.4;">
+              Must be 8+ characters with:<br>
+              • Uppercase (A-Z) • Lowercase (a-z)<br>
+              • Number (0-9) • Special char (!@#$%^&*)
+            </small>
           </div>
           <div class="form-group">
             <label>Confirm Password</label>
@@ -3364,9 +3370,43 @@
     setTimeout(() => msgBox.style.display = 'none', 5000);
   }
 
+  // Validate Password Strength (Real-time feedback)
+  function validatePasswordStrength() {
+    const password = document.getElementById('mainRegisterPassword').value;
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    if (!password) {
+      strengthDiv.innerHTML = '';
+      return;
+    }
+
+    const checks = {
+      length: password.length >= 8,
+      upper: /[A-Z]/.test(password),
+      lower: /[a-z]/.test(password),
+      digit: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+
+    const checkMark = '✓';
+    const crossMark = '✗';
+    
+    const strengthHTML = `
+      <div style="line-height: 1.6;">
+        <span style="color: ${checks.length ? '#10b981' : '#ef4444'};">${checks.length ? checkMark : crossMark} 8+ characters</span><br>
+        <span style="color: ${checks.upper ? '#10b981' : '#ef4444'};">${checks.upper ? checkMark : crossMark} Uppercase (A-Z)</span>
+        <span style="color: ${checks.lower ? '#10b981' : '#ef4444'}; margin-left: 10px;">${checks.lower ? checkMark : crossMark} Lowercase (a-z)</span><br>
+        <span style="color: ${checks.digit ? '#10b981' : '#ef4444'};">${checks.digit ? checkMark : crossMark} Number (0-9)</span>
+        <span style="color: ${checks.special ? '#10b981' : '#ef4444'}; margin-left: 10px;">${checks.special ? checkMark : crossMark} Special (!@#$)</span>
+      </div>
+    `;
+    
+    strengthDiv.innerHTML = strengthHTML;
+  }
+
   // Handle Main Register
   async function handleMainRegister() {
-    const username = document.getElementById('mainRegisterUsername').value;
+    const username = document.getElementById('mainRegisterUsername').value.trim().toLowerCase();
     const password = document.getElementById('mainRegisterPassword').value;
     const confirm = document.getElementById('mainRegisterPasswordConfirm').value;
 
@@ -3375,8 +3415,43 @@
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(username)) {
+      showMainAuthMessage('Please enter a valid email address', 'error');
+      return;
+    }
+
     if (password !== confirm) {
       showMainAuthMessage('Passwords do not match!', 'error');
+      return;
+    }
+
+    if (password.length < 8) {
+      showMainAuthMessage('Password must be at least 8 characters', 'error');
+      return;
+    }
+
+    // Validate password complexity
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasUpper) {
+      showMainAuthMessage('Password must contain at least one uppercase letter (A-Z)', 'error');
+      return;
+    }
+    if (!hasLower) {
+      showMainAuthMessage('Password must contain at least one lowercase letter (a-z)', 'error');
+      return;
+    }
+    if (!hasDigit) {
+      showMainAuthMessage('Password must contain at least one number (0-9)', 'error');
+      return;
+    }
+    if (!hasSpecial) {
+      showMainAuthMessage('Password must contain at least one special character (!@#$%^&*)', 'error');
       return;
     }
 
@@ -3396,7 +3471,7 @@
 
   // Handle Password Reset
   async function handlePasswordReset() {
-    const username = document.getElementById('mainResetUsername').value;
+    const username = document.getElementById('mainResetUsername').value.trim().toLowerCase();
     const newPassword = document.getElementById('mainResetNewPassword').value;
     const confirmPassword = document.getElementById('mainResetConfirmPassword').value;
 
@@ -3404,6 +3479,8 @@
       showMainAuthMessage('Please fill in all fields', 'error');
       return;
     }
+
+    // Allow both email and legacy username formats for reset (backward compatibility)
 
     if (newPassword.length < 8) {
       showMainAuthMessage('Password must be at least 8 characters', 'error');
@@ -3443,13 +3520,16 @@
 
   // Handle Main Login
   async function handleMainLogin() {
-    const username = document.getElementById('mainLoginUsername').value;
+    const username = document.getElementById('mainLoginUsername').value.trim().toLowerCase();
     const password = document.getElementById('mainLoginPassword').value;
 
     if (!username || !password) {
-      showMainAuthMessage('Please enter username and password', 'error');
+      showMainAuthMessage('Please enter email and password', 'error');
       return;
     }
+
+    // Allow both email and legacy username formats for login (backward compatibility)
+    // New registrations will enforce email format
 
     console.log('Attempting login for user:', username);
     dashboardCredentials = { username, password };

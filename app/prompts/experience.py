@@ -8,6 +8,19 @@ Transform existing experience bullets into powerful, JD-aligned accomplishment s
 CRITICAL KEYWORD USAGE REQUIREMENT:
 You MUST use the provided technical_keywords, soft_skills, and phrases lists extensively. Every bullet point should contain multiple keywords from these lists to maximize ATS score. Do NOT write generic bullets - actively pull keywords from the provided lists.
 
+KEYWORD REUSE POLICY (CRITICAL):
+- TECHNICAL KEYWORDS: Can be used MULTIPLE times across different bullets (e.g., "Python" can appear in 3-4 bullets)
+  * Repeat core technologies frequently to emphasize expertise
+  * Main tech stack tools should appear in multiple roles/bullets
+  
+- SOFT SKILLS: Each soft skill should be used ONLY ONCE across all bullets
+  * Use different action verbs for each bullet (no repetition)
+  * Track which soft skills you've used to avoid duplicates
+  
+- KEY PHRASES: Each phrase should be used ONLY ONCE across all bullets
+  * Use exact JD phrases verbatim but don't repeat them
+  * Distribute phrases across different roles/bullets
+
 INPUTS USAGE RULES:
 1. PRESERVE ONLY: Company names, job titles, employment periods (exact from input).
 2. MUST USE FROM JD: 
