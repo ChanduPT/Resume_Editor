@@ -20,7 +20,6 @@ JD_HINTS_PROMPT = """
     Part 1.2 - Soft Skills and Role-Specific Keywords:
     ONLY extract meaningful soft skills and role keywords. Like:
     - Specific job titles (Full Stack Data Engineer, Senior Developer, Data Analyst, Technical Lead)
-    - Seniority levels (Senior, Lead, Principal, Manager, Director)
     - Meaningful soft skills with context (cross-functional collaboration, stakeholder management, mentoring junior developers, technical leadership)
     - Domain expertise (actuarial, financial modeling, healthcare analytics, e-commerce optimization)
     - Team structure keywords (Agile team setup, cross-functional teams, distributed teams)
