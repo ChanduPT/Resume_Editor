@@ -20,7 +20,6 @@ JD_HINTS_PROMPT = """
     Part 1.2 - Soft Skills and Role-Specific Keywords:
     ONLY extract meaningful soft skills and role keywords. Like:
     - Specific job titles (Full Stack Data Engineer, Senior Developer, Data Analyst, Technical Lead)
-    - Seniority levels (Senior, Lead, Principal, Manager, Director)
     - Meaningful soft skills with context (cross-functional collaboration, stakeholder management, mentoring junior developers, technical leadership)
     - Domain expertise (actuarial, financial modeling, healthcare analytics, e-commerce optimization)
     - Team structure keywords (Agile team setup, cross-functional teams, distributed teams)
@@ -39,11 +38,9 @@ JD_HINTS_PROMPT = """
     Focus on phrases that highlight:
         - Exact responsibilities or requirements statements
         - Project or achievement descriptions
-        - Technical workflow or process descriptions
-        - Key performance indicators or metrics mentioned
         - Specific domain expertise descriptions
         - Team collaboration and leadership descriptions
-    Keep only top 12 phrases that are most relevant and of high value to include in a resume to get an ATS score of 95+.
+    Keep only top 10 phrases that are most relevant and of high value to include in a resume to get an ATS score of 95+.
 
     Instructions:
         - Return ONLY valid JSON matching the provided schema
