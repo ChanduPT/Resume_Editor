@@ -438,6 +438,7 @@
       <nav id="sidebar">
         <button class="tab-btn active" id="tabResumeBtn" type="button">View Resume</button>
         <button class="tab-btn" id="tabEditJDBtn" type="button">Generate Resume</button>
+        <button class="tab-btn" id="tabJobSearchBtn" type="button">🔍 Job Search</button>
         <button class="tab-btn" id="tabDashboardBtn" type="button">My Dashboard</button>
       </nav>
 
@@ -677,6 +678,94 @@
           <div class="jd-textarea-container">
             <label for="jobDescriptionTab"><b>Job Description *</b></label>
             <textarea id="jobDescriptionTab" placeholder="Paste the job description here...&#10;&#10;Include:&#10;• Job responsibilities&#10;• Required skills & qualifications&#10;• Nice-to-have skills&#10;• Company information"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job Search Tab Panel -->
+      <div id="jobSearchTabPanel" style="display: none;">
+        <div class="job-search-container">
+          <h2>🔍 Search Job Postings</h2>
+          
+          <!-- Search Form -->
+          <div class="search-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Job Title *</label>
+                <input type="text" id="jobSearchTitle" placeholder="e.g., Data Analyst, Software Engineer" required>
+              </div>
+              
+              <div class="form-group">
+                <label>Location</label>
+                <select id="jobSearchLocation">
+                  <option value="remote OR us OR usa">Remote or US</option>
+                  <option value="remote">Remote only</option>
+                  <option value="us OR usa OR united states">US only</option>
+                  <option value="california OR ca">California</option>
+                  <option value="texas OR tx">Texas</option>
+                  <option value="new york OR ny">New York</option>
+                  <option value="illinois OR il">Illinois</option>
+                  <option value="florida OR fl">Florida</option>
+                  <option value="washington OR wa">Washington</option>
+                  <option value="massachusetts OR ma">Massachusetts</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date Posted</label>
+                <select id="jobSearchDate">
+                  <option value="posted today">Today</option>
+                  <option value="posted this week">This week</option>
+                  <option value="posted this month">This month</option>
+                  <option value="">Any time</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Max Results</label>
+                <select id="jobSearchMaxResults">
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Job Boards</label>
+                <div class="checkbox-group">
+                  <label><input type="checkbox" id="sourceWorkday" value="workday" checked> Workday</label>
+                  <label><input type="checkbox" id="sourceGreenhouse" value="greenhouse" checked> Greenhouse</label>
+                  <label><input type="checkbox" id="sourceLever" value="lever" checked> Lever</label>
+                  <label><input type="checkbox" id="sourceLinkedin" value="linkedin"> LinkedIn</label>
+                </div>
+              </div>
+            </div>
+            
+            <button id="searchJobsBtn" class="primary-btn">🔍 Search Jobs</button>
+          </div>
+          
+          <!-- Loading State -->
+          <div id="jobSearchLoading" style="display: none; text-align: center; margin: 20px 0;">
+            <div class="spinner"></div>
+            <p>Searching for jobs...</p>
+          </div>
+          
+          <!-- Results Container -->
+          <div id="jobSearchResults" class="job-results">
+            <!-- Results will be populated here -->
+          </div>
+          
+          <!-- Cache Stats Section (hidden by default) -->
+          <div class="cache-stats-section" style="margin-top: 30px;">
+            <button id="viewCacheStatsBtn" class="secondary-btn" style="display: none;">
+              📊 View Cache Statistics
+            </button>
+            <div id="cacheStatsDisplay" style="display: none; margin-top: 20px; padding: 20px; background: var(--card); border-radius: var(--radius-lg);"></div>
           </div>
         </div>
       </div>
@@ -2364,9 +2453,11 @@
     // Remove active from all tabs
     tabResumeBtn.classList.remove('active');
     tabEditJDBtn.classList.remove('active');
+    tabJobSearchBtn.classList.remove('active');
     tabDashboardBtn.classList.remove('active');
     resumeFormContainer.classList.remove('active');
     jobDescTabPanel.classList.remove('active');
+    jobSearchTabPanel.style.display = 'none';
     dashboardTabPanel.classList.remove('active');
 
     // Get action bar
@@ -2381,6 +2472,10 @@
       tabEditJDBtn.classList.add('active');
       jobDescTabPanel.classList.add('active');
       actionBar.style.display = 'none'; // Hide in Generate Resume
+    } else if (tab === 'jobsearch') {
+      tabJobSearchBtn.classList.add('active');
+      jobSearchTabPanel.style.display = 'block';
+      actionBar.style.display = 'none'; // Hide in Job Search
     } else if (tab === 'dashboard') {
       tabDashboardBtn.classList.add('active');
       dashboardTabPanel.classList.add('active');
@@ -2392,6 +2487,7 @@
   
   tabResumeBtn.addEventListener('click', () => switchTab('resume'));
   tabEditJDBtn.addEventListener('click', () => switchTab('jd'));
+  tabJobSearchBtn.addEventListener('click', () => switchTab('jobsearch'));
   tabDashboardBtn.addEventListener('click', () => switchTab('dashboard'));
 
   // --------- INIT ---------
@@ -3711,6 +3807,345 @@
   window.addEventListener('DOMContentLoaded', () => {
     // Auth screen is shown by default (no auto-login)
   });
+
+  // ===== JOB SEARCH FUNCTIONALITY =====
+  
+  const searchJobsBtn = document.getElementById('searchJobsBtn');
+  if (searchJobsBtn) {
+    searchJobsBtn.addEventListener('click', searchJobs);
+  }
+
+  async function searchJobs() {
+    const jobTitle = document.getElementById('jobSearchTitle').value.trim();
+    const location = document.getElementById('jobSearchLocation').value;
+    const datePosted = document.getElementById('jobSearchDate').value;
+    const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value);
+    
+    // Get selected sources
+    const sources = [];
+    if (document.getElementById('sourceWorkday').checked) sources.push('workday');
+    if (document.getElementById('sourceGreenhouse').checked) sources.push('greenhouse');
+    if (document.getElementById('sourceLever').checked) sources.push('lever');
+    if (document.getElementById('sourceLinkedin').checked) sources.push('linkedin');
+    
+    if (!jobTitle) {
+      alert('Please enter a job title');
+      return;
+    }
+    
+    if (sources.length === 0) {
+      alert('Please select at least one job board');
+      return;
+    }
+    
+    // Show loading
+    document.getElementById('jobSearchLoading').style.display = 'block';
+    document.getElementById('jobSearchResults').innerHTML = '';
+    searchJobsBtn.disabled = true;
+    searchJobsBtn.textContent = 'Searching...';
+    
+    try {
+      const response = await fetch('/api/search-jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${dashboardCredentials.token}`
+        },
+        body: JSON.stringify({
+          job_title: jobTitle,
+          location: location,
+          date_posted: datePosted,
+          sources: sources,
+          max_results: maxResults
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        displayJobResults(data.jobs, data.cached, data.cache_hits);
+      } else {
+        throw new Error(data.detail || 'Failed to search jobs');
+      }
+    } catch (error) {
+      console.error('Error searching jobs:', error);
+      alert('Error searching jobs. Please try again.');
+      document.getElementById('jobSearchResults').innerHTML = `
+        <div class="no-results">
+          <h3>Error occurred</h3>
+          <p>${error.message}</p>
+        </div>
+      `;
+    } finally {
+      document.getElementById('jobSearchLoading').style.display = 'none';
+      searchJobsBtn.disabled = false;
+      searchJobsBtn.textContent = '🔍 Search Jobs';
+    }
+  }
+
+  function displayJobResults(jobs, cached = false, cacheHits = 0) {
+    const resultsContainer = document.getElementById('jobSearchResults');
+    
+    if (jobs.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="no-results">
+          <h3>No jobs found</h3>
+          <p>Try adjusting your search criteria</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Create cache info banner
+    const cacheInfo = cached ? `
+      <div class="cache-info-banner" style="background: var(--success-bg, #d4edda); color: var(--success-text, #155724); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-1 13v-2h2v2H9zm0-4V7h2v4H9z"/>
+        </svg>
+        <span><strong>⚡ Cached Results</strong> - Loaded from cache (${cacheHits} hits) • Faster & resource-efficient</span>
+      </div>
+    ` : '';
+    
+    resultsContainer.innerHTML = `
+      ${cacheInfo}
+      <h3 style="margin-bottom: 20px; color: var(--text);">Found ${jobs.length} jobs</h3>
+      ${jobs.map(job => createJobCard(job)).join('')}
+    `;
+  }
+
+  function createJobCard(job) {
+    return `
+      <div class="job-card">
+        <div class="job-header">
+          <div>
+            <h3 class="job-title">${escapeHtml(job.title)}</h3>
+            <p class="job-company">${escapeHtml(job.company)}</p>
+            <p class="job-location">📍 ${escapeHtml(job.location)}</p>
+          </div>
+          <span class="job-source">${escapeHtml(job.source)}</span>
+        </div>
+        
+        ${job.snippet ? `<p class="job-snippet">${escapeHtml(job.snippet)}</p>` : ''}
+        
+        <div class="job-actions">
+          <a href="${escapeHtml(job.link)}" target="_blank" rel="noopener noreferrer" class="job-link-btn">
+            View Job →
+          </a>
+          <button class="job-use-btn" onclick='useJobForResume(${JSON.stringify(job).replace(/'/g, "&#39;")})'>
+            ✨ Use for Resume
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  async function useJobForResume(job) {
+    if (!job || !job.link) {
+      alert('Invalid job data');
+      return;
+    }
+    
+    // Show loading
+    showResult('⏳ Fetching full job description...', 'info');
+    
+    try {
+      const response = await fetch('/api/scrape-job-details', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${dashboardCredentials.token}`
+        },
+        body: JSON.stringify({ url: job.link })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        const jobDetails = data.job_details;
+        
+        // Switch to JD/Resume tab
+        switchTab('jd');
+        
+        // Auto-fill the form
+        document.getElementById('companyNameJD').value = jobDetails.company || job.company;
+        document.getElementById('jobTitleJD').value = jobDetails.title || job.title;
+        document.getElementById('jdTextarea').value = jobDetails.description;
+        
+        showResult('✅ Job description loaded! Review and generate your resume.', 'success');
+      } else {
+        throw new Error(data.detail || 'Failed to fetch job details');
+      }
+    } catch (error) {
+      console.error('Error fetching job details:', error);
+      
+      // Fallback: try to use what we have
+      switchTab('jd');
+      document.getElementById('companyNameJD').value = job.company;
+      document.getElementById('jobTitleJD').value = job.title;
+      document.getElementById('jdTextarea').value = job.snippet || 'Click "View Job" button to see full description and copy it here.';
+      
+      showResult('⚠️ Could not fetch full description. Please copy the job description manually.', 'warning');
+    }
+  }
+
+  // Cache Stats Functions
+  async function loadCacheStats() {
+    try {
+      const response = await fetch('/api/cache/stats', {
+        headers: {
+          'Authorization': `Bearer ${dashboardCredentials.token}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        displayCacheStats(data.stats);
+      } else {
+        throw new Error(data.detail || 'Failed to load cache stats');
+      }
+    } catch (error) {
+      console.error('Error loading cache stats:', error);
+      showResult('❌ Failed to load cache statistics', 'error');
+    }
+  }
+
+  function displayCacheStats(stats) {
+    const display = document.getElementById('cacheStatsDisplay');
+    
+    const popularSearchesHTML = stats.popular_searches.length > 0 ? `
+      <div style="margin-top: 20px;">
+        <h4 style="margin-bottom: 10px;">🔥 Most Popular Searches</h4>
+        <div style="display: grid; gap: 10px;">
+          ${stats.popular_searches.map(search => `
+            <div style="padding: 10px; background: var(--bg); border-radius: var(--radius-md); display: flex; justify-content: space-between;">
+              <span><strong>${escapeHtml(search.job_title)}</strong> in ${escapeHtml(search.location)}</span>
+              <span style="color: var(--accent); font-weight: 600;">${search.hits} hits</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '<p style="margin-top: 20px; color: var(--text-secondary);">No popular searches yet</p>';
+    
+    display.innerHTML = `
+      <h3 style="margin-bottom: 20px;">📊 Cache Statistics</h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div class="stat-card">
+          <div class="stat-value">${stats.total_cache_entries}</div>
+          <div class="stat-label">Total Cache Entries</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value">${stats.active_entries}</div>
+          <div class="stat-label">Active Entries</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value">${stats.expired_entries}</div>
+          <div class="stat-label">Expired Entries</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value">${stats.total_cache_hits}</div>
+          <div class="stat-label">Total Cache Hits</div>
+        </div>
+      </div>
+      
+      ${popularSearchesHTML}
+      
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
+        <button onclick="clearExpiredCache()" class="secondary-btn" style="margin-right: 10px;">
+          🗑️ Clear Expired Cache
+        </button>
+        <button onclick="clearAllCache()" class="secondary-btn" style="background: var(--danger, #dc3545); color: white;">
+          ⚠️ Clear All Cache
+        </button>
+      </div>
+    `;
+    
+    display.style.display = 'block';
+  }
+
+  async function clearExpiredCache() {
+    if (!confirm('Clear expired cache entries?')) return;
+    
+    try {
+      const response = await fetch('/api/cache/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${dashboardCredentials.token}`
+        },
+        body: JSON.stringify({ action: 'expired' })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        showResult(`✅ ${data.message}`, 'success');
+        loadCacheStats(); // Reload stats
+      } else {
+        throw new Error(data.detail || 'Failed to clear cache');
+      }
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      showResult('❌ Failed to clear cache', 'error');
+    }
+  }
+
+  async function clearAllCache() {
+    if (!confirm('⚠️ This will clear ALL cached job searches. Are you sure?')) return;
+    
+    try {
+      const response = await fetch('/api/cache/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${dashboardCredentials.token}`
+        },
+        body: JSON.stringify({ action: 'all' })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        showResult(`✅ ${data.message}`, 'success');
+        loadCacheStats(); // Reload stats
+      } else {
+        throw new Error(data.detail || 'Failed to clear cache');
+      }
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      showResult('❌ Failed to clear cache', 'error');
+    }
+  }
+
+  // Setup cache stats button
+  document.getElementById('viewCacheStatsBtn').addEventListener('click', function() {
+    const display = document.getElementById('cacheStatsDisplay');
+    if (display.style.display === 'none') {
+      loadCacheStats();
+      this.textContent = '📊 Hide Cache Statistics';
+    } else {
+      display.style.display = 'none';
+      this.textContent = '📊 View Cache Statistics';
+    }
+  });
+
+  // Show cache stats button when job results are displayed
+  const originalDisplayJobResults = displayJobResults;
+  displayJobResults = function(...args) {
+    originalDisplayJobResults.apply(this, args);
+    document.getElementById('viewCacheStatsBtn').style.display = 'inline-block';
+  };
 
 </script>
 <script src="/static/js/main.js?v=23.0"></script>

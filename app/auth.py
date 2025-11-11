@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 import logging
+from datetime import datetime
+import os
 
 from app.database import get_db, User, authenticate_user, verify_password, create_user
 
@@ -15,18 +17,36 @@ security = HTTPBasic()
 limiter = Limiter(key_func=get_remote_address)
 
 
+
+# JWT authentication support
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+
+JWT_SECRET = os.getenv("JWT_SECRET", "resume_jwt_secret_2025")
+JWT_ALGORITHM = "HS256"
+bearer_scheme = HTTPBearer()
+
+def decode_jwt_token(token: str):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except Exception as e:
+        logger.warning(f"[AUTH] JWT decode failed: {e}")
+        return None
+
 async def get_current_user(
-    credentials: HTTPBasicCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db)
 ):
-    """Dependency to get current authenticated user"""
-    user = authenticate_user(db, credentials.username, credentials.password)
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Basic"},
-        )
+    """Dependency to get current authenticated user (JWT)"""
+    token = credentials.credentials
+    payload = decode_jwt_token(token)
+    if not payload or "user_id" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    user_id = payload["user_id"].lower().strip()
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found or inactive")
     return user
 
 
@@ -116,16 +136,16 @@ async def login_user(
         # Allow legacy username login but warn in logs
         logger.info(f"[LOGIN] Legacy username format detected: {username}")
     
+
     # Check if user exists (works for both email and username)
     user = db.query(User).filter(User.user_id == username).first()
-    
     if not user:
         logger.warning(f"[LOGIN FAILED] User not found: {username}")
         raise HTTPException(
             status_code=401,
             detail="User not found. Please register first."
         )
-    
+
     # Verify password
     if not verify_password(password, user.password_hash):
         logger.warning(f"[LOGIN FAILED] Invalid password for user: {username}")
@@ -133,13 +153,24 @@ async def login_user(
             status_code=401,
             detail="Invalid password. Please try again."
         )
-    
+
     logger.info(f"[LOGIN SUCCESS] User: {username}")
-    
+
+    # Issue JWT token
+    import jwt
+    import os
+    JWT_SECRET = os.getenv("JWT_SECRET", "resume_jwt_secret_2025")
+    JWT_ALGORITHM = "HS256"
+    token = jwt.encode({
+        "user_id": user.user_id,
+        "exp": int(datetime.utcnow().timestamp()) + 86400  # 24h expiry
+    }, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
     return {
         "message": "Login successful",
         "username": user.user_id,
-        "user_id": user.user_id
+        "user_id": user.user_id,
+        "token": token
     }
 
 

@@ -13,10 +13,16 @@ from fastapi import HTTPException, Depends, Request, BackgroundTasks
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from app.database import get_db, User, ResumeJob, UserResumeTemplate, SessionLocal
+from app.database import (
+    get_db, User, ResumeJob, UserResumeTemplate, SessionLocal,
+    generate_cache_key, get_cached_job_search, store_job_search_cache,
+    get_job_description, store_job_posting, cleanup_expired_cache, get_cache_stats,
+    JobSearchCache
+)
 from app.auth import get_current_user
 from app.create_resume import create_resume
 from app.job_processing import process_resume_parallel, job_progress
+from app.job_scraper import job_scraper
 
 logger = logging.getLogger(__name__)
 
@@ -482,3 +488,409 @@ async def parse_resume_document(
     except Exception as e:
         logger.exception(f"[PARSE_RESUME] Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+async def search_jobs_endpoint(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Search for job postings across multiple job boards
+    Uses 24-hour cache to reduce redundant scraping
+    
+    Request body:
+    {
+        "job_title": "data analyst",
+        "location": "remote OR us",
+        "date_posted": "posted today",
+        "sources": ["workday", "greenhouse", "lever"],
+        "max_results": 20
+    }
+    
+    Response:
+    {
+        "success": true,
+        "total_results": 15,
+        "jobs": [...],
+        "cached": true/false,
+        "cached_at": "2025-01-15T10:30:00" (if cached)
+    }
+    """
+    try:
+        # Parse request body
+        data = await request.json()
+        
+        # Extract parameters
+        job_title = data.get("job_title", "").strip()
+        location = data.get("location", "remote OR us")
+        date_posted = data.get("date_posted", "posted today")
+        sources = data.get("sources", ["workday"])
+        max_results = data.get("max_results", 20)
+        
+        # Validation
+        if not job_title:
+            raise HTTPException(status_code=400, detail="Job title is required")
+        
+        if not isinstance(sources, list) or len(sources) == 0:
+            raise HTTPException(status_code=400, detail="At least one source must be selected")
+        
+        logger.info(f"[API_JOB_SEARCH] User '{current_user['username']}' searching: '{job_title}' in '{location}'")
+        
+        # Generate cache key
+        cache_key = generate_cache_key(job_title, location, date_posted, sources)
+        logger.info(f"[API_JOB_SEARCH] Cache key: {cache_key}")
+        
+        # Check cache first
+        cached_result = get_cached_job_search(db, cache_key)
+        
+        if cached_result:
+            logger.info(f"[API_JOB_SEARCH] Cache HIT - returning {len(cached_result['jobs'])} cached jobs (hits: {cached_result['hit_count']})")
+            return {
+                "success": True,
+                "total_results": cached_result['total_results'],
+                "jobs": cached_result['jobs'],
+                "cached": True,
+                "cached_at": cached_result['cached_at'],
+                "expires_at": cached_result['expires_at'],
+                "cache_hits": cached_result['hit_count'],
+                "search_query": {
+                    "job_title": job_title,
+                    "location": location,
+                    "date_posted": date_posted,
+                    "sources": sources
+                }
+            }
+        
+        # Cache miss - perform fresh scrape
+        logger.info(f"[API_JOB_SEARCH] Cache MISS - scraping fresh results")
+        jobs = await job_scraper.search_jobs(
+            job_title=job_title,
+            location=location,
+            date_posted=date_posted,
+            sources=sources,
+            max_results=max_results
+        )
+        
+        # Store in cache (24 hour TTL)
+        store_job_search_cache(
+            db=db,
+            cache_key=cache_key,
+            job_title=job_title,
+            location=location,
+            sources=sources,
+            jobs=jobs,
+            ttl_hours=24
+        )
+        
+        logger.info(f"[API_JOB_SEARCH] Returning {len(jobs)} fresh jobs (cached for 24h)")
+        
+        return {
+            "success": True,
+            "total_results": len(jobs),
+            "jobs": jobs,
+            "cached": False,
+            "search_query": {
+                "job_title": job_title,
+                "location": location,
+                "date_posted": date_posted,
+                "sources": sources
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API_JOB_SEARCH] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Job search failed: {str(e)}")
+
+
+async def scrape_job_details_endpoint(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Scrape full job description from a job posting URL
+    Caches scraped descriptions to reduce redundant requests
+    
+    Request body:
+    {
+        "url": "https://company.myworkdayjobs.com/..."
+    }
+    
+    Response:
+    {
+        "success": true,
+        "job_details": {
+            "title": "...",
+            "company": "...",
+            "description": "..."
+        },
+        "cached": true/false
+    }
+    """
+    try:
+        # Parse request body
+        data = await request.json()
+        
+        url = data.get("url", "").strip()
+        
+        if not url:
+            raise HTTPException(status_code=400, detail="URL is required")
+        
+        # Validate URL
+        if not url.startswith('http'):
+            raise HTTPException(status_code=400, detail="Invalid URL")
+        
+        logger.info(f"[API_SCRAPE_JOB] User '{current_user['username']}' scraping: {url}")
+        
+        # Check if description is already cached
+        cached_description = get_job_description(db, url)
+        
+        if cached_description:
+            logger.info(f"[API_SCRAPE_JOB] Cache HIT - returning cached description")
+            # Parse cached data (assuming format matches scraper output)
+            return {
+                "success": True,
+                "job_details": {
+                    "description": cached_description,
+                    "url": url
+                },
+                "cached": True
+            }
+        
+        # Cache miss - scrape fresh
+        logger.info(f"[API_SCRAPE_JOB] Cache MISS - scraping fresh description")
+        job_details = await job_scraper.scrape_job_details(url)
+        
+        if not job_details:
+            raise HTTPException(status_code=404, detail="Failed to scrape job details. URL may be invalid or blocked.")
+        
+        # Store in database for future use
+        try:
+            store_job_posting(
+                db=db,
+                job_url=url,
+                title=job_details.get('title', 'Unknown'),
+                company=job_details.get('company', 'Unknown'),
+                location=job_details.get('location', 'Unknown'),
+                source=job_details.get('source', 'unknown'),
+                snippet=job_details.get('description', '')[:500],  # First 500 chars as snippet
+                full_description=job_details.get('description', '')
+            )
+            logger.info(f"[API_SCRAPE_JOB] Cached job description for future use")
+        except Exception as cache_error:
+            # Don't fail the request if caching fails
+            logger.warning(f"[API_SCRAPE_JOB] Failed to cache description: {cache_error}")
+        
+        logger.info(f"[API_SCRAPE_JOB] Successfully scraped job: {job_details.get('title', 'Unknown')}")
+        
+        return {
+            "success": True,
+            "job_details": job_details,
+            "cached": False
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API_SCRAPE_JOB] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to scrape job details: {str(e)}")
+
+
+# Cache Management Endpoints
+
+async def get_cache_stats_endpoint(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get job search cache statistics
+    Useful for monitoring cache performance and popular searches
+    
+    Response:
+    {
+        "success": true,
+        "stats": {
+            "total_cache_entries": 150,
+            "active_entries": 120,
+            "expired_entries": 30,
+            "total_cache_hits": 450,
+            "popular_searches": [...]
+        }
+    }
+    """
+    try:
+        logger.info(f"[API_CACHE_STATS] User '{current_user['username']}' requesting cache stats")
+        
+        stats = get_cache_stats(db)
+        
+        return {
+            "success": True,
+            "stats": stats
+        }
+    
+    except Exception as e:
+        logger.error(f"[API_CACHE_STATS] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get cache stats: {str(e)}")
+
+
+async def clear_cache_endpoint(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Clear job search cache
+    Options:
+    - Clear all cache
+    - Clear expired cache only
+    - Clear specific search
+    
+    Request body:
+    {
+        "action": "all" | "expired" | "specific",
+        "cache_key": "..." (required if action="specific")
+    }
+    
+    Response:
+    {
+        "success": true,
+        "cleared_count": 25,
+        "message": "..."
+    }
+    """
+    try:
+        data = await request.json()
+        action = data.get("action", "expired")
+        
+        logger.info(f"[API_CLEAR_CACHE] User '{current_user['username']}' clearing cache (action: {action})")
+        
+        if action == "expired":
+            # Clear only expired entries
+            cleared_count = cleanup_expired_cache(db)
+            message = f"Cleared {cleared_count} expired cache entries"
+        
+        elif action == "all":
+            # Clear all cache entries
+            cleared_count = db.query(JobSearchCache).delete()
+            db.commit()
+            message = f"Cleared all {cleared_count} cache entries"
+        
+        elif action == "specific":
+            # Clear specific cache entry
+            cache_key = data.get("cache_key", "").strip()
+            if not cache_key:
+                raise HTTPException(status_code=400, detail="cache_key required for specific action")
+            
+            cleared_count = db.query(JobSearchCache).filter(
+                JobSearchCache.search_key == cache_key
+            ).delete()
+            db.commit()
+            
+            if cleared_count == 0:
+                message = "Cache entry not found"
+            else:
+                message = f"Cleared cache entry: {cache_key}"
+        
+        else:
+            raise HTTPException(status_code=400, detail="Invalid action. Use 'all', 'expired', or 'specific'")
+        
+        logger.info(f"[API_CLEAR_CACHE] {message}")
+        
+        return {
+            "success": True,
+            "cleared_count": cleared_count,
+            "message": message
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API_CLEAR_CACHE] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
+
+
+async def refresh_cache_endpoint(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Force refresh specific cached search
+    Scrapes fresh results and updates cache
+    
+    Request body:
+    {
+        "job_title": "data analyst",
+        "location": "remote OR us",
+        "date_posted": "posted today",
+        "sources": ["workday"]
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "Cache refreshed",
+        "total_results": 15
+    }
+    """
+    try:
+        data = await request.json()
+        
+        job_title = data.get("job_title", "").strip()
+        location = data.get("location", "remote OR us")
+        date_posted = data.get("date_posted", "posted today")
+        sources = data.get("sources", ["workday"])
+        max_results = data.get("max_results", 20)
+        
+        if not job_title:
+            raise HTTPException(status_code=400, detail="job_title is required")
+        
+        logger.info(f"[API_REFRESH_CACHE] User '{current_user['username']}' refreshing cache for: '{job_title}'")
+        
+        # Generate cache key
+        cache_key = generate_cache_key(job_title, location, date_posted, sources)
+        
+        # Delete existing cache entry
+        db.query(JobSearchCache).filter(
+            JobSearchCache.search_key == cache_key
+        ).delete()
+        db.commit()
+        
+        # Scrape fresh results
+        jobs = await job_scraper.search_jobs(
+            job_title=job_title,
+            location=location,
+            date_posted=date_posted,
+            sources=sources,
+            max_results=max_results
+        )
+        
+        # Store fresh results
+        store_job_search_cache(
+            db=db,
+            cache_key=cache_key,
+            job_title=job_title,
+            location=location,
+            sources=sources,
+            jobs=jobs,
+            ttl_hours=24
+        )
+        
+        logger.info(f"[API_REFRESH_CACHE] Cache refreshed with {len(jobs)} jobs")
+        
+        return {
+            "success": True,
+            "message": "Cache refreshed successfully",
+            "total_results": len(jobs),
+            "jobs": jobs
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API_REFRESH_CACHE] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to refresh cache: {str(e)}")
