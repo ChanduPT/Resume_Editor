@@ -28,6 +28,13 @@ from app.helpers import (
     safe_load_json, normalize_section_name,
     convert_resume_json_to_text, extract_json
 )
+from app.jd_preprocessing import (
+    preprocess_jd, get_jd_summary, validate_preprocessed_jd
+)
+from app.logging_config import (
+    setup_detailed_logging, log_section_header, log_subsection, 
+    log_data, log_comparison
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,24 +82,54 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
     
     Expected time savings: 40-50% (14-23s → 8-13s)
     """
+    # Setup detailed logging for this request
+    debug_log, summary_log = setup_detailed_logging(request_id)
+    logger.info(f"📝 Detailed logs created:")
+    logger.info(f"   Debug log: {debug_log}")
+    logger.info(f"   Summary log: {summary_log}")
+    
+    log_section_header(logger, f"RESUME PROCESSING START - Request ID: {request_id}")
+    
     send_progress(request_id, 5, "Starting resume processing...", db)
     
     resume_json = data.get("resume_data", {})
+    mode = data.get("mode", "complete_jd")
+    
+    # Log request metadata
+    log_subsection(logger, "REQUEST METADATA")
+    logger.info(f"Processing Mode: {mode}")
+    logger.info(f"Request ID: {request_id}")
     
     # Extract job description - handle both old and new payload formats
     if "job_description_data" in data:
         job_json = data.get("job_description_data", {})
         jd = job_json.get("job_description", "")
         company_name = job_json.get("company_name", "")
+        job_title = job_json.get("job_title", "")
     else:
         jd = data.get("jd", "")
         company_name = data.get("company_name", "")
+        job_title = data.get("job_title", "")
+    
+    logger.info(f"Company: {company_name}")
+    logger.info(f"Job Title: {job_title}")
+    logger.info(f"JD Length (raw): {len(jd)} chars")
     
     # Clean job description to remove extra spaces and special characters
     jd = clean_job_description(jd)
+    logger.info(f"JD Length (cleaned): {len(jd)} chars")
     
-    logger.info(f"[JD] Job description length: {len(jd)} chars (cleaned)")
-    logger.info(f"[COMPANY] Company name: {company_name}")
+    # Log input resume data
+    log_subsection(logger, "INPUT RESUME DATA")
+    log_data(logger, "Name", resume_json.get("name", ""))
+    log_data(logger, "Summary", resume_json.get("summary", ""), max_length=300)
+    log_data(logger, "Technical Skills", resume_json.get("technical_skills", {}), max_length=400)
+    
+    input_experience = resume_json.get("experience", [])
+    logger.info(f"Experience: {len(input_experience)} roles")
+    for idx, exp in enumerate(input_experience[:3]):  # Log first 3 roles
+        logger.info(f"  Role {idx+1}: {exp.get('company', '')} - {exp.get('role', '')} ({exp.get('period', '')})")
+        logger.info(f"          {len(exp.get('points', exp.get('bullets', [])))} bullet points")
 
     # Prepare final JSON with static fields
     final_json = {
@@ -123,18 +160,60 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         if valid_certifications:
             final_json["certifications"] = valid_certifications
 
-    # STEP 1: Extract JD hints (SEQUENTIAL - required first)
-    send_progress(request_id, 15, "Analyzing job description...", db)
+    # STEP 1: Preprocess JD (new comprehensive preprocessing layer)
+    send_progress(request_id, 10, "Preprocessing job description...", db)
     
     import time
+    preprocess_start = time.time()
+    try:
+        # Run JD preprocessing pipeline
+        preprocessed_jd = await preprocess_jd(
+            raw_text=jd,
+            job_title=job_title,
+            use_llm_extraction=True  # Use LLM for maximum accuracy
+        )
+        
+        # Validate preprocessed JD
+        is_valid, error_msg = validate_preprocessed_jd(preprocessed_jd)
+        if not is_valid:
+            raise ValueError(f"JD preprocessing validation failed: {error_msg}")
+        
+        # Log preprocessing summary
+        logger.info(f"\n{get_jd_summary(preprocessed_jd)}")
+        
+        # Save preprocessed JD for debugging
+        save_debug_file(
+            content=json.dumps(preprocessed_jd, indent=2),
+            filename=f"{request_id}_preprocessed_jd.json",
+            prefix="jd_preprocessing"
+        )
+        
+        preprocess_duration = time.time() - preprocess_start
+        logger.info(f"[PERF] JD preprocessing took {preprocess_duration:.2f}s")
+        
+    except Exception as e:
+        logger.error(f"[JD_PREPROCESSING] Error: {str(e)}")
+        raise Exception(f"Failed to preprocess job description: {str(e)}")
+    
+    # STEP 2: Extract JD hints using preprocessed text (SEQUENTIAL - required first)
+    send_progress(request_id, 15, "Analyzing job description...", db)
+    
     jd_start = time.time()
     try:
+        # Use normalized JD text for LLM analysis (cleaner, structured)
+        jd_text_for_llm = preprocessed_jd["normalized_jd"]
+        
         jd_hints_raw = await chat_completion_async(
-            JD_HINTS_PROMPT.format(jd_text=jd),
+            JD_HINTS_PROMPT.format(jd_text=jd_text_for_llm),
             response_schema=jd_hints_response_schema,
             timeout=90  # 90 seconds timeout for JD analysis
         )
         jd_hints = json.loads(jd_hints_raw)
+        
+        # Enrich jd_hints with preprocessing metadata
+        jd_hints["preprocessed_metadata"] = preprocessed_jd["metadata"]
+        jd_hints["section_weights"] = preprocessed_jd["section_weights"]
+        
         jd_duration = time.time() - jd_start
         logger.info(f"[PERF] JD analysis took {jd_duration:.2f}s - extracted {len(jd_hints.get('technical_keywords', []))} keywords")
     except asyncio.TimeoutError:
@@ -144,9 +223,15 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         logger.error(f"[JD_HINTS] Error: {str(e)}")
         raise Exception(f"Failed to analyze job description: {str(e)}")
     
-    # Get mode from data
-    mode = data.get("mode", "complete_jd")
-    logger.info(f"[MODE] Processing in '{mode}' mode")
+    # Log JD hints extraction result
+    log_subsection(logger, "JD ANALYSIS RESULTS")
+    logger.info(f"Technical Keywords: {len(jd_hints.get('technical_keywords', []))} found")
+    log_data(logger, "Technical Keywords", jd_hints.get('technical_keywords', [])[:20], max_length=500)
+    logger.info(f"Soft Skills: {len(jd_hints.get('soft_skills_role_keywords', []))} found")
+    log_data(logger, "Soft Skills", jd_hints.get('soft_skills_role_keywords', [])[:10], max_length=300)
+    logger.info(f"Key Phrases: {len(jd_hints.get('phrases', []))} found")
+    
+    log_section_header(logger, f"PARALLEL PROCESSING - Mode: {mode.upper()}")
     
     send_progress(request_id, 25, "JD analysis complete. Starting parallel optimization...", db)
     
@@ -160,18 +245,29 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             if mode == "complete_jd":
                 logger.info("[SUMMARY] Using GENERATE_SUMMARY_FROM_JD_PROMPT (complete_jd mode)")
                 prompt = GENERATE_SUMMARY_FROM_JD_PROMPT.format(
-                    jd_hints=json.dumps(jd_hints, ensure_ascii=False),
+                    technical_keywords=jd_hints.get("technical_keywords", []),
+                    soft_skills=jd_hints.get("soft_skills_role_keywords", []),
+                    phrases=jd_hints.get("phrases", []),
                     original_summary=original_summary
                 )
-            else:  # resume_jd mode
-                logger.info("[SUMMARY] Using original summary (resume_jd mode)")
-                # In resume_jd mode, keep original summary or lightly optimize
-                return original_summary if original_summary else "Professional with relevant experience"
+
+                result_raw = await chat_completion_async(prompt, response_schema=summary_response_schema, timeout=60)
+                result = json.loads(result_raw)
+                logger.info("[SUMMARY] Generated successfully")
+                return result.get("summary", "")
             
-            result_raw = await chat_completion_async(prompt, response_schema=summary_response_schema, timeout=60)
-            result = json.loads(result_raw)
-            logger.info("[SUMMARY] Generated successfully")
-            return result.get("summary", "")
+            else:  # resume_jd mode
+                log_subsection(logger, "SUMMARY GENERATION (resume_jd mode)")
+                logger.info("✓ Mode: resume_jd - PRESERVING ORIGINAL SUMMARY")
+                log_data(logger, "Input Summary", original_summary, max_length=300)
+                result = original_summary if original_summary else "Professional with relevant experience"
+                log_data(logger, "Output Summary", result, max_length=300)
+                if original_summary == result:
+                    logger.info("✅ Summary preserved successfully (unchanged)")
+                else:
+                    logger.warning("⚠️  Summary was modified (unexpected!)")
+                return result
+            
         except asyncio.TimeoutError:
             logger.error("[SUMMARY] Timeout after 60 seconds")
             return resume_json.get("summary", "")
@@ -187,15 +283,36 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             # Use different prompts based on mode
             if mode == "complete_jd":
                 logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_FROM_JD_PROMPT (complete_jd mode)")
+                
+                # Extract only company, role, period (no bullets) for complete_jd mode
+                experience_metadata = []
+                for exp in experience_data:
+                    experience_metadata.append({
+                        "company": exp.get("company", ""),
+                        "role": exp.get("role", ""),
+                        "period": exp.get("period", "")
+                    })
+                
+                logger.info(f"[EXPERIENCE] Sending metadata only (no bullets) for {len(experience_metadata)} roles")
+                
                 prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
                     technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
                     soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
                     phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
-                    experience_data=json.dumps(experience_data, ensure_ascii=False, indent=2)
+                    experience_data=json.dumps(experience_metadata, ensure_ascii=False, indent=2)
                 )
             else:  # resume_jd mode
                 logger.info("[EXPERIENCE] Using original experience (resume_jd mode - applying light edits)")
-                # In resume_jd mode, keep original experience
+                # In resume_jd mode, give existing experience  as input for light editing
+                experience_metadata = experience_data
+                
+                prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
+                    technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
+                    soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
+                    phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
+                    experience_data=json.dumps(experience_metadata, ensure_ascii=False, indent=2)
+                )
+
                 return experience_data if experience_data else []
             
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
@@ -226,29 +343,38 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
                     jd_technical_keywords=", ".join(jd_hints.get("technical_keywords", [])),
                     existing_skills=json.dumps(existing_skills, ensure_ascii=False, indent=2)
                 )
+                result_raw = await chat_completion_async(prompt, response_schema=skills_response_schema, timeout=60)
+                
+                # Log raw response to see what model returns
+                logger.info(f"[SKILLS] Raw response (first 500 chars): {result_raw[:500]}")
+                
+                # Use extract_json to handle markdown code blocks
+                result = extract_json(result_raw)
+                if not result:
+                    logger.error(f"[SKILLS] Failed to extract JSON from response")
+                    logger.error(f"[SKILLS] Raw response: {result_raw}")
+                    return resume_json.get("technical_skills", {})
+                
+                logger.info(f"[SKILLS] Parsed JSON structure: {list(result.keys())}")
+                
+                # Extract the nested technical_skills object
+                technical_skills = result.get("technical_skills", {})
+                logger.info(f"[SKILLS] Generated {len(technical_skills)} categories: {list(technical_skills.keys())}")
+                return technical_skills
+            
             else:  # resume_jd mode
-                logger.info("[SKILLS] Using original skills (resume_jd mode)")
-                # In resume_jd mode, keep original skills
-                return existing_skills if existing_skills else {}
-            
-            result_raw = await chat_completion_async(prompt, response_schema=skills_response_schema, timeout=60)
-            
-            # Log raw response to see what model returns
-            logger.info(f"[SKILLS] Raw response (first 500 chars): {result_raw[:500]}")
-            
-            # Use extract_json to handle markdown code blocks
-            result = extract_json(result_raw)
-            if not result:
-                logger.error(f"[SKILLS] Failed to extract JSON from response")
-                logger.error(f"[SKILLS] Raw response: {result_raw}")
-                return resume_json.get("technical_skills", {})
-            
-            logger.info(f"[SKILLS] Parsed JSON structure: {list(result.keys())}")
-            
-            # Extract the nested technical_skills object
-            technical_skills = result.get("technical_skills", {})
-            logger.info(f"[SKILLS] Generated {len(technical_skills)} categories: {list(technical_skills.keys())}")
-            return technical_skills
+                log_subsection(logger, "SKILLS GENERATION (resume_jd mode)")
+                logger.info("✓ Mode: resume_jd - PRESERVING ORIGINAL SKILLS")
+                logger.info(f"Input Skills: {len(existing_skills)} categories")
+                log_data(logger, "Input Skills", existing_skills, max_length=600)
+                result = existing_skills if existing_skills else {}
+                logger.info(f"Output Skills: {len(result)} categories")
+                log_data(logger, "Output Skills", result, max_length=600)
+                if existing_skills == result:
+                    logger.info("✅ Skills preserved successfully (unchanged)")
+                else:
+                    logger.warning("⚠️  Skills were modified (unexpected!)")
+                return result
         except asyncio.TimeoutError:
             logger.error("[SKILLS] Timeout after 60 seconds")
             return resume_json.get("technical_skills", {})
@@ -257,7 +383,7 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             return resume_json.get("technical_skills", {})
     
     # Run all three tasks in parallel
-    send_progress(request_id, 30, "Generating summary, experience, and skills in parallel...", db)
+    send_progress(request_id, 30, "Generating new content...", db)
     
     summary, experience, skills = await asyncio.gather(
         generate_summary(),
@@ -272,8 +398,42 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
     final_json["experience"] = experience
     final_json["technical_skills"] = skills
     
+    # Log final output comparison
+    log_section_header(logger, "FINAL OUTPUT COMPARISON")
+    
+    if mode == "resume_jd":
+        logger.info("🔍 RESUME_JD MODE - Verifying data preservation:")
+        logger.info("")
+        
+        # Summary comparison
+        input_summary = resume_json.get('summary', '')
+        output_summary = final_json['summary']
+        log_comparison(logger, "SUMMARY", input_summary, output_summary, max_length=300)
+        
+        # Skills comparison
+        input_skills = resume_json.get('technical_skills', {})
+        output_skills = final_json['technical_skills']
+        log_comparison(logger, "SKILLS", input_skills, output_skills, max_length=400)
+        
+        # Experience comparison (count only, since it's intentionally modified)
+        input_exp_count = len(resume_json.get('experience', []))
+        output_exp_count = len(final_json['experience'])
+        logger.info(f"\n📊 EXPERIENCE COMPARISON:")
+        logger.info(f"   Input: {input_exp_count} roles")
+        logger.info(f"   Output: {output_exp_count} roles")
+        logger.info(f"   ℹ️  Experience is intentionally modified in resume_jd mode")
+    else:
+        logger.info("🔍 COMPLETE_JD MODE - Generated fresh content:")
+        log_data(logger, "Generated Summary", final_json['summary'], max_length=300)
+        logger.info(f"Generated Experience: {len(final_json['experience'])} roles")
+        logger.info(f"Generated Skills: {len(final_json['technical_skills'])} categories")
+    
     send_progress(request_id, 100, "Resume completed!", db)
-    logger.info(f"[COMPLETE] Parallel resume processing finished successfully")
+    log_section_header(logger, "PROCESSING COMPLETE ✅")
+    logger.info(f"📊 Final resume JSON has {len(final_json)} top-level fields")
+    logger.info(f"📝 Detailed logs saved")
+    logger.info(f"   Debug: {debug_log}")
+    logger.info(f"   Summary: {summary_log}")
     
     return final_json
 

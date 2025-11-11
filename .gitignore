@@ -82,3 +82,4 @@ htmlcov/
 
 # Thumbnails
 ._*
+.env.render
