@@ -1,57 +1,159 @@
+# JD_HINTS_PROMPT = """
+
+#     You are an expert in analyzing job descriptions for any technical or analytical role.
+
+#     The goal is to extract two main types of information from the provided job description (JD), which can be used to optimize a resume for Applicant Tracking Systems (ATS):
+
+#     1. Important keywords and terms
+#     2. Key phrases and sentences that should be reflected in the resume to get high ATS scores.
+
+#     PART 1 - Technical Keywords/Terms to extract:
+#     - Programming languages, frameworks, libraries, APIs
+#     - Cloud, DevOps, and infrastructure tools
+#     - Databases, ETL tools, data warehouses, pipelines
+#     - BI, analytics, ML, and visualization tools
+#     - Version control, SDLC, CI/CD, testing, and deployment practices
+#     - Agile, Scrum, and collaboration tools
+#     - Business domains (finance, healthcare, e-commerce, etc.)
+#     - Certifications and compliance standards (AWS Certified, HIPAA, GDPR, PMP, etc.)
+
+#     Part 1.2 - Soft Skills and Role-Specific Keywords:
+#     ONLY extract meaningful soft skills and role keywords. Like:
+#     - Specific job titles (Full Stack Data Engineer, Senior Developer, Data Analyst, Technical Lead)
+#     - Meaningful soft skills with context (cross-functional collaboration, stakeholder management, mentoring junior developers, technical leadership)
+#     - Domain expertise (actuarial, financial modeling, healthcare analytics, e-commerce optimization)
+#     - Team structure keywords (Agile team setup, cross-functional teams, distributed teams)
+#     - Business impact skills (business stakeholder collaboration, requirements gathering, solution architecture)
+    
+#     DO NOT extract:
+#     - Single generic verbs without context (Use, Support, Own, Document, improve, simplify etc)
+#     - Overly common action words (building, maintaining, working, helping etc)
+#     - Basic work activities (analyze, resolve, implement, design, deliver, participate, contribute, estimate, apply etc)
+#     - Personal traits without professional context (self-driven, passionate, comfortable, thrives etc)
+#     - Generic capabilities that are expected in any job
+    
+#     PART 2 - Phrases to extract:
+#     Extract exact phrases from the job description that would be impactful to include in a resume and help achieve a high ATS score.
+#     Don't paraphrase or summarize - provide the exact text.
+#     Focus on phrases that highlight:
+#         - Exact responsibilities or requirements statements
+#         - Project or achievement descriptions
+#         - Specific domain expertise descriptions
+#         - Team collaboration and leadership descriptions
+#     Keep only top 10 phrases that are most relevant and of high value to include in a resume to get an ATS score of 95+.
+
+#     Instructions:
+#         - Return ONLY valid JSON matching the provided schema
+#         - Don't use any markdown formatting in the response.
+#         - Do not include any explanations or extra text - only provide the requested lists.
+#         - Don't paraphrase or summarize - provide the exact text where specified.
+#         - Don't hallucinate - only extract what is explicitly present in the JD.
+
+#     Here is the job description (JD):
+#     {jd_text}
+#     """
+
 JD_HINTS_PROMPT = """
+You are an expert in analyzing job descriptions (JDs) for technical and analytical roles.
+Your task is to extract ONLY the most relevant keywords, skills, and phrases that will improve an Applicant Tracking System (ATS) score when tailoring a resume.
 
-    You are an expert in analyzing job descriptions for any technical or analytical role.
+-------------------------------------------------------
+INPUT CONTEXT
+-------------------------------------------------------
+The JD provided below has been PREPROCESSED and STRUCTURED.
+It contains:
+- Cleaned, normalized text (no fluff or boilerplate)
+- Metadata (Job Title, Seniority, Domain, Location)
+- Segmented sections: [RESPONSIBILITIES], [REQUIREMENTS], [PREFERRED]
+- Section weighting (Responsibilities = highest priority, then Requirements, then Preferred)
 
-    The goal is to extract two main types of information from the provided job description (JD), which can be used to optimize a resume for Applicant Tracking Systems (ATS):
+Use this structure to prioritize keyword extraction:
+1. Focus heavily on the [RESPONSIBILITIES] section for technical keywords.
+2. Use [REQUIREMENTS] for confirming skills and tools.
+3. Reference [PREFERRED] only for secondary or supporting skills.
 
-    1. Important keywords and terms
-    2. Key phrases and sentences that should be reflected in the resume to get high ATS scores.
+-------------------------------------------------------
+GOAL
+-------------------------------------------------------
+From the provided preprocessed JD, extract and validate three structured categories:
+1. Technical Keywords (hard skills, tools, frameworks)
+2. Soft Skills (behavioral or action-oriented verbs)
+3. Key Phrases (domain-specific, multi-word phrases)
 
-    PART 1 - Technical Keywords/Terms to extract:
-    - Programming languages, frameworks, libraries, APIs
-    - Cloud, DevOps, and infrastructure tools
-    - Databases, ETL tools, data warehouses, pipelines
-    - BI, analytics, ML, and visualization tools
-    - Version control, SDLC, CI/CD, testing, and deployment practices
-    - Agile, Scrum, and collaboration tools
-    - Business domains (finance, healthcare, e-commerce, etc.)
-    - Certifications and compliance standards (AWS Certified, HIPAA, GDPR, PMP, etc.)
+-------------------------------------------------------
+VALIDATION LOGIC & RULES
+-------------------------------------------------------
 
-    Part 1.2 - Soft Skills and Role-Specific Keywords:
-    ONLY extract meaningful soft skills and role keywords. Like:
-    - Specific job titles (Full Stack Data Engineer, Senior Developer, Data Analyst, Technical Lead)
-    - Meaningful soft skills with context (cross-functional collaboration, stakeholder management, mentoring junior developers, technical leadership)
-    - Domain expertise (actuarial, financial modeling, healthcare analytics, e-commerce optimization)
-    - Team structure keywords (Agile team setup, cross-functional teams, distributed teams)
-    - Business impact skills (business stakeholder collaboration, requirements gathering, solution architecture)
-    
-    DO NOT extract:
-    - Single generic verbs without context (Use, Support, Own, Document, improve, simplify etc)
-    - Overly common action words (building, maintaining, working, helping etc)
-    - Basic work activities (analyze, resolve, implement, design, deliver, participate, contribute, estimate, apply etc)
-    - Personal traits without professional context (self-driven, passionate, comfortable, thrives etc)
-    - Generic capabilities that are expected in any job
-    
-    PART 2 - Phrases to extract:
-    Extract exact phrases from the job description that would be impactful to include in a resume and help achieve a high ATS score.
-    Don't paraphrase or summarize - provide the exact text.
-    Focus on phrases that highlight:
-        - Exact responsibilities or requirements statements
-        - Project or achievement descriptions
-        - Specific domain expertise descriptions
-        - Team collaboration and leadership descriptions
-    Keep only top 10 phrases that are most relevant and of high value to include in a resume to get an ATS score of 95+.
+PART 1 – TECHNICAL KEYWORDS
+Extract up to 15 unique technical or domain-specific tools and technologies such as:
+- Programming languages, frameworks, APIs
+- Cloud, DevOps, and infrastructure tools (AWS, Azure, Docker, Kubernetes)
+- Databases, data warehouses, ETL, pipelines, orchestration tools
+- BI, analytics, visualization, ML/AI frameworks
+- SDLC, testing, CI/CD, version control tools
+- Domain tech (CRM, ERP, Salesforce, SAP, Snowflake, etc.)
 
-    Instructions:
-        - Return ONLY valid JSON matching the provided schema
-        - Don't use any markdown formatting in the response.
-        - Do not include any explanations or extra text - only provide the requested lists.
-        - Don't paraphrase or summarize - provide the exact text where specified.
-        - Don't hallucinate - only extract what is explicitly present in the JD.
+Validation Criteria:
+- Include only if explicitly mentioned in the JD.
+- Prefer terms from [RESPONSIBILITIES] > [REQUIREMENTS] > [PREFERRED].
+- Must appear near an action verb or competency phrase (e.g., “experience with”, “hands-on using”).
+- Prefer modern/relevant stacks over outdated ones.
+- Deduplicate synonyms (“AWS Cloud” → “AWS”).
+- Return as a clean list of capitalized skill names.
 
-    Here is the job description (JD):
-    {jd_text}
-    """
+PART 2 – SOFT SKILLS / ACTION VERBS
+Extract up to 7 strong soft skills or action verbs that reflect behavior, ownership, or leadership qualities.
+Examples: Led, Collaborated, Optimized, Designed, Implemented, Mentored, Analyzed.
+
+Validation Criteria:
+- Must appear in context (e.g., “collaborate with teams”, “led initiatives”).
+- Exclude generic verbs without measurable impact (“worked on”, “helped with”, “supported”).
+- Exclude adjectives or personality traits (“passionate”, “self-motivated”).
+- Use unique verbs only; no duplicates across list.
+- Preserve the verb’s original tense and form as in JD.
+
+PART 3 – KEY PHRASES
+Extract the top 10 multi-word phrases or short clauses (exact text, no paraphrasing) that increase ATS match likelihood.
+Examples:
+- “design and implement scalable data pipelines”
+- “develop and deploy RESTful APIs”
+- “work in cross-functional agile teams”
+
+Validation Criteria:
+- Must be 3–6 words long.
+- Must contain at least one noun and one verb.
+- Must represent a distinct responsibility, domain concept, or measurable outcome.
+- Must appear exactly in the JD (no paraphrasing or hallucination).
+- Remove duplicates or slight rewordings.
+
+-------------------------------------------------------
+GENERAL RULES
+-------------------------------------------------------
+- Always prefer terms appearing in the [RESPONSIBILITIES] section first.
+- Preserve capitalization for technologies, acronyms, and frameworks.
+- Maintain concise wording (phrases ≤ 15 words).
+- Prioritize high-frequency and domain-relevant terms.
+- Ensure balanced ratio: ~60% technical, ~25% soft, ~15% phrases.
+- Return only validated, unique, contextually grounded items.
+
+-------------------------------------------------------
+OUTPUT FORMAT (STRICT JSON)
+-------------------------------------------------------
+Return ONLY valid JSON with three fields:
+{{
+  "technical_keywords": ["keyword1", "keyword2", ...],
+  "soft_skills": ["skill1", "skill2", ...],
+  "phrases": ["exact phrase 1", "exact phrase 2", ...]
+}}
+
+Do NOT include markdown, commentary, or extra text.
+
+-------------------------------------------------------
+PREPROCESSED JOB DESCRIPTION (JD):
+{jd_text}
+"""
+
+
 
 # Properly formatted JSON schema for Gemini
 jd_hints_response_schema = {
@@ -64,7 +166,7 @@ jd_hints_response_schema = {
                     "type": "string"
                 }
             },
-            "soft_skills_role_keywords": {
+            "soft_skills": {
                 "type": "array",
                 "description": "List of soft skills and role-specific keywords extracted from the JD",
                 "items": {
@@ -79,7 +181,7 @@ jd_hints_response_schema = {
                 }
             }
         },
-        "required": ["technical_keywords", "soft_skills_role_keywords", "phrases"]
+        "required": ["technical_keywords", "soft_skills", "phrases"]
     }
 
 sample_jd = """

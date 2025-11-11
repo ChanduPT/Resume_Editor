@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=54.0">
+<link rel="stylesheet" href="/static/css/main.css?v=55.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -1223,7 +1223,12 @@
     document.querySelectorAll('#contactList .entry').forEach(x=>{
       const k=x.querySelector('.contact-key').value.trim(),v=x.querySelector('.contact-value').value.trim();if(k&&v)resume_data.contact[k.toLowerCase()]=v;});
     document.querySelectorAll('#skillsList .entry').forEach(x=>{
-      const k=x.querySelector('.skill-key').value,v=x.querySelector('.skill-value').value;if(k&&v)resume_data.technical_skills[k]=v;});
+      const k=x.querySelector('.skill-key').value.trim(),v=x.querySelector('.skill-value').value.trim();
+      if(k&&v){
+        // Convert comma-separated string to array
+        resume_data.technical_skills[k]=v.split(',').map(s=>s.trim()).filter(Boolean);
+      }
+    });
     document.querySelectorAll('#experienceList .entry').forEach(x=>{
       resume_data.experience.push({company:x.querySelector('.exp-company').value,
         role:x.querySelector('.exp-role').value,period:x.querySelector('.exp-period').value,
@@ -1997,7 +2002,11 @@
     document.getElementById('skillsList').innerHTML = '';
     const skills = d.technical_skills || d.skills || {};
     if (Object.keys(skills).length) {
-      Object.entries(skills).forEach(([k, v]) => addSkill(k, v));
+      Object.entries(skills).forEach(([k, v]) => {
+        // Handle both array and string formats
+        const skillValue = Array.isArray(v) ? v.join(', ') : v;
+        addSkill(k, skillValue);
+      });
     } else {
       addSkill();
     }
@@ -2440,10 +2449,16 @@
       // Get resume data from form
       const resumeData = getResumeData();
       
+      // Get selected mode from radio button
+      const resumeModeRadio = document.querySelector('input[name="resumeMode"]:checked');
+      const resumeMode = resumeModeRadio ? resumeModeRadio.value : 'complete_jd';
+      
+      console.log('Selected mode:', resumeMode);
+      
       // Generate using authenticated endpoint
       try {
         const requestData = {
-          mode: "complete_jd",
+          mode: resumeMode,
           resume_data: resumeData,
           job_description_data: {
             company_name: companyName,
@@ -2477,8 +2492,7 @@
         // Add to processing banner
         addRequestToUI(result.request_id, companyName);
         
-        // Show success message and switch to dashboard
-        alert(`Resume generation started! Request ID: ${result.request_id}\n\nGo to Dashboard to track progress.`);
+        // Automatically switch to dashboard to track progress
         switchTab('dashboard');
         loadDashboardHistory();
         
@@ -2528,6 +2542,36 @@
   let currentPage = 1; // Current page number
   let totalJobs = 0; // Total number of jobs
   let allDashboardJobs = []; // Store all jobs for filtering
+
+  // Format UTC datetime to local timezone
+  function formatLocalDateTime(utcDateString) {
+    if (!utcDateString) return 'N/A';
+    
+    // Create date object - if the string ends with 'Z' it's already marked as UTC
+    // If not, we need to treat it as UTC
+    let date;
+    if (utcDateString.endsWith('Z')) {
+      date = new Date(utcDateString);
+    } else {
+      // Assume UTC if no timezone marker
+      date = new Date(utcDateString + 'Z');
+    }
+    
+    // Format to local timezone
+    const dateStr = date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+    
+    return `${dateStr} ${timeStr}`;
+  }
 
   // Change page size function
   function changePageSize() {
@@ -2891,7 +2935,8 @@
         company_name: companyName,
         job_title: jobTitle,
         job_description: jd
-      }
+      },
+      request_id: `req_${Date.now()}_${dashboardCredentials.username}`
     };
 
     const btn = document.getElementById('dashGenerateBtn');
@@ -3173,7 +3218,7 @@
             `}
           </td>
           <td style="padding: 12px 16px; font-size: 0.85em; color: var(--text-secondary); white-space: nowrap;">
-            ${new Date(job.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ${new Date(job.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+            ${formatLocalDateTime(job.created_at)}
           </td>
           <td style="padding: 12px 16px; text-align: right; position: relative;">
             ${job.status === 'completed' ? `
