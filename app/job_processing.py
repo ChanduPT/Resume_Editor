@@ -181,12 +181,12 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
         # Log preprocessing summary
         logger.info(f"\n{get_jd_summary(preprocessed_jd)}")
         
-        # Save preprocessed JD for debugging
-        save_debug_file(
-            content=json.dumps(preprocessed_jd, indent=2),
-            filename=f"{request_id}_preprocessed_jd.json",
-            prefix="jd_preprocessing"
-        )
+        # # Save preprocessed JD for debugging
+        # save_debug_file(
+        #     content=json.dumps(preprocessed_jd, indent=2),
+        #     filename=f"{request_id}_preprocessed_jd.json",
+        #     prefix="jd_preprocessing"
+        # )
         
         preprocess_duration = time.time() - preprocess_start
         logger.info(f"[PERF] JD preprocessing took {preprocess_duration:.2f}s")
