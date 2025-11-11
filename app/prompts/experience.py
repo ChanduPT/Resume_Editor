@@ -147,6 +147,8 @@ EXPERIENCE STRUCTURE BY ROLE:
 - Previous Role: 7–8 bullets (30%)
 - Older Roles: 6–7 bullets (20%)
 - Alternate focus: backend → frontend → data → infra → collaboration across bullets.
+- Maintain realistic tech stacks per role and time period.
+- Maintain at least 6 bullets per role in all cases.
 
 MICRO-ARCHETYPES TO CYCLE THROUGH:
 1. Backend/API bullet (Python, Java, Node.js, RESTful, microservices)
