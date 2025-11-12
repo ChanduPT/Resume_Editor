@@ -3845,12 +3845,8 @@
     searchJobsBtn.textContent = 'Searching...';
     
     try {
-      const response = await fetch('/api/search-jobs', {
+      const data = await dashApiCall('/api/search-jobs', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${dashboardCredentials.token}`
-        },
         body: JSON.stringify({
           job_title: jobTitle,
           location: location,
@@ -3860,9 +3856,7 @@
         })
       });
       
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
+      if (data.success) {
         displayJobResults(data.jobs, data.cached, data.cache_hits);
       } else {
         throw new Error(data.detail || 'Failed to search jobs');

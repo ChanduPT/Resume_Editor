@@ -218,7 +218,7 @@ class JobScraper:
         try:
             search_url = f"https://www.google.com/search?q={quote_plus(query)}&num={max_results}"
             
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            async with aiohttp.ClientSession(timeout=self.timeout, connector=aiohttp.TCPConnector(ssl=self.ssl_context)) as session:
                 async with session.get(search_url, headers=self.headers) as response:
                     if response.status != 200:
                         logger.warning(f"[GOOGLE_SEARCH] Non-200 status: {response.status}")
@@ -300,7 +300,7 @@ class JobScraper:
         try:
             logger.info(f"[JOB_DETAILS] Scraping: {url}")
             
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            async with aiohttp.ClientSession(timeout=self.timeout, connector=aiohttp.TCPConnector(ssl=self.ssl_context)) as session:
                 async with session.get(url, headers=self.headers) as response:
                     if response.status != 200:
                         return None

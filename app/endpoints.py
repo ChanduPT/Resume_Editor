@@ -535,7 +535,7 @@ async def search_jobs_endpoint(
         if not isinstance(sources, list) or len(sources) == 0:
             raise HTTPException(status_code=400, detail="At least one source must be selected")
         
-        logger.info(f"[API_JOB_SEARCH] User '{current_user['username']}' searching: '{job_title}' in '{location}'")
+        logger.info(f"[API_JOB_SEARCH] User '{current_user.user_id}' searching: '{job_title}' in '{location}'")
         
         # Generate cache key
         cache_key = generate_cache_key(job_title, location, date_posted, sources)
@@ -643,7 +643,7 @@ async def scrape_job_details_endpoint(
         if not url.startswith('http'):
             raise HTTPException(status_code=400, detail="Invalid URL")
         
-        logger.info(f"[API_SCRAPE_JOB] User '{current_user['username']}' scraping: {url}")
+        logger.info(f"[API_SCRAPE_JOB] User '{current_user.user_id}' scraping: {url}")
         
         # Check if description is already cached
         cached_description = get_job_description(db, url)
@@ -723,7 +723,7 @@ async def get_cache_stats_endpoint(
     }
     """
     try:
-        logger.info(f"[API_CACHE_STATS] User '{current_user['username']}' requesting cache stats")
+        logger.info(f"[API_CACHE_STATS] User '{current_user.user_id}' requesting cache stats")
         
         stats = get_cache_stats(db)
         
@@ -766,7 +766,7 @@ async def clear_cache_endpoint(
         data = await request.json()
         action = data.get("action", "expired")
         
-        logger.info(f"[API_CLEAR_CACHE] User '{current_user['username']}' clearing cache (action: {action})")
+        logger.info(f"[API_CLEAR_CACHE] User '{current_user.user_id}' clearing cache (action: {action})")
         
         if action == "expired":
             # Clear only expired entries
@@ -849,7 +849,7 @@ async def refresh_cache_endpoint(
         if not job_title:
             raise HTTPException(status_code=400, detail="job_title is required")
         
-        logger.info(f"[API_REFRESH_CACHE] User '{current_user['username']}' refreshing cache for: '{job_title}'")
+        logger.info(f"[API_REFRESH_CACHE] User '{current_user.user_id}' refreshing cache for: '{job_title}'")
         
         # Generate cache key
         cache_key = generate_cache_key(job_title, location, date_posted, sources)

@@ -20,12 +20,11 @@ limiter = Limiter(key_func=get_remote_address)
 
 # JWT authentication support
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Optional
 import jwt
 
 JWT_SECRET = os.getenv("JWT_SECRET", "resume_jwt_secret_2025")
 JWT_ALGORITHM = "HS256"
-bearer_scheme = HTTPBearer(auto_error=False)  # Don't auto-error, allow fallback
+bearer_scheme = HTTPBearer()
 
 def decode_jwt_token(token: str):
     try:
@@ -36,39 +35,19 @@ def decode_jwt_token(token: str):
         return None
 
 async def get_current_user(
-    db: Session = Depends(get_db),
-    credentials: Optional[HTTPBasicCredentials] = Depends(security),
-    bearer: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    db: Session = Depends(get_db)
 ):
-    """
-    Dependency to get current authenticated user
-    Supports both HTTP Basic Auth AND JWT Bearer tokens
-    """
-    # Try JWT Bearer token first (for new job scraper endpoints)
-    if bearer and bearer.credentials:
-        token = bearer.credentials
-        payload = decode_jwt_token(token)
-        if payload and "user_id" in payload:
-            user_id = payload["user_id"].lower().strip()
-            user = db.query(User).filter(User.user_id == user_id).first()
-            if user and user.is_active:
-                logger.info(f"[AUTH] JWT authentication successful for user: {user_id}")
-                return user
-    
-    # Fallback to HTTP Basic Auth (for existing endpoints)
-    if credentials:
-        user = authenticate_user(db, credentials.username, credentials.password)
-        if user:
-            logger.info(f"[AUTH] Basic authentication successful for user: {credentials.username}")
-            return user
-    
-    # Both methods failed
-    logger.warning("[AUTH] Authentication failed - no valid credentials provided")
-    raise HTTPException(
-        status_code=401,
-        detail="Invalid credentials",
-        headers={"WWW-Authenticate": "Basic"},
-    )
+    """Dependency to get current authenticated user (JWT)"""
+    token = credentials.credentials
+    payload = decode_jwt_token(token)
+    if not payload or "user_id" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    user_id = payload["user_id"].lower().strip()
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found or inactive")
+    return user
 
 
 @limiter.limit("5/minute")
