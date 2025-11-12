@@ -2407,8 +2407,12 @@
       mode: resumeMode  // Add mode to payload
     };
     
-    // Call new endpoint for JSON output (use correct backend port)
-    const apiUrl = 'http://localhost:5001/api/generate_resume_json';
+    // Use dynamic API URL that works in both development and production
+    const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5001'
+      : '';
+    const apiUrl = `${apiBaseUrl}/api/generate_resume_json`;
+    
     try {
       const res = await fetch(apiUrl, {
         method: 'POST',
