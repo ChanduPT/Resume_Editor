@@ -1,6 +1,6 @@
 # app/database.py
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, Boolean, Index
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, Boolean, Index, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
@@ -365,7 +365,7 @@ def get_cache_stats(db) -> dict:
     
     # Total hits
     total_hits = db.query(JobSearchCache).with_entities(
-        db.func.sum(JobSearchCache.hit_count)
+        func.sum(JobSearchCache.hit_count)
     ).scalar() or 0
     
     return {

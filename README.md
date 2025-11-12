@@ -48,6 +48,13 @@ An AI-powered resume builder that tailors your resume to specific job descriptio
 - **Status Tracking** - Real-time status updates (Processing, Completed, Failed)
 - **Job History** - Complete history of all resume generations with timestamps
 - **Concurrent Processing** - Generate up to 2 resumes simultaneously (queues additional requests)
+
+### 🔍 Job Search Integration
+- **JSearch API Integration** - Real job data from multiple sources via OpenWebNinja
+- **Multi-Source Scraping** - Workday, Greenhouse, Lever job board support
+- **Smart Fallback** - Sample jobs for development when API unavailable
+- **Intelligent Caching** - 24-hour cache reduces API calls and improves performance
+- **Location & Date Filtering** - Remote jobs, specific locations, recent postings
 - **Per-User Limits** - Maximum 2 active jobs per user to ensure fair resource allocation
 
 ### ✏️ Advanced Editing Features
@@ -496,6 +503,27 @@ resume_editor_v1.1/
 | `GEMINI_MODEL` | Gemini model name | `gemini-2.5-flash` |
 | `OPENAI_API_KEY` | OpenAI API key | - |
 | `OPENAI_MODEL` | OpenAI model name | `gpt-4o-mini` |
+| `JSEARCH_API_KEY` | JSearch API key from OpenWebNinja | - |
+| `JWT_SECRET` | JWT token secret for authentication | `resume_jwt_secret_2025` |
+| `DATABASE_URL` | PostgreSQL database connection string | `sqlite:///./resume_editor.db` |
+
+#### 🔑 Getting JSearch API Key (Free Tier Available)
+
+1. **Sign up for OpenWebNinja**: Go to [api.openwebninja.com](https://api.openwebninja.com)
+2. **Get JSearch API Access**: Navigate to the JSearch API section
+3. **Subscribe to Free Tier**: 1,000 requests/month free
+4. **Get API Key**: Copy your x-api-key
+5. **Set Environment Variable**: `JSEARCH_API_KEY=your_key_here`
+
+**With JSearch API configured:**
+- ✅ Real job data from multiple job sources
+- ✅ Up-to-date job postings from major companies  
+- ✅ Salary ranges, employment types, remote options
+- ✅ Professional job descriptions and requirements
+
+**Without JSearch API:**
+- 🔄 Falls back to web scraping (limited success)
+- 🎭 Demo job data for development/testing
 
 ### Concurrency Settings
 

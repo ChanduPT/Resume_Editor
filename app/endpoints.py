@@ -19,7 +19,7 @@ from app.database import (
     get_job_description, store_job_posting, cleanup_expired_cache, get_cache_stats,
     JobSearchCache
 )
-from app.auth import get_current_user
+from app.auth import get_current_user, get_current_user_optional
 from app.create_resume import create_resume
 from app.job_processing import process_resume_parallel, job_progress
 from app.job_scraper import job_scraper
@@ -492,21 +492,25 @@ async def parse_resume_document(
 
 async def search_jobs_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
-    Search for job postings across multiple job boards
-    Uses 24-hour cache to reduce redundant scraping
+    Search for jobs across multiple sources
+    Automatically uses JSearch API if available (real job data), 
+    otherwise falls back to web scraping or sample data
+    Uses 24-hour cache to reduce redundant API calls
     
     Request body:
     {
         "job_title": "data analyst",
-        "location": "remote OR us",
+        "location": "remote OR us", 
         "date_posted": "posted today",
         "sources": ["workday", "greenhouse", "lever"],
         "max_results": 20
     }
+    
+    Note: JSearch API provides real job data when JSEARCH_API_KEY is configured
     
     Response:
     {
@@ -528,6 +532,14 @@ async def search_jobs_endpoint(
         sources = data.get("sources", ["workday"])
         max_results = data.get("max_results", 20)
         
+        # New dynamic parameters
+        employment_types = data.get("employment_types", ["FULLTIME"])
+        experience_level = data.get("experience_level", "")
+        work_from_home = data.get("work_from_home", False)
+        salary_min = data.get("salary_min")
+        salary_max = data.get("salary_max")
+        salary_frequency = data.get("salary_frequency", "yearly")
+        
         # Validation
         if not job_title:
             raise HTTPException(status_code=400, detail="Job title is required")
@@ -535,7 +547,8 @@ async def search_jobs_endpoint(
         if not isinstance(sources, list) or len(sources) == 0:
             raise HTTPException(status_code=400, detail="At least one source must be selected")
         
-        logger.info(f"[API_JOB_SEARCH] User '{current_user.user_id}' searching: '{job_title}' in '{location}'")
+        user_id = current_user.user_id if current_user else 'anonymous'
+        logger.info(f"[API_JOB_SEARCH] User '{user_id}' searching: '{job_title}' in '{location}'")
         
         # Generate cache key
         cache_key = generate_cache_key(job_title, location, date_posted, sources)
@@ -569,7 +582,12 @@ async def search_jobs_endpoint(
             location=location,
             date_posted=date_posted,
             sources=sources,
-            max_results=max_results
+            max_results=max_results,
+            employment_types=employment_types,
+            experience_level=experience_level,
+            work_from_home=work_from_home,
+            salary_min=salary_min,
+            salary_max=salary_max
         )
         
         # Store in cache (24 hour TTL)
@@ -603,6 +621,82 @@ async def search_jobs_endpoint(
     except Exception as e:
         logger.error(f"[API_JOB_SEARCH] Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Job search failed: {str(e)}")
+
+
+async def search_greenhouse_jobs_endpoint(
+    request: Request,
+    current_user = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """
+    Search for jobs specifically from Greenhouse company boards
+    High-quality jobs from tech companies like Databricks, Stripe, Snowflake, etc.
+    
+    Request body:
+    {
+        "job_title": "data engineer",
+        "location": "remote",
+        "max_results": 20,
+        "company_tokens": ["databricks", "stripe", "snowflake"]  // optional
+    }
+    
+    Response:
+    {
+        "success": true,
+        "total_results": 15,
+        "jobs": [...],
+        "companies_searched": ["databricks", "stripe", ...]
+    }
+    """
+    try:
+        data = await request.json()
+        
+        job_title = data.get("job_title", "").strip()
+        location = data.get("location", "").strip()
+        max_results = min(data.get("max_results", 20), 50)  # Cap at 50
+        company_tokens = data.get("company_tokens", None)
+        
+        # Validate required fields
+        if not job_title:
+            raise HTTPException(status_code=400, detail="job_title is required")
+        
+        logger.info(f"[API_GREENHOUSE] Searching: '{job_title}' in '{location}' (max: {max_results})")
+        
+        # Search Greenhouse companies
+        jobs = await job_scraper._search_greenhouse_companies(
+            job_title=job_title,
+            location=location,
+            max_results=max_results,
+            company_tokens=company_tokens
+        )
+        
+        # Get list of companies that were searched
+        default_companies = [
+            "databricks", "stripe", "snowflake", "nvidia", "tiktok", 
+            "canva", "instacart", "doordash", "coinbase", "robinhood",
+            "discord", "figma", "notion", "airtable", "palantir"
+        ]
+        searched_companies = company_tokens[:10] if company_tokens else default_companies[:10]
+        
+        logger.info(f"[API_GREENHOUSE] Found {len(jobs)} jobs from {len(searched_companies)} companies")
+        
+        return {
+            "success": True,
+            "total_results": len(jobs),
+            "jobs": jobs,
+            "companies_searched": searched_companies,
+            "search_params": {
+                "job_title": job_title,
+                "location": location,
+                "max_results": max_results
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API_GREENHOUSE] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Greenhouse job search failed: {str(e)}")
 
 
 async def scrape_job_details_endpoint(
@@ -703,7 +797,6 @@ async def scrape_job_details_endpoint(
 
 async def get_cache_stats_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -723,7 +816,7 @@ async def get_cache_stats_endpoint(
     }
     """
     try:
-        logger.info(f"[API_CACHE_STATS] User '{current_user.user_id}' requesting cache stats")
+        logger.info(f"[API_CACHE_STATS] Public request for cache stats")
         
         stats = get_cache_stats(db)
         
@@ -739,7 +832,6 @@ async def get_cache_stats_endpoint(
 
 async def clear_cache_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -766,7 +858,7 @@ async def clear_cache_endpoint(
         data = await request.json()
         action = data.get("action", "expired")
         
-        logger.info(f"[API_CLEAR_CACHE] User '{current_user.user_id}' clearing cache (action: {action})")
+        logger.info(f"[API_CLEAR_CACHE] Public request to clear cache (action: {action})")
         
         if action == "expired":
             # Clear only expired entries
@@ -815,7 +907,6 @@ async def clear_cache_endpoint(
 
 async def refresh_cache_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -849,7 +940,7 @@ async def refresh_cache_endpoint(
         if not job_title:
             raise HTTPException(status_code=400, detail="job_title is required")
         
-        logger.info(f"[API_REFRESH_CACHE] User '{current_user.user_id}' refreshing cache for: '{job_title}'")
+        logger.info(f"[API_REFRESH_CACHE] Public request to refresh cache for: '{job_title}'")
         
         # Generate cache key
         cache_key = generate_cache_key(job_title, location, date_posted, sources)

@@ -28,7 +28,7 @@ from app.endpoints import (
     get_user_jobs, get_user_stats,
     save_resume_template, get_resume_template,
     delete_job, cleanup_stale_jobs, parse_resume_document,
-    search_jobs_endpoint, scrape_job_details_endpoint,
+    search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
     get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint
 )
 
@@ -180,6 +180,7 @@ app.post("/api/parse-resume")(limiter.limit("3/minute")(parse_resume_document))
 # --------------------- Job Search Endpoints ---------------------
 
 app.post("/api/search-jobs")(limiter.limit("10/minute")(search_jobs_endpoint))
+app.post("/api/search-greenhouse-jobs")(limiter.limit("15/minute")(search_greenhouse_jobs_endpoint))
 app.post("/api/scrape-job-details")(limiter.limit("10/minute")(scrape_job_details_endpoint))
 
 # --------------------- Cache Management Endpoints ---------------------

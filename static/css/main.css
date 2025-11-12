@@ -3137,6 +3137,60 @@
   cursor: pointer;
 }
 
+/* Dynamic job search enhancements */
+.location-input-container {
+  position: relative;
+}
+
+.job-title-suggestions,
+.location-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: var(--bg-secondary);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  width: auto;
+  cursor: pointer;
+}
+
 .job-results {
   display: grid;
   gap: 20px;
@@ -3337,5 +3391,130 @@
   .job-use-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* ===== ENHANCED JOB SEARCH STYLES ===== */
+
+.search-card {
+  border: 1px solid var(--border);
+  transition: box-shadow 0.3s ease;
+}
+
+.search-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.advanced-filters {
+  border: 1px solid var(--border);
+}
+
+.filter-group label:hover {
+  background: var(--hover-bg, rgba(0,0,0,0.05));
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Enhanced input focus states */
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 0,123,255), 0.1);
+}
+
+/* Suggestion dropdowns */
+.job-title-suggestions,
+.location-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s ease;
+  font-size: 14px;
+}
+
+.suggestion-item:hover {
+  background: var(--hover-bg, rgba(0,123,255,0.1));
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* Button improvements */
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, #0056b3) 100%);
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+}
+
+.secondary-btn {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Greenhouse company grid improvements */
+#greenhouseCompanySection label {
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+#greenhouseCompanySection label:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+#greenhouseCompanySection input[type="checkbox"]:checked + * {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .search-card > div:first-child {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .advanced-filters > div:first-child {
+    grid-template-columns: 1fr;
+  }
+  
+  #greenhouseCompanySection > div:first-child {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 6px;
   }
 }

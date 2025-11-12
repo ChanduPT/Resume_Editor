@@ -685,68 +685,196 @@
       <!-- Job Search Tab Panel -->
       <div id="jobSearchTabPanel" style="display: none;">
         <div class="job-search-container">
-          <h2>🔍 Search Job Postings</h2>
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="margin-bottom: 10px;">🔍 Find Your Next Job</h2>
+            <p style="color: var(--text-secondary); margin: 0;">Search thousands of jobs from top companies</p>
+          </div>
           
-          <!-- Search Form -->
-          <div class="search-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Job Title *</label>
-                <input type="text" id="jobSearchTitle" placeholder="e.g., Data Analyst, Software Engineer" required>
+          <!-- Main Search Card -->
+          <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+            
+            <!-- Essential Search Fields -->
+            <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 16px; margin-bottom: 20px;">
+              <div class="form-group" style="position: relative;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">What job are you looking for? *</label>
+                <input type="text" id="jobSearchTitle" placeholder="e.g., Software Engineer, Data Scientist" required
+                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;"
+                  onfocus="this.style.borderColor='var(--primary)'" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)">
+                <div class="job-title-suggestions" id="jobTitleSuggestions" style="display: none;">
+                  <div class="suggestion-item" onclick="selectJobTitle('Software Engineer')">💻 Software Engineer</div>
+                  <div class="suggestion-item" onclick="selectJobTitle('Data Scientist')">📊 Data Scientist</div>
+                  <div class="suggestion-item" onclick="selectJobTitle('Product Manager')">🎯 Product Manager</div>
+                  <div class="suggestion-item" onclick="selectJobTitle('Frontend Developer')">🎨 Frontend Developer</div>
+                  <div class="suggestion-item" onclick="selectJobTitle('Backend Developer')">⚙️ Backend Developer</div>
+                  <div class="suggestion-item" onclick="selectJobTitle('DevOps Engineer')">🔧 DevOps Engineer</div>
+                </div>
+              </div>
+              
+              <div class="form-group" style="position: relative;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">Where?</label>
+                <input type="text" id="jobSearchLocationCustom" placeholder="Type any location (city, state, country, or 'remote')" 
+                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;"
+                  onfocus="this.style.borderColor='var(--primary)'; showLocationSuggestions(this.value)" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)"
+                  oninput="showLocationSuggestions(this.value)">
+                <div class="location-suggestions" id="locationSuggestions" style="display: none;">
+                  <div class="suggestion-item" onclick="selectLocation('remote')">🏠 Remote</div>
+                  <div class="suggestion-item" onclick="selectLocation('new york, ny')">🏙️ New York, NY</div>
+                  <div class="suggestion-item" onclick="selectLocation('san francisco, ca')">🌉 San Francisco, CA</div>
+                  <div class="suggestion-item" onclick="selectLocation('seattle, wa')">🌲 Seattle, WA</div>
+                  <div class="suggestion-item" onclick="selectLocation('austin, tx')">🤠 Austin, TX</div>
+                  <div class="suggestion-item" onclick="selectLocation('chicago, il')">🏢 Chicago, IL</div>
+                  <div class="suggestion-item" onclick="selectLocation('london, uk')">🇬🇧 London, UK</div>
+                  <div class="suggestion-item" onclick="selectLocation('toronto, canada')">🇨🇦 Toronto, Canada</div>
+                  <div class="suggestion-item" onclick="selectLocation('berlin, germany')">🇩🇪 Berlin, Germany</div>
+                  <div class="suggestion-item" onclick="selectLocation('anywhere')">🌍 Anywhere</div>
+                </div>
               </div>
               
               <div class="form-group">
-                <label>Location</label>
-                <select id="jobSearchLocation">
-                  <option value="remote OR us OR usa">Remote or US</option>
-                  <option value="remote">Remote only</option>
-                  <option value="us OR usa OR united states">US only</option>
-                  <option value="california OR ca">California</option>
-                  <option value="texas OR tx">Texas</option>
-                  <option value="new york OR ny">New York</option>
-                  <option value="illinois OR il">Illinois</option>
-                  <option value="florida OR fl">Florida</option>
-                  <option value="washington OR wa">Washington</option>
-                  <option value="massachusetts OR ma">Massachusetts</option>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">Results</label>
+                <select id="jobSearchMaxResults" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                  <option value="10">10 Jobs</option>
+                  <option value="20" selected>20 Jobs</option>
+                  <option value="30">30 Jobs</option>
+                  <option value="50">50 Jobs</option>
                 </select>
               </div>
             </div>
             
-            <div class="form-row">
-              <div class="form-group">
-                <label>Date Posted</label>
-                <select id="jobSearchDate">
-                  <option value="posted today">Today</option>
-                  <option value="posted this week">This week</option>
-                  <option value="posted this month">This month</option>
-                  <option value="">Any time</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label>Max Results</label>
-                <select id="jobSearchMaxResults">
-                  <option value="10">10</option>
-                  <option value="20" selected>20</option>
-                  <option value="30">30</option>
-                  <option value="50">50</option>
-                </select>
-              </div>
+            <!-- Search Buttons -->
+            <div style="display: flex; gap: 12px; justify-content: center;">
+              <button id="searchJobsBtn" class="primary-btn" style="padding: 14px 32px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+                🔍 Search All Jobs
+              </button>
+              <button id="searchGreenhouseBtn" class="secondary-btn" style="padding: 14px 24px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+                � Top Tech Companies
+              </button>
+            </div>
+          </div>
+          
+          <!-- Advanced Filters (Collapsible) -->
+          <div class="advanced-filters" style="background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: between; margin-bottom: 16px; cursor: pointer;" onclick="toggleAdvancedFilters()">
+              <h3 style="margin: 0; font-size: 16px; font-weight: 600;">⚙️ Advanced Filters</h3>
+              <span id="advancedFilterToggle" style="margin-left: auto; font-size: 14px; color: var(--text-secondary);">▼ Show</span>
             </div>
             
-            <div class="form-row">
-              <div class="form-group">
-                <label>Job Boards</label>
-                <div class="checkbox-group">
-                  <label><input type="checkbox" id="sourceWorkday" value="workday" checked> Workday</label>
-                  <label><input type="checkbox" id="sourceGreenhouse" value="greenhouse" checked> Greenhouse</label>
-                  <label><input type="checkbox" id="sourceLever" value="lever" checked> Lever</label>
-                  <label><input type="checkbox" id="sourceLinkedin" value="linkedin"> LinkedIn</label>
+            <div id="advancedFiltersContent" style="display: none;">
+              <!-- Filter Grid -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                
+                <!-- Employment Type -->
+                <div class="filter-group">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Employment Type</label>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="checkbox" id="typeFullTime" value="FULLTIME" checked style="margin-right: 8px;"> Full-time
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="checkbox" id="typePartTime" value="PARTTIME" style="margin-right: 8px;"> Part-time
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="checkbox" id="typeContract" value="CONTRACTOR" style="margin-right: 8px;"> Contract
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="checkbox" id="typeIntern" value="INTERN" style="margin-right: 8px;"> Internship
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- Experience Level -->
+                <div class="filter-group">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Experience Level</label>
+                  <select id="jobExperienceLevel" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                    <option value="">Any Experience</option>
+                    <option value="no_experience">Entry Level</option>
+                    <option value="under_3_years_experience">Junior (1-3 years)</option>
+                    <option value="more_than_3_years_experience">Senior (3+ years)</option>
+                  </select>
+                </div>
+                
+                <!-- Date Posted -->
+                <div class="filter-group">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Date Posted</label>
+                  <select id="jobSearchDate" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                    <option value="today">Today</option>
+                    <option value="3days">Last 3 Days</option>
+                    <option value="week" selected>This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="all">Any Time</option>
+                  </select>
+                </div>
+                
+                <!-- Work Preference -->
+                <div class="filter-group">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Work Style</label>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="radio" name="workFromHome" value="false" checked style="margin-right: 8px;"> Any
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="radio" name="workFromHome" value="true" style="margin-right: 8px;"> Remote Only
+                    </label>
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                      <input type="radio" name="workFromHome" value="hybrid" style="margin-right: 8px;"> Hybrid
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Salary Range -->
+              <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">💰 Salary Range (Optional)</label>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                  <input type="number" id="salaryMin" placeholder="Min" style="width: 100px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                  <span style="color: var(--text-secondary);">to</span>
+                  <input type="number" id="salaryMax" placeholder="Max" style="width: 100px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                  <select id="salaryFrequency" style="padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
+                    <option value="yearly">per year</option>
+                    <option value="hourly">per hour</option>
+                  </select>
                 </div>
               </div>
             </div>
+          </div>
+          
+          <!-- Greenhouse Company Selection (hidden by default) -->
+          <div id="greenhouseCompanySection" style="display: none; background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 2px solid var(--primary); background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%);">
+            <h3 style="margin-bottom: 8px; color: var(--primary);">🏢 Top Tech Companies</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">Search high-quality positions at leading technology companies</p>
             
-            <button id="searchJobsBtn" class="primary-btn">🔍 Search Jobs</button>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="databricks" checked style="margin-right: 8px;"> Databricks
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="stripe" checked style="margin-right: 8px;"> Stripe
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="snowflake" checked style="margin-right: 8px;"> Snowflake
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="nvidia" checked style="margin-right: 8px;"> NVIDIA
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="discord" style="margin-right: 8px;"> Discord
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="figma" style="margin-right: 8px;"> Figma
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="notion" style="margin-right: 8px;"> Notion
+              </label>
+              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
+                <input type="checkbox" value="coinbase" style="margin-right: 8px;"> Coinbase
+              </label>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button onclick="selectAllGreenhouse()" class="secondary-btn" style="padding: 8px 16px; font-size: 14px;">Select All</button>
+              <button onclick="clearAllGreenhouse()" class="secondary-btn" style="padding: 8px 16px; font-size: 14px;">Clear All</button>
+              <button id="executeGreenhouseSearch" class="primary-btn" style="padding: 8px 20px; font-size: 14px; font-weight: 600;">🔍 Search Selected</button>
+            </div>
           </div>
           
           <!-- Loading State -->
@@ -3817,16 +3945,39 @@
 
   async function searchJobs() {
     const jobTitle = document.getElementById('jobSearchTitle').value.trim();
-    const location = document.getElementById('jobSearchLocation').value;
+    
+    // Use custom location input if filled, otherwise fall back to select
+    const customLocation = document.getElementById('jobSearchLocationCustom').value.trim();
+    const location = customLocation || 'remote OR us OR usa';
+    
     const datePosted = document.getElementById('jobSearchDate').value;
     const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value);
     
+    // Get employment types
+    const employmentTypes = [];
+    if (document.getElementById('typeFullTime').checked) employmentTypes.push('FULLTIME');
+    if (document.getElementById('typePartTime').checked) employmentTypes.push('PARTTIME');
+    if (document.getElementById('typeContract').checked) employmentTypes.push('CONTRACTOR');
+    if (document.getElementById('typeIntern').checked) employmentTypes.push('INTERN');
+    
+    // Get experience level
+    const experienceLevel = document.getElementById('jobExperienceLevel').value;
+    
+    // Get work from home preference
+    const workFromHomeRadio = document.querySelector('input[name="workFromHome"]:checked');
+    const workFromHome = workFromHomeRadio ? workFromHomeRadio.value : 'false';
+    
+    // Get salary range
+    const salaryMin = document.getElementById('salaryMin').value;
+    const salaryMax = document.getElementById('salaryMax').value;
+    const salaryFrequency = document.getElementById('salaryFrequency').value;
+    
     // Get selected sources
     const sources = [];
+    if (document.getElementById('sourceJsearch') && document.getElementById('sourceJsearch').checked) sources.push('jsearch');
     if (document.getElementById('sourceWorkday').checked) sources.push('workday');
     if (document.getElementById('sourceGreenhouse').checked) sources.push('greenhouse');
     if (document.getElementById('sourceLever').checked) sources.push('lever');
-    if (document.getElementById('sourceLinkedin').checked) sources.push('linkedin');
     
     if (!jobTitle) {
       alert('Please enter a job title');
@@ -3845,15 +3996,28 @@
     searchJobsBtn.textContent = 'Searching...';
     
     try {
+      const searchParams = {
+        job_title: jobTitle,
+        location: location,
+        date_posted: datePosted,
+        sources: sources,
+        max_results: maxResults,
+        employment_types: employmentTypes,
+        experience_level: experienceLevel,
+        work_from_home: workFromHome === 'true',
+        salary_min: salaryMin ? parseInt(salaryMin) : undefined,
+        salary_max: salaryMax ? parseInt(salaryMax) : undefined,
+        salary_frequency: salaryFrequency
+      };
+      
+      // Remove undefined values
+      Object.keys(searchParams).forEach(key => 
+        searchParams[key] === undefined && delete searchParams[key]
+      );
+
       const data = await dashApiCall('/api/search-jobs', {
         method: 'POST',
-        body: JSON.stringify({
-          job_title: jobTitle,
-          location: location,
-          date_posted: datePosted,
-          sources: sources,
-          max_results: maxResults
-        })
+        body: JSON.stringify(searchParams)
       });
       
       if (data.success) {
@@ -3992,11 +4156,7 @@
   // Cache Stats Functions
   async function loadCacheStats() {
     try {
-      const response = await fetch('/api/cache/stats', {
-        headers: {
-          'Authorization': `Bearer ${dashboardCredentials.token}`
-        }
-      });
+      const response = await fetch('/api/cache/stats');
       
       const data = await response.json();
       
@@ -4069,17 +4229,25 @@
   }
 
   async function clearExpiredCache() {
-    if (!confirm('Clear expired cache entries?')) return;
+    console.log('[DEBUG] clearExpiredCache function called');
+    
+    if (!confirm('Clear expired cache entries?')) {
+      console.log('[DEBUG] User cancelled clear expired cache action');
+      return;
+    }
+    
+    console.log('[DEBUG] User confirmed, sending request to clear expired cache');
     
     try {
       const response = await fetch('/api/cache/clear', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${dashboardCredentials.token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ action: 'expired' })
       });
+      
+      console.log('[DEBUG] Clear expired cache response:', response.status, response.statusText);
       
       const data = await response.json();
       
@@ -4096,17 +4264,25 @@
   }
 
   async function clearAllCache() {
-    if (!confirm('⚠️ This will clear ALL cached job searches. Are you sure?')) return;
+    console.log('[DEBUG] clearAllCache function called');
+    
+    if (!confirm('⚠️ This will clear ALL cached job searches. Are you sure?')) {
+      console.log('[DEBUG] User cancelled clear cache action');
+      return;
+    }
+    
+    console.log('[DEBUG] User confirmed, sending request to clear cache');
     
     try {
       const response = await fetch('/api/cache/clear', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${dashboardCredentials.token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ action: 'all' })
       });
+      
+      console.log('[DEBUG] Clear cache response:', response.status, response.statusText);
       
       const data = await response.json();
       
@@ -4140,6 +4316,209 @@
     originalDisplayJobResults.apply(this, args);
     document.getElementById('viewCacheStatsBtn').style.display = 'inline-block';
   };
+
+  // Debug function for testing cache clear - can be called from console
+  window.testClearCache = async function() {
+    console.log('[TEST] Testing clear cache API call directly');
+    try {
+      const response = await fetch('/api/cache/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'all' })
+      });
+      
+      console.log('[TEST] Response status:', response.status);
+      console.log('[TEST] Response headers:', [...response.headers.entries()]);
+      
+      const data = await response.json();
+      console.log('[TEST] Response data:', data);
+      
+      if (response.ok) {
+        console.log('[TEST] ✅ Clear cache API is working!');
+        return data;
+      } else {
+        console.error('[TEST] ❌ Clear cache API failed:', data);
+        return data;
+      }
+    } catch (error) {
+      console.error('[TEST] ❌ Error calling clear cache API:', error);
+      return error;
+    }
+  };
+
+  // ===== DYNAMIC JOB SEARCH FUNCTIONS =====
+  
+  // ===== GREENHOUSE SEARCH FUNCTIONALITY =====
+  
+  // Show/hide Greenhouse company selection
+  document.getElementById('searchGreenhouseBtn').addEventListener('click', function() {
+    const section = document.getElementById('greenhouseCompanySection');
+    if (section.style.display === 'none') {
+      section.style.display = 'block';
+      this.textContent = '🏢 Hide Company Selection';
+    } else {
+      section.style.display = 'none';
+      this.textContent = '🏢 Search Top Tech Companies (Greenhouse)';
+    }
+  });
+  
+  // Select/clear all Greenhouse companies
+  function selectAllGreenhouse() {
+    const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = true);
+  }
+  
+  function clearAllGreenhouse() {
+    const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = false);
+  }
+  
+  // Execute Greenhouse search
+  document.getElementById('executeGreenhouseSearch').addEventListener('click', searchGreenhouseJobs);
+  
+  async function searchGreenhouseJobs() {
+    const jobTitle = document.getElementById('jobSearchTitle').value.trim();
+    const customLocation = document.getElementById('jobSearchLocationCustom').value.trim();
+    const location = customLocation || 'remote OR us OR usa';
+    const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value);
+    
+    // Get selected companies
+    const selectedCompanies = [];
+    const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]:checked');
+    checkboxes.forEach(cb => selectedCompanies.push(cb.value));
+    
+    if (!jobTitle) {
+      alert('Please enter a job title');
+      return;
+    }
+    
+    if (selectedCompanies.length === 0) {
+      alert('Please select at least one company');
+      return;
+    }
+    
+    // Show loading
+    document.getElementById('jobSearchLoading').style.display = 'block';
+    document.getElementById('jobSearchResults').innerHTML = '';
+    document.getElementById('executeGreenhouseSearch').disabled = true;
+    document.getElementById('executeGreenhouseSearch').textContent = 'Searching...';
+    
+    try {
+      const searchParams = {
+        job_title: jobTitle,
+        location: location,
+        max_results: maxResults,
+        company_tokens: selectedCompanies
+      };
+      
+      const data = await dashApiCall('/api/search-greenhouse-jobs', {
+        method: 'POST',
+        body: JSON.stringify(searchParams)
+      });
+      
+      if (data.success) {
+        displayGreenhouseResults(data.jobs, data.companies_searched);
+      } else {
+        throw new Error(data.detail || 'Failed to search Greenhouse jobs');
+      }
+    } catch (error) {
+      console.error('Error searching Greenhouse jobs:', error);
+      alert('Error searching Greenhouse jobs. Please try again.');
+      document.getElementById('jobSearchResults').innerHTML = `
+        <div class="no-results">
+          <h3>Error occurred</h3>
+          <p>${error.message}</p>
+        </div>
+      `;
+    } finally {
+      document.getElementById('jobSearchLoading').style.display = 'none';
+      document.getElementById('executeGreenhouseSearch').disabled = false;
+      document.getElementById('executeGreenhouseSearch').textContent = '🔍 Search Selected Companies';
+    }
+  }
+  
+  function displayGreenhouseResults(jobs, companiesSearched) {
+    const resultsContainer = document.getElementById('jobSearchResults');
+    
+    if (jobs.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="no-results">
+          <h3>No jobs found</h3>
+          <p>Try different companies or adjust your search criteria</p>
+          <p style="margin-top: 10px; color: var(--text-secondary);">
+            Searched: ${companiesSearched.join(', ')}
+          </p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Create Greenhouse info banner
+    const greenhouseInfo = `
+      <div class="cache-info-banner" style="background: var(--primary-light, #e3f2fd); color: var(--primary-dark, #1565c0); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <span>🏢</span>
+        <span><strong>Greenhouse Results</strong> - High-quality jobs from ${companiesSearched.length} tech companies: ${companiesSearched.slice(0,3).join(', ')}${companiesSearched.length > 3 ? ` +${companiesSearched.length-3} more` : ''}</span>
+      </div>
+    `;
+    
+    resultsContainer.innerHTML = `
+      ${greenhouseInfo}
+      <h3 style="margin-bottom: 20px; color: var(--text);">Found ${jobs.length} jobs from ${companiesSearched.length} companies</h3>
+      ${jobs.map(job => createJobCard(job)).join('')}
+    `;
+  }
+  
+  // Job Title Suggestions
+  function selectJobTitle(title) {
+    document.getElementById('jobSearchTitle').value = title;
+    document.getElementById('jobTitleSuggestions').style.display = 'none';
+  }
+
+  // Location Suggestions
+  function showLocationSuggestions(value) {
+    const suggestions = document.getElementById('locationSuggestions');
+    if (value.length > 0) {
+      suggestions.style.display = 'block';
+    } else {
+      suggestions.style.display = 'none';
+    }
+  }
+
+  function selectLocation(location) {
+    document.getElementById('jobSearchLocationCustom').value = location;
+    document.getElementById('locationSuggestions').style.display = 'none';
+  }
+
+  // Hide suggestions when clicking outside
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.location-input-container')) {
+      document.getElementById('locationSuggestions').style.display = 'none';
+    }
+    if (!event.target.closest('#jobSearchTitle') && !event.target.closest('#jobTitleSuggestions')) {
+      document.getElementById('jobTitleSuggestions').style.display = 'none';
+    }
+  });
+
+  // Advanced Filters Toggle
+  function toggleAdvancedFilters() {
+    const content = document.getElementById('advancedFiltersContent');
+    const toggle = document.getElementById('advancedFilterToggle');
+    
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      toggle.textContent = '▲ Hide';
+    } else {
+      content.style.display = 'none';
+      toggle.textContent = '▼ Show';
+    }
+  }
+
+  // Show job title suggestions on focus
+  document.getElementById('jobSearchTitle').addEventListener('focus', function() {
+    document.getElementById('jobTitleSuggestions').style.display = 'block';
+  });
 
 </script>
 <script src="/static/js/main.js?v=23.0"></script>
