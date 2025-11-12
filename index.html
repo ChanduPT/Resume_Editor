@@ -685,158 +685,88 @@
       <!-- Job Search Tab Panel -->
       <div id="jobSearchTabPanel" style="display: none;">
         <div class="job-search-container">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h2 style="margin-bottom: 10px;">🔍 Find Your Next Job</h2>
+          <div style="text-align: center; margin-bottom: 16px;">
+            <h2 style="margin-bottom: 8px;">🔍 Find Your Next Job</h2>
             <p style="color: var(--text-secondary); margin: 0;">Search thousands of jobs from top companies</p>
           </div>
           
           <!-- Main Search Card -->
-          <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+          <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
             
             <!-- Essential Search Fields -->
-            <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; margin-bottom: 16px; align-items: end;">
               <div class="form-group" style="position: relative;">
-                <label style="display: block; margin-bottom: 6px; font-weight: 600;">What job are you looking for? *</label>
-                <input type="text" id="jobSearchTitle" placeholder="e.g., Software Engineer, Data Scientist" required
-                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;"
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px;">Job Title *</label>
+                <input type="text" id="jobSearchTitle" placeholder="e.g., Software Engineer" required
+                  style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;"
                   onfocus="this.style.borderColor='var(--primary)'" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)">
                 <div class="job-title-suggestions" id="jobTitleSuggestions" style="display: none;">
-                  <div class="suggestion-item" onclick="selectJobTitle('Software Engineer')">💻 Software Engineer</div>
-                  <div class="suggestion-item" onclick="selectJobTitle('Data Scientist')">📊 Data Scientist</div>
-                  <div class="suggestion-item" onclick="selectJobTitle('Product Manager')">🎯 Product Manager</div>
-                  <div class="suggestion-item" onclick="selectJobTitle('Frontend Developer')">🎨 Frontend Developer</div>
-                  <div class="suggestion-item" onclick="selectJobTitle('Backend Developer')">⚙️ Backend Developer</div>
-                  <div class="suggestion-item" onclick="selectJobTitle('DevOps Engineer')">🔧 DevOps Engineer</div>
                 </div>
               </div>
               
               <div class="form-group" style="position: relative;">
-                <label style="display: block; margin-bottom: 6px; font-weight: 600;">Where?</label>
-                <input type="text" id="jobSearchLocationCustom" placeholder="Type any location (city, state, country, or 'remote')" 
-                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;"
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px;">Location</label>
+                <input type="text" id="jobSearchLocationCustom" placeholder="City, state, or 'remote'" 
+                  style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;"
                   onfocus="this.style.borderColor='var(--primary)'; showLocationSuggestions(this.value)" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)"
                   oninput="showLocationSuggestions(this.value)">
                 <div class="location-suggestions" id="locationSuggestions" style="display: none;">
-                  <div class="suggestion-item" onclick="selectLocation('remote')">🏠 Remote</div>
-                  <div class="suggestion-item" onclick="selectLocation('new york, ny')">🏙️ New York, NY</div>
-                  <div class="suggestion-item" onclick="selectLocation('san francisco, ca')">🌉 San Francisco, CA</div>
-                  <div class="suggestion-item" onclick="selectLocation('seattle, wa')">🌲 Seattle, WA</div>
-                  <div class="suggestion-item" onclick="selectLocation('austin, tx')">🤠 Austin, TX</div>
-                  <div class="suggestion-item" onclick="selectLocation('chicago, il')">🏢 Chicago, IL</div>
-                  <div class="suggestion-item" onclick="selectLocation('london, uk')">🇬🇧 London, UK</div>
-                  <div class="suggestion-item" onclick="selectLocation('toronto, canada')">🇨🇦 Toronto, Canada</div>
-                  <div class="suggestion-item" onclick="selectLocation('berlin, germany')">🇩🇪 Berlin, Germany</div>
-                  <div class="suggestion-item" onclick="selectLocation('anywhere')">🌍 Anywhere</div>
                 </div>
               </div>
               
               <div class="form-group">
-                <label style="display: block; margin-bottom: 6px; font-weight: 600;">Results</label>
-                <select id="jobSearchMaxResults" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <select id="jobSearchMaxResults" style="padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; min-width: 90px;">
                   <option value="10">10 Jobs</option>
                   <option value="20" selected>20 Jobs</option>
-                  <option value="30">30 Jobs</option>
                   <option value="50">50 Jobs</option>
                 </select>
               </div>
             </div>
+
+            <!-- Hidden elements for JavaScript compatibility -->
+            <div style="display: none;">
+              <select id="jobSearchDate">
+                <option value="week" selected>This Week</option>
+              </select>
+              <select id="jobExperienceLevel">
+                <option value="" selected>Any Experience</option>
+              </select>
+              <input type="number" id="salaryMin">
+              <input type="number" id="salaryMax">
+              <select id="salaryFrequency">
+                <option value="yearly" selected>Yearly</option>
+              </select>
+            </div>
+            </div>
             
+            <!-- Quick Filters -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 16px 0; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;">
+              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
+                <input type="checkbox" id="typeFullTime" value="FULLTIME" checked style="margin-right: 8px;"> <span>💼 Full-time</span>
+              </label>
+              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
+                <input type="checkbox" id="typePartTime" value="PARTTIME" style="margin-right: 8px;"> <span>⏰ Part-time</span>
+              </label>
+              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
+                <input type="checkbox" id="typeRemote" value="remote" style="margin-right: 8px;"> <span>🏠 Remote</span>
+              </label>
+              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
+                <input type="checkbox" id="typeContract" value="CONTRACTOR" style="margin-right: 8px;"> <span>📝 Contract</span>
+              </label>
+            </div>
+
             <!-- Search Buttons -->
-            <div style="display: flex; gap: 12px; justify-content: center;">
-              <button id="searchJobsBtn" class="primary-btn" style="padding: 14px 32px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+              <button id="searchJobsBtn" class="primary-btn" style="padding: 12px 24px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 160px;">
                 🔍 Search All Jobs
               </button>
-              <button id="searchGreenhouseBtn" class="secondary-btn" style="padding: 14px 24px; font-size: 16px; font-weight: 600; border-radius: 8px;">
-                � Top Tech Companies
+              <button id="searchGreenhouseBtn" class="secondary-btn" style="padding: 12px 20px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 140px;">
+                🏢 Tech Companies
               </button>
             </div>
           </div>
           
-          <!-- Advanced Filters (Collapsible) -->
-          <div class="advanced-filters" style="background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <div style="display: flex; align-items: center; justify-content: between; margin-bottom: 16px; cursor: pointer;" onclick="toggleAdvancedFilters()">
-              <h3 style="margin: 0; font-size: 16px; font-weight: 600;">⚙️ Advanced Filters</h3>
-              <span id="advancedFilterToggle" style="margin-left: auto; font-size: 14px; color: var(--text-secondary);">▼ Show</span>
-            </div>
-            
-            <div id="advancedFiltersContent" style="display: none;">
-              <!-- Filter Grid -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                
-                <!-- Employment Type -->
-                <div class="filter-group">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Employment Type</label>
-                  <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="checkbox" id="typeFullTime" value="FULLTIME" checked style="margin-right: 8px;"> Full-time
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="checkbox" id="typePartTime" value="PARTTIME" style="margin-right: 8px;"> Part-time
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="checkbox" id="typeContract" value="CONTRACTOR" style="margin-right: 8px;"> Contract
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="checkbox" id="typeIntern" value="INTERN" style="margin-right: 8px;"> Internship
-                    </label>
-                  </div>
-                </div>
-                
-                <!-- Experience Level -->
-                <div class="filter-group">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Experience Level</label>
-                  <select id="jobExperienceLevel" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-                    <option value="">Any Experience</option>
-                    <option value="no_experience">Entry Level</option>
-                    <option value="under_3_years_experience">Junior (1-3 years)</option>
-                    <option value="more_than_3_years_experience">Senior (3+ years)</option>
-                  </select>
-                </div>
-                
-                <!-- Date Posted -->
-                <div class="filter-group">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Date Posted</label>
-                  <select id="jobSearchDate" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-                    <option value="today">Today</option>
-                    <option value="3days">Last 3 Days</option>
-                    <option value="week" selected>This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="all">Any Time</option>
-                  </select>
-                </div>
-                
-                <!-- Work Preference -->
-                <div class="filter-group">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Work Style</label>
-                  <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="radio" name="workFromHome" value="false" checked style="margin-right: 8px;"> Any
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="radio" name="workFromHome" value="true" style="margin-right: 8px;"> Remote Only
-                    </label>
-                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
-                      <input type="radio" name="workFromHome" value="hybrid" style="margin-right: 8px;"> Hybrid
-                    </label>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Salary Range -->
-              <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">💰 Salary Range (Optional)</label>
-                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                  <input type="number" id="salaryMin" placeholder="Min" style="width: 100px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-                  <span style="color: var(--text-secondary);">to</span>
-                  <input type="number" id="salaryMax" placeholder="Max" style="width: 100px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-                  <select id="salaryFrequency" style="padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);">
-                    <option value="yearly">per year</option>
-                    <option value="hourly">per hour</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
+
           
           <!-- Greenhouse Company Selection (hidden by default) -->
           <div id="greenhouseCompanySection" style="display: none; background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 2px solid var(--primary); background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%);">
@@ -3950,44 +3880,60 @@
     const customLocation = document.getElementById('jobSearchLocationCustom').value.trim();
     const location = customLocation || 'remote OR us OR usa';
     
-    const datePosted = document.getElementById('jobSearchDate').value;
+    // Get date posted with null check
+    const datePostedEl = document.getElementById('jobSearchDate');
+    const datePosted = datePostedEl ? datePostedEl.value : 'week';
+    
     const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value);
     
-    // Get employment types
+    // Get employment types (with null checks)
     const employmentTypes = [];
-    if (document.getElementById('typeFullTime').checked) employmentTypes.push('FULLTIME');
-    if (document.getElementById('typePartTime').checked) employmentTypes.push('PARTTIME');
-    if (document.getElementById('typeContract').checked) employmentTypes.push('CONTRACTOR');
-    if (document.getElementById('typeIntern').checked) employmentTypes.push('INTERN');
+    const fullTimeEl = document.getElementById('typeFullTime');
+    const partTimeEl = document.getElementById('typePartTime');
+    const contractEl = document.getElementById('typeContract');
+    const internEl = document.getElementById('typeIntern');
+    
+    if (fullTimeEl && fullTimeEl.checked) employmentTypes.push('FULLTIME');
+    if (partTimeEl && partTimeEl.checked) employmentTypes.push('PARTTIME');
+    if (contractEl && contractEl.checked) employmentTypes.push('CONTRACTOR');
+    if (internEl && internEl.checked) employmentTypes.push('INTERN');
+    
+    // Default to full-time if no employment types selected
+    if (employmentTypes.length === 0) {
+      employmentTypes.push('FULLTIME');
+    }
     
     // Get experience level
-    const experienceLevel = document.getElementById('jobExperienceLevel').value;
+    const experienceLevelEl = document.getElementById('jobExperienceLevel');
+    const experienceLevel = experienceLevelEl ? experienceLevelEl.value : '';
     
-    // Get work from home preference
-    const workFromHomeRadio = document.querySelector('input[name="workFromHome"]:checked');
-    const workFromHome = workFromHomeRadio ? workFromHomeRadio.value : 'false';
+    // Get remote work preference
+    const remoteEl = document.getElementById('typeRemote');
+    const workFromHome = remoteEl && remoteEl.checked;
     
-    // Get salary range
-    const salaryMin = document.getElementById('salaryMin').value;
-    const salaryMax = document.getElementById('salaryMax').value;
-    const salaryFrequency = document.getElementById('salaryFrequency').value;
+    // Get salary range (with null checks)
+    const salaryMinEl = document.getElementById('salaryMin');
+    const salaryMaxEl = document.getElementById('salaryMax');
+    const salaryFrequencyEl = document.getElementById('salaryFrequency');
     
-    // Get selected sources
-    const sources = [];
-    if (document.getElementById('sourceJsearch') && document.getElementById('sourceJsearch').checked) sources.push('jsearch');
-    if (document.getElementById('sourceWorkday').checked) sources.push('workday');
-    if (document.getElementById('sourceGreenhouse').checked) sources.push('greenhouse');
-    if (document.getElementById('sourceLever').checked) sources.push('lever');
+    const salaryMin = salaryMinEl ? salaryMinEl.value : '';
+    const salaryMax = salaryMaxEl ? salaryMaxEl.value : '';
+    const salaryFrequency = salaryFrequencyEl ? salaryFrequencyEl.value : 'yearly';
+    
+    // Default to JSearch API
+    const sources = ['jsearch'];
     
     if (!jobTitle) {
       alert('Please enter a job title');
       return;
     }
     
-    if (sources.length === 0) {
-      alert('Please select at least one job board');
-      return;
-    }
+    console.log('[JOB_SEARCH] Starting search with params:', {
+      job_title: jobTitle,
+      location: location,
+      max_results: maxResults,
+      employment_types: employmentTypes
+    });
     
     // Show loading
     document.getElementById('jobSearchLoading').style.display = 'block';
@@ -4004,7 +3950,7 @@
         max_results: maxResults,
         employment_types: employmentTypes,
         experience_level: experienceLevel,
-        work_from_home: workFromHome === 'true',
+        work_from_home: workFromHome,
         salary_min: salaryMin ? parseInt(salaryMin) : undefined,
         salary_max: salaryMax ? parseInt(salaryMax) : undefined,
         salary_frequency: salaryFrequency

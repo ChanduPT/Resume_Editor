@@ -450,7 +450,6 @@
   #tabContainer {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 64px);
     margin: 0;
     padding: 0;
     max-width: 100%;
@@ -767,8 +766,7 @@
   
   #tabContentArea {
     margin-left: 0;
-    flex: 1;
-    padding: 40px 48px;
+    padding: 20px 32px;
     padding-bottom: 80px;
     display: flex;
     flex-direction: column;
@@ -1110,11 +1108,10 @@
   /* Dashboard Tab Panel - Modern 2025 Design */
   #dashboardTabPanel {
     width: 100%;
-    flex: 1;
     display: none;
     flex-direction: column;
     background: transparent;
-    padding: 24px;
+    padding: 16px;
   }
   
   #dashboardTabPanel.active {
@@ -1127,7 +1124,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
+    margin-bottom: 16px;
   }
   
   .dashboard-header h2 {
@@ -1160,7 +1157,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
   }
   
   .stat-card {
@@ -3071,7 +3068,7 @@
 .job-search-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 16px;
 }
 
 .search-form {
@@ -3421,7 +3418,18 @@ input[type="number"]:focus,
 select:focus {
   outline: none;
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 0,123,255), 0.1);
+  box-shadow: 0 0 0 2px rgba(0,123,255, 0.2);
+}
+
+/* Job search form improvements */
+.search-card {
+  max-width: none;
+  width: 100%;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* Suggestion dropdowns */
@@ -3457,20 +3465,7 @@ select:focus {
   border-bottom: none;
 }
 
-/* Button improvements */
-.primary-btn {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, #0056b3) 100%);
-  border: none;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,123,255,0.3);
-}
-
-.primary-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,123,255,0.4);
-}
+/* Button improvements - using existing primary-btn styles defined earlier */
 
 .secondary-btn {
   background: var(--bg);
@@ -3505,8 +3500,12 @@ select:focus {
 /* Responsive improvements */
 @media (max-width: 768px) {
   .search-card > div:first-child {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 12px;
+  }
+  
+  .search-card {
+    padding: 16px !important;
   }
   
   .advanced-filters > div:first-child {
@@ -3516,5 +3515,20 @@ select:focus {
   #greenhouseCompanySection > div:first-child {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 6px;
+  }
+  
+  .primary-btn, .secondary-btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .job-search-container {
+    padding: 12px;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
   }
 }
