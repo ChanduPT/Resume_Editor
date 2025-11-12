@@ -71,6 +71,42 @@ async def get_current_user(
     )
 
 
+async def get_current_user_optional(
+    db: Session = Depends(get_db),
+    credentials: Optional[HTTPBasicCredentials] = Depends(security),
+    bearer: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
+):
+    """
+    Optional authentication dependency - returns user if authenticated, None if not
+    Used for endpoints that can work with or without authentication
+    """
+    try:
+        # Try JWT Bearer token first
+        if bearer and bearer.credentials:
+            token = bearer.credentials
+            payload = decode_jwt_token(token)
+            if payload and "user_id" in payload:
+                user_id = payload["user_id"].lower().strip()
+                user = db.query(User).filter(User.user_id == user_id).first()
+                if user and user.is_active:
+                    logger.info(f"[AUTH] Optional JWT authentication successful for user: {user_id}")
+                    return user
+        
+        # Fallback to HTTP Basic Auth
+        if credentials:
+            user = authenticate_user(db, credentials.username, credentials.password)
+            if user:
+                logger.info(f"[AUTH] Optional Basic authentication successful for user: {credentials.username}")
+                return user
+    
+    except Exception as e:
+        logger.warning(f"[AUTH] Optional authentication failed: {e}")
+    
+    # No valid credentials - return None (no error)
+    logger.info("[AUTH] No authentication provided - proceeding without user context")
+    return None
+
+
 @limiter.limit("5/minute")
 async def register_user(request: Request, db: Session = Depends(get_db)):
     """Register new user endpoint - requires valid email"""
