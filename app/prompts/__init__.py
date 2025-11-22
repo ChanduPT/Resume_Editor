@@ -4,7 +4,11 @@ Prompts package for resume optimization
 
 from .jd_hints import JD_HINTS_PROMPT, jd_hints_response_schema
 from .summary import GENERATE_SUMMARY_FROM_JD_PROMPT, summary_response_schema
-from .experience import GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT, experience_response_schema
+from .experience import (
+    GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT, 
+    GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT,
+    experience_response_schema
+)
 from .skills import GENERATE_TECHNICAL_SKILLS_FROM_JD, skills_response_schema
 
 # Alias for backward compatibility

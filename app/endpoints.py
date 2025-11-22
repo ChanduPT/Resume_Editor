@@ -176,12 +176,18 @@ async def generate_resume_json(
         job_title = job_data.get("job_title") or data.get("job_title", "Unknown")
         jd_text = job_data.get("job_description") or data.get("jd", "")
         
+        # Get format selection (default to classic for backward compatibility)
+        resume_format = data.get("format", "classic")
+        if resume_format not in ["classic", "modern"]:
+            resume_format = "classic"
+        
         resume_job = ResumeJob(
             user_id=current_user.user_id,
             request_id=request_id,
             company_name=company_name,
             job_title=job_title,
             mode=data.get("mode", "complete_jd"),
+            format=resume_format,
             jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
             status="pending",
@@ -239,18 +245,28 @@ async def update_job_resume(request_id: str, request: Request, current_user: Use
         raise HTTPException(status_code=500, detail=f"Failed to update resume: {str(e)}")
 
 
-async def download_resume(request_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def download_resume(
+    request_id: str, 
+    format: str = "classic",  # Accept format as query parameter
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
     job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id, ResumeJob.user_id == current_user.user_id).first()
     if not job or job.status != "completed":
         raise HTTPException(status_code=404, detail="Completed job not found")
     try:
+        # Use format from query parameter (allows downloading same resume in different formats)
+        # Validate format value
+        if format not in ["classic", "modern"]:
+            format = "classic"
+        
         with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
             tmp_path = tmp_file.name
-        create_resume(job.final_resume_json, tmp_path)
+        create_resume(job.final_resume_json, tmp_path, format=format)
         with open(tmp_path, 'rb') as f:
             docx_content = f.read()
         os.unlink(tmp_path)
-        filename = f"{job.company_name}_{job.job_title}_Resume.docx".replace(" ", "_").replace("/", "_")
+        filename = f"{job.company_name}_{job.job_title}_Resume_{format}.docx".replace(" ", "_").replace("/", "_")
         return Response(content=docx_content, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', headers={"Content-Disposition": f"attachment; filename={filename}"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

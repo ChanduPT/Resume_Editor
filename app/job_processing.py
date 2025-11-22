@@ -18,7 +18,7 @@ from app.utils import (
 from app.prompts import (
     JD_HINTS_PROMPT, jd_hints_response_schema,
     GENERATE_SUMMARY_FROM_JD_PROMPT, summary_response_schema,
-    GENERATE_EXPERIENCE_FROM_JD_PROMPT, experience_response_schema,
+    GENERATE_EXPERIENCE_FROM_JD_PROMPT, GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT, experience_response_schema,
     GENERATE_TECHNICAL_SKILLS_FROM_JD, skills_response_schema,
     SCORING_PROMPT_JSON, APPLY_EDITS_PROMPT,
     ORGANIZE_SKILLS_PROMPT, GENERATE_FROM_JD_PROMPT,
@@ -237,36 +237,29 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
     
     # STEP 2: Generate summary, experience, skills in PARALLEL
     async def generate_summary():
-        """Generate professional summary from JD hints"""
+        """Generate optimized summary from JD hints - SAME FOR BOTH MODES"""
         try:
             original_summary = resume_json.get("summary", "")
             
-            # Use different prompts based on mode
-            if mode == "complete_jd":
-                logger.info("[SUMMARY] Using GENERATE_SUMMARY_FROM_JD_PROMPT (complete_jd mode)")
-                prompt = GENERATE_SUMMARY_FROM_JD_PROMPT.format(
-                    technical_keywords=jd_hints.get("technical_keywords", []),
-                    soft_skills=jd_hints.get("soft_skills_role_keywords", []),
-                    phrases=jd_hints.get("phrases", []),
-                    original_summary=original_summary
-                )
-
-                result_raw = await chat_completion_async(prompt, response_schema=summary_response_schema, timeout=60)
-                result = json.loads(result_raw)
-                logger.info("[SUMMARY] Generated successfully")
-                return result.get("summary", "")
+            # Always generate new summary using JD (regardless of mode)
+            log_subsection(logger, "SUMMARY GENERATION")
+            logger.info("✓ Generating summary from JD hints (applies to both modes)")
             
-            else:  # resume_jd mode
-                log_subsection(logger, "SUMMARY GENERATION (resume_jd mode)")
-                logger.info("✓ Mode: resume_jd - PRESERVING ORIGINAL SUMMARY")
-                log_data(logger, "Input Summary", original_summary, max_length=300)
-                result = original_summary if original_summary else "Professional with relevant experience"
-                log_data(logger, "Output Summary", result, max_length=300)
-                if original_summary == result:
-                    logger.info("✅ Summary preserved successfully (unchanged)")
-                else:
-                    logger.warning("⚠️  Summary was modified (unexpected!)")
-                return result
+            # Always use complete_jd logic
+            prompt = GENERATE_SUMMARY_FROM_JD_PROMPT.format(
+                technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
+                soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
+                phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False)
+            )
+            
+            logger.info(f"[SUMMARY] Using GENERATE_SUMMARY_FROM_JD_PROMPT")
+            result_raw = await asyncio.wait_for(
+                chat_completion_async(prompt, response_schema=summary_response_schema),
+                timeout=60
+            )
+            result = json.loads(result_raw)
+            logger.info("[SUMMARY] Generated successfully")
+            return result.get("summary", "")
             
         except asyncio.TimeoutError:
             logger.error("[SUMMARY] Timeout after 60 seconds")
@@ -302,18 +295,16 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
                     experience_data=json.dumps(experience_metadata, ensure_ascii=False, indent=2)
                 )
             else:  # resume_jd mode
-                logger.info("[EXPERIENCE] Using original experience (resume_jd mode - applying light edits)")
-                # In resume_jd mode, give existing experience  as input for light editing
-                experience_metadata = experience_data
+                logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT (resume_jd mode)")
+                logger.info(f"[EXPERIENCE] Enhancing existing bullets for {len(experience_data)} roles")
                 
-                prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
+                # In resume_jd mode, send complete experience with all bullets for enhancement
+                prompt = GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT.format(
                     technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
                     soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
                     phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
-                    experience_data=json.dumps(experience_metadata, ensure_ascii=False, indent=2)
+                    experience_data=json.dumps(experience_data, ensure_ascii=False, indent=2)
                 )
-
-                return experience_data if experience_data else []
             
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
             result = json.loads(result_raw)
@@ -332,49 +323,40 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             return resume_json.get("experience", [])
     
     async def generate_skills():
-        """Generate technical skills categorized by JD requirements"""
+        """Generate technical skills categorized by JD requirements - SAME FOR BOTH MODES"""
         try:
             existing_skills = resume_json.get("technical_skills", {})
             
-            # Use different prompts based on mode
-            if mode == "complete_jd":
-                logger.info("[SKILLS] Using GENERATE_TECHNICAL_SKILLS_FROM_JD (complete_jd mode)")
-                prompt = GENERATE_TECHNICAL_SKILLS_FROM_JD.format(
-                    jd_technical_keywords=", ".join(jd_hints.get("technical_keywords", [])),
-                    existing_skills=json.dumps(existing_skills, ensure_ascii=False, indent=2)
-                )
-                result_raw = await chat_completion_async(prompt, response_schema=skills_response_schema, timeout=60)
-                
-                # Log raw response to see what model returns
-                logger.info(f"[SKILLS] Raw response (first 500 chars): {result_raw[:500]}")
-                
-                # Use extract_json to handle markdown code blocks
-                result = extract_json(result_raw)
-                if not result:
-                    logger.error(f"[SKILLS] Failed to extract JSON from response")
-                    logger.error(f"[SKILLS] Raw response: {result_raw}")
-                    return resume_json.get("technical_skills", {})
-                
-                logger.info(f"[SKILLS] Parsed JSON structure: {list(result.keys())}")
-                
-                # Extract the nested technical_skills object
-                technical_skills = result.get("technical_skills", {})
-                logger.info(f"[SKILLS] Generated {len(technical_skills)} categories: {list(technical_skills.keys())}")
-                return technical_skills
+            # Always generate new skills using JD (regardless of mode)
+            log_subsection(logger, "SKILLS GENERATION")
+            logger.info("✓ Generating skills from JD hints (applies to both modes)")
             
-            else:  # resume_jd mode
-                log_subsection(logger, "SKILLS GENERATION (resume_jd mode)")
-                logger.info("✓ Mode: resume_jd - PRESERVING ORIGINAL SKILLS")
-                logger.info(f"Input Skills: {len(existing_skills)} categories")
-                log_data(logger, "Input Skills", existing_skills, max_length=600)
-                result = existing_skills if existing_skills else {}
-                logger.info(f"Output Skills: {len(result)} categories")
-                log_data(logger, "Output Skills", result, max_length=600)
-                if existing_skills == result:
-                    logger.info("✅ Skills preserved successfully (unchanged)")
-                else:
-                    logger.warning("⚠️  Skills were modified (unexpected!)")
-                return result
+            # Always use complete_jd logic
+            prompt = GENERATE_TECHNICAL_SKILLS_FROM_JD.format(
+                jd_technical_keywords=", ".join(jd_hints.get("technical_keywords", [])),
+                existing_skills=json.dumps(existing_skills, ensure_ascii=False, indent=2)
+            )
+            
+            logger.info(f"[SKILLS] Using GENERATE_TECHNICAL_SKILLS_FROM_JD")
+            result_raw = await chat_completion_async(prompt, response_schema=skills_response_schema, timeout=60)
+            
+            # Log raw response to see what model returns
+            logger.info(f"[SKILLS] Raw response (first 500 chars): {result_raw[:500]}")
+            
+            # Use extract_json to handle markdown code blocks
+            result = extract_json(result_raw)
+            if not result:
+                logger.error(f"[SKILLS] Failed to extract JSON from response")
+                logger.error(f"[SKILLS] Raw response: {result_raw}")
+                return resume_json.get("technical_skills", {})
+            
+            logger.info(f"[SKILLS] Parsed JSON structure: {list(result.keys())}")
+            
+            # Extract the nested technical_skills object
+            technical_skills = result.get("technical_skills", {})
+            logger.info(f"[SKILLS] Generated {len(technical_skills)} categories: {list(technical_skills.keys())}")
+            return technical_skills
+            
         except asyncio.TimeoutError:
             logger.error("[SKILLS] Timeout after 60 seconds")
             return resume_json.get("technical_skills", {})
@@ -401,29 +383,19 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
     # Log final output comparison
     log_section_header(logger, "FINAL OUTPUT COMPARISON")
     
+    # Log final output
+    log_section_header(logger, "FINAL OUTPUT COMPARISON")
+    
     if mode == "resume_jd":
-        logger.info("🔍 RESUME_JD MODE - Verifying data preservation:")
+        logger.info("🔍 RESUME_JD MODE - Enhanced content with JD keywords:")
         logger.info("")
-        
-        # Summary comparison
-        input_summary = resume_json.get('summary', '')
-        output_summary = final_json['summary']
-        log_comparison(logger, "SUMMARY", input_summary, output_summary, max_length=300)
-        
-        # Skills comparison
-        input_skills = resume_json.get('technical_skills', {})
-        output_skills = final_json['technical_skills']
-        log_comparison(logger, "SKILLS", input_skills, output_skills, max_length=400)
-        
-        # Experience comparison (count only, since it's intentionally modified)
-        input_exp_count = len(resume_json.get('experience', []))
-        output_exp_count = len(final_json['experience'])
-        logger.info(f"\n📊 EXPERIENCE COMPARISON:")
-        logger.info(f"   Input: {input_exp_count} roles")
-        logger.info(f"   Output: {output_exp_count} roles")
-        logger.info(f"   ℹ️  Experience is intentionally modified in resume_jd mode")
+        logger.info(f"✓ Summary: Generated from JD (ATS-optimized)")
+        logger.info(f"✓ Skills: Generated from JD (ATS-optimized)")
+        logger.info(f"✓ Experience: Enhanced existing bullets with JD keywords")
+        logger.info(f"   - Input: {len(resume_json.get('experience', []))} roles")
+        logger.info(f"   - Output: {len(final_json['experience'])} roles")
     else:
-        logger.info("🔍 COMPLETE_JD MODE - Generated fresh content:")
+        logger.info("🔍 COMPLETE_JD MODE - Generated fresh content from JD:")
         log_data(logger, "Generated Summary", final_json['summary'], max_length=300)
         logger.info(f"Generated Experience: {len(final_json['experience'])} roles")
         logger.info(f"Generated Skills: {len(final_json['technical_skills'])} categories")

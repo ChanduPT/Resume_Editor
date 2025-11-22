@@ -57,6 +57,46 @@
   </div>
 </div>
 
+<!-- Format Selection Modal -->
+<div id="formatModal" class="view-modal" style="display: none;">
+  <div class="view-modal-content" style="max-width: 600px;">
+    <div class="view-modal-header">
+      <h2>📄 Choose Resume Format</h2>
+      <button class="view-modal-close" onclick="closeFormatModal()">✕</button>
+    </div>
+    <div class="view-modal-body">
+      <p style="margin-bottom: 20px; color: var(--text-secondary);">Select the format for your resume download:</p>
+      
+      <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <label class="format-choice-card" style="flex: 1; cursor: pointer; padding: 20px; border: 2px solid var(--border); border-radius: 8px; transition: all 0.2s;">
+          <input type="radio" name="downloadFormat" value="classic" checked style="margin-right: 8px;">
+          <div>
+            <h3 style="margin: 0 0 8px 0; color: var(--text);">📋 Classic</h3>
+            <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">Traditional Times New Roman with underlined headers</p>
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--accent); font-weight: 600;">Best for: Corporate, Finance, Law</p>
+          </div>
+        </label>
+        
+        <label class="format-choice-card" style="flex: 1; cursor: pointer; padding: 20px; border: 2px solid var(--border); border-radius: 8px; transition: all 0.2s;">
+          <input type="radio" name="downloadFormat" value="modern" style="margin-right: 8px;">
+          <div>
+            <h3 style="margin: 0 0 8px 0; color: var(--text);">✨ Modern</h3>
+            <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">Contemporary Calibri with bold headers</p>
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--accent); font-weight: 600;">Best for: Tech, Startups, Creative</p>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="view-modal-footer">
+      <button class="view-modal-btn primary" onclick="confirmFormatDownload()">
+        <span class="btn-icon">⬇️</span>
+        <span>Download Resume</span>
+      </button>
+      <button class="view-modal-btn cancel" onclick="closeFormatModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Help/Tutorial Modal -->
 <div id="helpModal" class="view-modal" style="display: none;">
   <div class="view-modal-content" style="max-width: 1200px;">
@@ -88,6 +128,18 @@
         <div style="margin-bottom: 30px;">
           <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
             <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">2</span>
+            Choose Resume Format
+          </h3>
+          <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
+            <p><strong>📄 Classic Format:</strong> Traditional layout with Times New Roman and underlined headers. Best for corporate, finance, law, and government positions.</p>
+            <p><strong>✨ Modern Format:</strong> Contemporary design with Calibri and bold headers. Best for tech companies, startups, and creative industries.</p>
+            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>Tip: Choose Classic if you're unsure about company culture!</em></p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">3</span>
             Fill in Job Description
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
@@ -104,7 +156,7 @@
 
         <div style="margin-bottom: 30px;">
           <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">3</span>
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">4</span>
             Add Your Resume Data (Resume + JD Mode)
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
@@ -126,7 +178,7 @@
 
         <div style="margin-bottom: 30px;">
           <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">4</span>
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">5</span>
             Generate Your Resume
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
@@ -143,7 +195,7 @@
 
         <div style="margin-bottom: 30px;">
           <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">5</span>
+            <span style="background: var(--primary); color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">6</span>
             View, Edit & Download Your Resume
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
@@ -667,6 +719,18 @@
                   Creates a complete resume from scratch using only the job description
                 </p>
               </div>
+              
+              <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
+                <span class="btn-icon">🚀</span>
+                <span class="btn-text">Generate Resume</span>
+              </button>
+            </div>
+          </div>
+                <p class="mode-description" style="font-size: 11px; margin-top: 2px;">
+                  Choose resume layout style
+                </p>
+              </div>
+              
               <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
                 <span class="btn-icon">🚀</span>
                 <span class="btn-text">Generate Resume</span>
@@ -2525,23 +2589,39 @@
     // Get action bar
     const actionBar = document.getElementById('actionBar');
     
+    // Force hide job description elements when not in JD tab
+    const jdTextarea = document.getElementById('jobDescriptionTab');
+    const jdContainer = document.querySelector('.jd-textarea-container');
+    
     // Activate the selected tab
     if (tab === 'resume') {
       tabResumeBtn.classList.add('active');
       resumeFormContainer.classList.add('active');
       actionBar.style.display = 'flex'; // Show in View Resume
+      // Hide JD elements
+      if (jdTextarea) jdTextarea.style.display = 'none';
+      if (jdContainer) jdContainer.style.display = 'none';
     } else if (tab === 'jd') {
       tabEditJDBtn.classList.add('active');
       jobDescTabPanel.classList.add('active');
       actionBar.style.display = 'none'; // Hide in Generate Resume
+      // Show JD elements
+      if (jdTextarea) jdTextarea.style.display = 'block';
+      if (jdContainer) jdContainer.style.display = 'flex';
     } else if (tab === 'jobsearch') {
       tabJobSearchBtn.classList.add('active');
       jobSearchTabPanel.style.display = 'block';
       actionBar.style.display = 'none'; // Hide in Job Search
+      // Hide JD elements
+      if (jdTextarea) jdTextarea.style.display = 'none';
+      if (jdContainer) jdContainer.style.display = 'none';
     } else if (tab === 'dashboard') {
       tabDashboardBtn.classList.add('active');
       dashboardTabPanel.classList.add('active');
       actionBar.style.display = 'none'; // Hide in Dashboard
+      // Hide JD elements
+      if (jdTextarea) jdTextarea.style.display = 'none';
+      if (jdContainer) jdContainer.style.display = 'none';
       loadDashboardStats(); // Load stats when dashboard tab is opened
       loadDashboardHistory(); // Load resume history
     }
@@ -2611,12 +2691,18 @@
       const resumeModeRadio = document.querySelector('input[name="resumeMode"]:checked');
       const resumeMode = resumeModeRadio ? resumeModeRadio.value : 'complete_jd';
       
+      // Get selected format from radio button
+      const resumeFormatRadio = document.querySelector('input[name="resumeFormat"]:checked');
+      const resumeFormat = resumeFormatRadio ? resumeFormatRadio.value : 'classic';
+      
       console.log('Selected mode:', resumeMode);
+      console.log('Selected format:', resumeFormat);
       
       // Generate using authenticated endpoint
       try {
         const requestData = {
           mode: resumeMode,
+          format: resumeFormat,
           resume_data: resumeData,
           job_description_data: {
             company_name: companyName,
@@ -3428,43 +3514,91 @@
   }
 
   // Download Resume as DOCX (on-the-fly generation)
-  async function downloadResumeDocx(requestId, companyName, jobTitle) {
-    try {
-      // Fetch the resume JSON
-      const data = await dashApiCall(`/api/jobs/${requestId}/result`);
-      
-      if (!data.final_resume) {
-        showDashMessage('Resume data not found', 'error');
-        return;
-      }
+  // Store download context for view modal
+  let pendingViewModalDownload = null;
 
-      // Call the backend to generate DOCX on-the-fly
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${requestId}/download`, {
+  async function downloadResumeDocx(requestId, companyName, jobTitle) {
+    // Store context and show format selection modal
+    pendingViewModalDownload = { requestId, companyName, jobTitle };
+    document.getElementById('formatModal').style.display = 'flex';
+  }
+
+  // Update confirmFormatDownload to handle both dashboard and view modal downloads
+  async function confirmFormatDownload() {
+    const format = document.querySelector('input[name="downloadFormat"]:checked').value;
+    
+    // Check if download is from view modal
+    if (pendingViewModalDownload) {
+      try {
+        const { requestId, companyName, jobTitle } = pendingViewModalDownload;
+        
+        const response = await fetch(`${API_BASE_URL}/api/jobs/${requestId}/download?format=${format}`, {
+          headers: {
+            'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate resume');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${companyName}_${jobTitle}_Resume_${format}.docx`.replace(/[^a-z0-9_\-\.]/gi, '_');
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        showDashMessage(`Resume downloaded in ${format} format!`, 'success');
+        closeFormatModal();
+        pendingViewModalDownload = null;
+      } catch (error) {
+        console.error('Download failed:', error);
+        showDashMessage('Failed to download resume', 'error');
+        closeFormatModal();
+      }
+      return;
+    }
+    
+    // Otherwise, handle dashboard download
+    if (!pendingDownloadRequestId) {
+      showDashMessage('No resume selected for download', 'error');
+      return;
+    }
+
+    const url = `${API_BASE_URL}/api/jobs/${pendingDownloadRequestId}/download?format=${format}`;
+    
+    if (dashboardCredentials) {
+      fetch(url, {
         headers: {
           'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
         }
+      })
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `resume_${pendingDownloadRequestId}_${format}.docx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showDashMessage(`Resume downloaded in ${format} format!`, 'success');
+        closeFormatModal();
+      })
+      .catch(error => {
+        showDashMessage('Download failed: ' + error.message, 'error');
+        closeFormatModal();
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate resume');
-      }
-
-      // Download the file
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${companyName}_${jobTitle}_Resume.docx`.replace(/[^a-z0-9_\-\.]/gi, '_');
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      showDashMessage('Resume downloaded successfully!', 'success');
-    } catch (error) {
-      console.error('Download failed:', error);
-      showDashMessage('Failed to download resume', 'error');
     }
+  }
+
+  function closeFormatModal() {
+    document.getElementById('formatModal').style.display = 'none';
+    pendingDownloadRequestId = null;
+    pendingViewModalDownload = null;
   }
 
   // Download Job Description
@@ -3565,29 +3699,12 @@
     }
   }
 
-  // Download Resume
+  // Download Resume - Show format selection modal
+  let pendingDownloadRequestId = null;
+
   function downloadDashboardResume(requestId) {
-    const url = `${API_BASE_URL}/api/jobs/${requestId}/download`;
-    
-    if (dashboardCredentials) {
-      fetch(url, {
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
-        }
-      })
-      .then(response => response.blob())
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `resume_${requestId}.docx`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      })
-      .catch(error => {
-        showDashMessage('Download failed: ' + error.message, 'error');
-      });
-    }
+    pendingDownloadRequestId = requestId;
+    document.getElementById('formatModal').style.display = 'flex';
   }
 
   // Cleanup on page unload

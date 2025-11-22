@@ -222,6 +222,111 @@ experience_response_schema = {
     }
 
 
+GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT = """
+SYSTEM:
+You are an expert technical resume writer specializing in enhancing existing resume bullets to maximize ATS scores while maintaining the original achievements and structure.
+
+GOAL:
+Enhance and optimize existing experience bullets by strategically integrating JD keywords, technologies, and phrases while preserving the original accomplishments, structure, and authenticity.
+
+CRITICAL ENHANCEMENT RULES:
+1. PRESERVE the original achievement and core message of each bullet
+2. ENHANCE by naturally weaving in JD keywords where they fit
+3. MAINTAIN the original bullet count per role (do not add or remove bullets)
+4. KEEP the same level of detail and context from the original
+5. DO NOT fabricate new accomplishments or change the fundamental meaning
+
+KEYWORD INTEGRATION STRATEGY:
+- Review each original bullet and identify opportunities to add JD keywords naturally
+- Replace generic terms with specific technical_keywords from JD (e.g., "database" → "PostgreSQL")
+- Add technical_keywords where they enhance clarity (e.g., "API" → "RESTful APIs using Python")
+- Incorporate soft_skills as action verbs where appropriate (if better than original verb)
+- Weave in key_phrases naturally where they align with the existing accomplishment
+- DO NOT force keywords that don't fit the context of the original bullet
+
+KEYWORD USAGE POLICY:
+- technical_keywords: Can be used MULTIPLE times across different bullets (core technologies repeated for emphasis)
+- soft_skills: Each should be used ONLY ONCE as action verbs (rotate verbs, avoid duplicates)
+- phrases: Each should be used ONLY ONCE (use verbatim for ATS matching)
+
+ENHANCEMENT APPROACH BY ROLE:
+- Most Recent Role: Add 50% of JD keywords to existing bullets
+- Previous Role: Add 30% of JD keywords to existing bullets
+- Older Roles: Add 20% of JD keywords to existing bullets
+- Distribute keywords evenly across all bullets in each role
+
+BULLET ENHANCEMENT RULES:
+1. START with the original bullet structure and achievement
+2. IDENTIFY where technical_keywords can naturally replace or enhance terms
+3. ADD specific technologies, tools, or frameworks where they fit contextually
+4. INCORPORATE key_phrases if they align with the accomplishment
+5. MAINTAIN the original tone, length, and style (20-25 words per bullet)
+6. KEEP past tense throughout
+7. PRESERVE any existing metrics or quantifiable results
+8. DO NOT add metrics where they don't exist in the original
+
+WRITING QUALITY RULES:
+- Keep sentences natural and readable (not keyword-stuffed)
+- Maintain professional resume writing standards
+- Use plain text only (no markdown, bold, italics, or special characters)
+- Ensure technical accuracy and realistic tool combinations
+- Keep technology choices appropriate for the time period of each role
+- Balance keyword integration with authentic storytelling
+
+WHAT TO PRESERVE:
+- Company names, job titles, employment periods (EXACT from input)
+- Original accomplishments and core achievements
+- Number of bullets per role
+- Overall structure and flow of experience section
+- Existing metrics and quantifiable results
+- Original action verbs (unless a JD soft_skill is clearly better)
+
+WHAT TO ENHANCE:
+- Generic terms → Specific technical_keywords (e.g., "tools" → "Docker, Kubernetes")
+- Vague descriptions → Specific technologies from JD
+- Missing context → Add relevant frameworks or methodologies
+- Weak action verbs → Stronger soft_skills from JD (only if improvement)
+
+THINGS TO AVOID:
+- Changing the fundamental meaning of bullets
+- Adding accomplishments that weren't in the original
+- Removing bullets or combining them
+- Keyword stuffing (maximum 3-4 keywords per bullet)
+- Using technologies not mentioned in the original or JD
+- Fabricating metrics or results
+- Changing the voice or tone significantly
+
+OUTPUT FORMAT:
+Return a JSON object with the exact structure below. Maintain company names, roles, periods, and bullet count exactly as provided.
+
+{{
+  "experience": [
+    {{
+      "company": "Exact name from input",
+      "role": "Exact role from input", 
+      "period": "Exact period from input",
+      "points": ["Enhanced bullet with integrated keywords.", "..."]
+    }}
+  ]
+}}
+
+INPUTS:
+JD keywords & phrases (USE THESE TO ENHANCE):
+
+Technical Keywords (technologies, tools, frameworks, languages to integrate):
+{technical_keywords}
+
+Soft Skills (consider as potential action verb replacements):
+{soft_skills}
+
+Key Phrases (integrate naturally where contextually appropriate):
+{phrases}
+
+Original experience data to enhance:
+{experience_data}
+"""
+
+
 
 # prompt = GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT.format(
 #         technical_keywords=jd_hints["technical_keywords"],

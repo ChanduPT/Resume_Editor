@@ -1090,19 +1090,22 @@
   #resumeFormContainer, #jobDescTabPanel {
     width: 100%;
     flex: 1;
-    display: none;
+    display: none !important;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
     min-width: 0;
     max-width: 100%;
-    position: relative; /* For absolute positioned buttons */
+    position: relative;
+    overflow: hidden;
+    visibility: hidden;
   }
   
   #resumeFormContainer.active, #jobDescTabPanel.active {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     animation: fadeIn 0.3s ease;
+    visibility: visible;
   }
   
   /* Dashboard Tab Panel - Modern 2025 Design */
@@ -1117,6 +1120,20 @@
   #dashboardTabPanel.active {
     display: flex;
     animation: fadeIn 0.3s ease;
+  }
+  
+  /* Force hide Job Description textarea when Dashboard is active */
+  #dashboardTabPanel.active ~ #jobDescTabPanel,
+  #dashboardTabPanel.active ~ * #jobDescTabPanel,
+  body:has(#dashboardTabPanel.active) #jobDescTabPanel,
+  body:has(#dashboardTabPanel.active) #jobDescriptionTab,
+  body:has(#dashboardTabPanel.active) .jd-textarea-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
   }
   
   /* Dashboard Header */
@@ -1749,6 +1766,14 @@
     min-width: 0;
   }
   
+  .jd-format-section {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  
   .mode-label {
     font-weight: 600;
     font-size: 13px;
@@ -1842,8 +1867,6 @@
     padding: 20px 24px;
     overflow: hidden;
     min-height: 0;
-    position: relative;
-    z-index: 1;
     background: var(--bg);
     width: 100%;
     box-sizing: border-box;
@@ -1874,6 +1897,13 @@
     overflow-y: auto;
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Hide textarea when not in job description tab */
+  #dashboardTabPanel ~ #jobDescriptionTab,
+  #resumeFormContainer ~ #jobDescriptionTab {
+    display: none !important;
+    visibility: hidden !important;
   }
   
   #jobDescriptionTab:focus {
@@ -3495,6 +3525,26 @@ select:focus {
 #greenhouseCompanySection input[type="checkbox"]:checked + * {
   color: var(--primary);
   font-weight: 600;
+}
+
+/* Format Selection Modal Styles */
+.format-choice-card {
+  display: block;
+}
+
+.format-choice-card:hover {
+  border-color: var(--accent) !important;
+  background: var(--accent-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.format-choice-card input[type="radio"]:checked + div {
+  color: var(--accent);
+}
+
+.format-choice-card input[type="radio"]:checked {
+  accent-color: var(--accent);
 }
 
 /* Responsive improvements */

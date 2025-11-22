@@ -114,6 +114,7 @@ class ResumeJob(Base):
     company_name = Column(String(255), index=True)
     job_title = Column(String(255))
     mode = Column(String(50))  # "complete_jd" or "resume_jd"
+    format = Column(String(50), default="classic")  # "classic" or "modern"
     
     # Input data
     jd_text = Column(Text)

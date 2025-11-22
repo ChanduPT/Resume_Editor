@@ -5,6 +5,7 @@ An AI-powered resume builder that tailors your resume to specific job descriptio
 ## 🎉 What's New (v2.0)
 
 **Major Feature Updates:**
+- 📄 **Dual Resume Formats** - Choose between Classic (traditional) and Modern (contemporary) layouts
 - ✏️ **Interactive Edit Mode** - Click-to-edit any section of generated resumes
 - 🔧 **Advanced Skills Management** - Edit skill category names AND values, add/remove categories
 - 👁️ **View Modal System** - Preview resumes and job descriptions before downloading
@@ -69,7 +70,10 @@ An AI-powered resume builder that tailors your resume to specific job descriptio
 - **Inline Updates** - All changes sync to your database instantly
 - **Version Control** - Save and retrieve different versions via JSON export
 
-### � Import/Export & Downloads
+### 📄 Import/Export & Downloads
+- **Dual Resume Formats**:
+  - **Classic Format** - Traditional Times New Roman with underlined headers (best for corporate, finance, law)
+  - **Modern Format** - Clean Calibri with bold headers (best for tech, startups, creative roles)
 - **JSON Import/Export** - Save your resume data for reuse across multiple applications
 - **DOCX Generation** - Professional Word documents with proper formatting
 - **Dual Downloads** - Download both resume and original job description
