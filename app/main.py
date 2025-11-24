@@ -4,27 +4,27 @@
 import os
 import sys
 import logging
+import re
 from pathlib import Path
 from datetime import datetime
 import json
 import asyncio
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from app.create_resume import create_resume
+from typing import Dict, Any
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, HTTPException
 
 # Load environment variables
 load_dotenv()
 
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.security import HTTPBasic
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+from app.create_resume import create_resume
 from app.database import init_db
 from app.auth import register_user, login_user, reset_password
 from app.endpoints import (
@@ -36,6 +36,19 @@ from app.endpoints import (
     search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
     get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint,
     extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint
+)
+from app.utils import (
+    normalize_whitespace, split_resume_sections,
+    chat_completion, parse_experience_to_json, parse_skills_to_json
+)
+from app.helpers import (
+    save_debug_file as _save_debug_file, 
+    balance_experience_roles as _balance_experience_roles,
+    safe_load_json as _safe_load_json
+)
+from app.prompts import (
+    JD_HINTS_PROMPT, SCORING_PROMPT_JSON, APPLY_EDITS_PROMPT,
+    ORGANIZE_SKILLS_PROMPT, GENERATE_FROM_JD_PROMPT
 )
 
 # --------------------- App Setup ---------------------
@@ -231,8 +244,6 @@ def convert_resume_json_to_text(resume_data: dict) -> str:
     return "\n".join(lines)
 
 # --------------------- Endpoints ---------------------
-from fastapi import HTTPException
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 
@@ -514,20 +525,8 @@ app.post("/api/search-jobs")(limiter.limit("10/minute")(search_jobs_endpoint))
 app.post("/api/search-greenhouse-jobs")(limiter.limit("15/minute")(search_greenhouse_jobs_endpoint))
 app.post("/api/scrape-job-details")(limiter.limit("10/minute")(scrape_job_details_endpoint))
 
-    if request_id:
-        send_progress(request_id, 95, "Generating Word document...")
-
-    comapny_name = job_json.get("company_name", "Company")
-    # file name - company_name_date_time.docx
-    file_name = f"{comapny_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
-
 app.get("/api/cache/stats")(get_cache_stats_endpoint)
 app.post("/api/cache/clear")(clear_cache_endpoint)
 app.post("/api/cache/refresh")(refresh_cache_endpoint)
 
 # --------------------- Cleanup Endpoints ---------------------
-
-    if request_id:
-        send_progress(request_id, 100, "Resume generated successfully!")
-
-    return {"result": "Resume generated successfully", "file_name": file_name}
