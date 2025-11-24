@@ -96,13 +96,15 @@ INPUTS USAGE RULES:
 
 SUMMARY STRUCTURE (MANDATORY 5 SENTENCES):
 Sentence 1: Introduce the candidate (years of experience + role title) and front-load 2–3 primary technical keywords from the JD, plus a brief domain context.
-Sentence 2: Expand on technical expertise using 4–5 additional JD skills, tools, or frameworks in a flowing, natural sentence.
-Sentence 3: Highlight key deliverables or achievements using JD phrases that indicate impact, measurable outcomes, or value creation.
+Sentence 2: Expand on technical expertise using 4–5 additional JD skills, tools, or frameworks in a flowing, natural sentence. (avoid keword stuffing prioritize flow and clarity)
+Sentence 3: Highlight key deliverables or achievements using JD phrases that indicate impact, measurable outcomes, or value creation. (avoid just listing phrases, make it flow if needed you can modify JD phrases slightly to fit naturally)
 Sentence 4: Reference infrastructure, cloud, or AI technologies from the JD (AWS, GCP, CI/CD, Kubernetes, etc.), showing breadth of system or deployment experience.
 Sentence 5: Close with a confident ownership or quality statement emphasizing end-to-end delivery, collaboration, or impactful outcomes.
 
 Linguistic and Flow Rules:
 - Dont use any pronouns
+- use simple past tense throughout 
+- Maximize clarity and readability while integrating keywords
 - Maintain consistent rhythm (18–22 words per sentence)
 - Alternate between technical and narrative focus to ensure natural flow
 - Vary action verbs (designing, building, implementing, developing, optimizing)
