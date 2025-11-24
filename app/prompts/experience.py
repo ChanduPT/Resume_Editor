@@ -362,7 +362,7 @@ Additional rules:
 
 BULLET WRITING CONSTRAINTS:
 - Produce exactly 8–10 bullets per role.
-- 20–25 words per bullet.
+- Produce each bullet with length of 20–25 words.
 - Use only ONE connector per bullet (“using”, “to”, “for”, “with”, “enabling”).
 - Use realistic tools for the given time period and industry.
 - Never combine equivalent/conflicting tools (e.g., AWS + Azure in same role, Tableau + Power BI in same role).
