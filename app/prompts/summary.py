@@ -102,6 +102,7 @@ Sentence 4: Reference infrastructure, cloud, or AI technologies from the JD (AWS
 Sentence 5: Close with a confident ownership or quality statement emphasizing end-to-end delivery, collaboration, or impactful outcomes.
 
 Linguistic and Flow Rules:
+- Dont use any pronouns
 - Maintain consistent rhythm (18–22 words per sentence)
 - Alternate between technical and narrative focus to ensure natural flow
 - Vary action verbs (designing, building, implementing, developing, optimizing)
