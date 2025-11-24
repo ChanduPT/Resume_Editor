@@ -12,6 +12,7 @@ import asyncio
 from typing import Dict, Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -28,14 +29,13 @@ from app.create_resume import create_resume
 from app.database import init_db
 from app.auth import register_user, login_user, reset_password
 from app.endpoints import (
-    generate_resume_json, get_job_status, get_job_keywords, get_job_result, update_job_resume,
+    generate_resume_json, get_job_status, get_job_result, update_job_resume,
     download_resume, download_job_description,
     get_user_jobs, get_user_stats,
     save_resume_template, get_resume_template,
     delete_job, cleanup_stale_jobs, parse_resume_document,
     search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
-    get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint,
-    extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint
+    get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint
 )
 from app.utils import (
     normalize_whitespace, split_resume_sections,
@@ -143,390 +143,67 @@ async def serve_index():
             status_code=404
         )
 
-def _safe_load_json(raw: str):
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.1",
+        "max_workers": int(os.getenv("MAX_WORKERS", "2")),
+        "max_concurrent_jobs": int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
+    }
+
+# --------------------- Auth Endpoints ---------------------
+
+app.post("/api/auth/register")(register_user)
+app.post("/api/auth/login")(login_user)
+app.post("/api/auth/reset-password")(reset_password)
+
+# --------------------- Resume Generation Endpoints ---------------------
+
+app.post("/api/generate_resume_json")(limiter.limit("5/minute")(generate_resume_json))
+
+# --------------------- Job Management Endpoints ---------------------
+
+app.get("/api/jobs/{request_id}/status")(get_job_status)
+app.get("/api/jobs/{request_id}/result")(get_job_result)
+app.put("/api/jobs/{request_id}/update")(update_job_resume)
+app.get("/api/jobs/{request_id}/download")(download_resume)
+app.get("/api/jobs/{request_id}/download-jd")(download_job_description)
+app.delete("/api/jobs/{request_id}")(delete_job)
+
+# Manual cleanup endpoint (for debugging)
+@app.post("/api/admin/cleanup-stale-jobs")
+async def manual_cleanup():
+    """Manually trigger cleanup of stale jobs"""
+    from app.database import SessionLocal
+    db = SessionLocal()
     try:
-        return json.loads(raw)
-    except Exception:
-        i, j = raw.find("{"), raw.rfind("}")
-        if i != -1 and j != -1 and j > i:
-            try:
-                return json.loads(raw[i:j+1])
-            except Exception:
-                pass
-    return None
+        cleanup_stale_jobs(db)
+        return {"message": "Stale jobs cleaned up successfully"}
+    finally:
+        db.close()
 
-def _norm_section_name(name: str) -> str:
-    n = (name or "").strip().lower()
-    for ch in [":", "-", "|", "—"]:
-        n = n.replace(ch, " ")
-    n = " ".join(n.split())
-    if "summary" in n or "professional summary" in n:
-        return "summary"
-    if "skill" in n or "technical skill" in n:
-        return "skills"
-    if "experience" in n or "work experience" in n or "professional experience" in n:
-        return "experience"
-    if "project" in n:
-        return "projects"
-    if "education" in n:
-        return "education"
-    if "cert" in n:
-        return "certifications"
-    return n
+# --------------------- User Endpoints ---------------------
 
+app.get("/api/user/jobs")(get_user_jobs)
+app.get("/api/user/stats")(get_user_stats)
+app.post("/api/user/resume-template")(save_resume_template)
+app.get("/api/user/resume-template")(get_resume_template)
 
-def convert_resume_json_to_text(resume_data: dict) -> str:
-    """Convert structured resume JSON into clean plain-text format."""
+# --------------------- Resume Parsing Endpoint ---------------------
 
-    lines = []
+app.post("/api/parse-resume")(limiter.limit("3/minute")(parse_resume_document))
 
-    # --- Header ---
-    name = resume_data.get("name", "")
-    contact = resume_data.get("contact", "")
-    
-    # Handle both string and structured contact formats
-    if isinstance(contact, dict):
-        # Structured format: build contact line from dict
-        contact_parts = []
-        ordered_keys = ["phone", "email", "linkedin", "github", "portfolio", "website"]
-        
-        # Add ordered items first
-        for key in ordered_keys:
-            if key in contact and contact[key]:
-                contact_parts.append(contact[key] if key in ["phone", "email"] else key.capitalize())
-        
-        # Add any additional links
-        for key, value in contact.items():
-            if key not in ordered_keys and value:
-                contact_parts.append(key.capitalize())
-        
-        contact_line = " | ".join(contact_parts)
-    else:
-        # String format: use as-is
-        contact_line = contact
-    
-    lines.append(f"{name.upper()}\n{contact_line}\n")
-
-    # --- Summary ---
-    if resume_data.get("summary"):
-        lines.append("SUMMARY\n")
-        lines.append(resume_data["summary"].strip() + "\n")
-
-    # --- Technical Skills ---
-    if resume_data.get("technical_skills"):
-        lines.append("TECHNICAL SKILLS\n")
-        for key, value in resume_data["technical_skills"].items():
-            if value.strip():
-                lines.append(f"{key}: {value}")
-        lines.append("")
-
-    # --- Experience ---
-    if resume_data.get("experience"):
-        lines.append("EXPERIENCE\n")
-        for exp in resume_data["experience"]:
-            company = exp.get("company", "")
-            role = exp.get("role", "")
-            period = exp.get("period", "")
-            lines.append(f"{company} | {role} | {period}")
-            for point in exp.get("points", []):
-                lines.append(f"  • {point}")
-            lines.append("")
-
-    # --- Education ---
-    if resume_data.get("education"):
-        lines.append("EDUCATION\n")
-        for edu in resume_data["education"]:
-            degree = edu.get("degree", "")
-            institution = edu.get("institution", "")
-            year = edu.get("year", "")
-            lines.append(f"{degree}\n{institution} ({year})\n")
-
-    return "\n".join(lines)
-
-# --------------------- Endpoints ---------------------
-from concurrent.futures import ThreadPoolExecutor
-from queue import Queue
-
-# Create a thread pool for CPU-bound operations
-executor = ThreadPoolExecutor(max_workers=4)
-
-# Global dictionary to track progress for each request
-progress_store: Dict[str, Dict[str, Any]] = {}
-
-def send_progress(request_id: str, percentage: int, message: str):
-    """Send progress update to the store for a specific request"""
-    if request_id:
-        progress_store[request_id] = {
-            "percentage": percentage,
-            "message": message,
-            "timestamp": datetime.now().isoformat()
-        }
-        logger.info(f"[PROGRESS] {request_id}: {percentage}% - {message}")
-
-@app.get("/api/progress/{request_id}")
-async def get_progress(request_id: str):
-    """Get current progress for a specific request"""
-    if request_id in progress_store:
-        return progress_store[request_id]
-    return {"percentage": 0, "message": "Initializing..."}
-
-@app.post("/api/generate_resume_json")
-async def generate_resume_json(request: Request):
-    
-    try:
-        data = await request.json()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
-    
-    # Extract request_id if provided
-    request_id = data.get("request_id")
-    
-    # Run CPU-intensive operations in thread pool to not block event loop
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(executor, process_resume, data, request_id)
-    
-    # Clean up progress after completion
-    if request_id and request_id in progress_store:
-        del progress_store[request_id]
-    
-    return result
-
-def process_resume(data: dict, request_id: str = None) -> dict:
-    """Process resume in thread pool - this is the CPU-intensive part"""
-    resume_json = data.get("resume_data", {})
-    job_json = data.get("job_description_data", {})
-    mode = data.get("mode", "complete_jd")  # Extract mode, default to 'complete_jd'
-    
-    logger.info(f"[MODE] Processing resume in '{mode}' mode")
-    
-    if request_id:
-        send_progress(request_id, 5, "Starting resume processing...")
-
-    final_json = {}
-    name = resume_json.get("name", "")
-    final_json["name"] = name
-    contact = resume_json.get("contact", "")
-    final_json["contact"] = contact
-    education = resume_json.get("education", [])
-    final_json["education"] = education
-    
-    # Add projects if present and not empty (filter out objects with empty fields)
-    projects = resume_json.get("projects", [])
-    if projects:
-        # Filter out projects with empty title or no bullets
-        valid_projects = [
-            p for p in projects 
-            if p.get("title", "").strip() and p.get("bullets") and len(p.get("bullets", [])) > 0
-        ]
-        if valid_projects:
-            final_json["projects"] = valid_projects
-    
-    # Add certifications if present and not empty (filter out objects with empty fields)
-    certifications = resume_json.get("certifications", [])
-    if certifications:
-        # Filter out certifications with empty name
-        valid_certifications = [
-            c for c in certifications 
-            if c.get("name", "").strip()
-        ]
-        if valid_certifications:
-            final_json["certifications"] = valid_certifications
-
-    # convert resume_json to text format if needed
-    resume_txt = convert_resume_json_to_text(resume_json)
-    
-    if request_id:
-        send_progress(request_id, 10, "Analyzing job description...")
-
-    # write debug files
-    # _save_debug_file(resume_txt, "resume_text.txt", prefix="resume")
-
-    jd = job_json.get("job_description", "")
-    jd_file_name = job_json.get("company_name", "job_description").replace(" ", "_") + ".txt"
-    # save jd file
-    _save_debug_file(jd, jd_file_name, prefix="job_description")
-
-    resume_text = normalize_whitespace(resume_txt)
-    # _save_debug_file(resume_text, "normalized_resume_text.txt", prefix="resume_normalized")
-    sections = split_resume_sections(resume_text)
-    #_save_debug_file(sections, "resume_sections.json", prefix="resume_sections")
-
-    if request_id:
-        send_progress(request_id, 20, "Generating optimization plan...")
-
-    # Plan + JD hints
-    plan_prompt = SCORING_PROMPT_JSON.replace("{jd_text}", jd).replace("{resume_text}", resume_text)    
-    plan_raw = chat_completion(plan_prompt)
-    plan = _safe_load_json(plan_raw) or {"section_updates": []}
-    
-    if request_id:
-        send_progress(request_id, 30, "Extracting key insights from job description...")
-    
-    # Debug: Log the scoring plan
-    logger.info(f"[SCORING PLAN] Received {len(plan.get('section_updates', []))} section updates")
-    for update in plan.get("section_updates", []):
-        section_name = update.get("section", "Unknown")
-        logger.info(f"[SCORING PLAN] - Section: {section_name}")
-    
-    jd_hints = chat_completion(JD_HINTS_PROMPT.format(jd_text=jd))
-    #save jd_hints
-    #_save_debug_file(jd_hints, "jd_hints.txt", prefix="jd_hints")
-
-    if request_id:
-        send_progress(request_id, 40, "Optimizing summary section...")
-
-    # Apply plan (same as /api/tailor)
-    rewritten: Dict[str, str] = {}
-    updates = plan.get("section_updates", [])
-
-    # Process Summary section
-    if sections.get("Summary"):
-        summary_edits = [e for e in updates if _norm_section_name(e.get("section")) == "summary"]
-        logger.info(f"[SUMMARY] Found {len(summary_edits)} summary edits from scoring plan")
-        
-        # ALWAYS process summary
-        if mode == "complete_jd":
-            # Use GENERATE_FROM_JD_PROMPT for complete JD mode
-            logger.info("[SUMMARY] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
-            prompt = GENERATE_FROM_JD_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Summary"],
-                section_edits_json=json.dumps(summary_edits, ensure_ascii=False) if summary_edits else "[]"
-            )
-        else:  # resume_jd mode
-            # Use APPLY_EDITS_PROMPT for resume + JD mode
-            logger.info("[SUMMARY] Using APPLY_EDITS_PROMPT (resume_jd mode)")
-            prompt = APPLY_EDITS_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Summary"],
-                section_edits_json=json.dumps(summary_edits, ensure_ascii=False) if summary_edits else "[]"
-            )
-        rewritten["Summary"] = chat_completion(prompt).strip()
-        logger.info("[SUMMARY] Summary section rewritten successfully")
-        
-    if request_id:
-        send_progress(request_id, 55, "Optimizing technical skills...")
-        
-    # Process Skills section
-    if sections.get("Skills"):
-        skills_edits = [e for e in updates if _norm_section_name(e.get("section")) == "skills"]
-        logger.info(f"[SKILLS] Found {len(skills_edits)} skills edits from scoring plan")
-        
-        # ALWAYS process skills, even if LLM didn't include it in scoring plan
-        if mode == "complete_jd":
-            # Use GENERATE_FROM_JD_PROMPT for complete JD mode
-            logger.info("[SKILLS] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
-            prompt = GENERATE_FROM_JD_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Skills"],
-                section_edits_json=json.dumps(skills_edits, ensure_ascii=False) if skills_edits else "[]"
-            )
-        else:  # resume_jd mode
-            # Use APPLY_EDITS_PROMPT for resume + JD mode
-            logger.info("[SKILLS] Using APPLY_EDITS_PROMPT (resume_jd mode)")
-            prompt = APPLY_EDITS_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Skills"],
-                section_edits_json=json.dumps(skills_edits, ensure_ascii=False) if skills_edits else "[]"
-            )
-        rewritten["Skills"] = chat_completion(prompt).strip()
-        logger.info("[SKILLS] Skills section rewritten successfully")
-    else:
-        logger.warning("[SKILLS] No Skills section found in parsed resume sections")
-
-    if request_id:
-        send_progress(request_id, 70, "Optimizing experience section...")
-
-    # Process Experience section
-    if sections.get("Experience"):
-        experience_edits = [e for e in updates if _norm_section_name(e.get("section")) == "experience"]
-        logger.info(f"[EXPERIENCE] Found {len(experience_edits)} experience edits from scoring plan")
-        
-        # ALWAYS process experience
-        if mode == "complete_jd":
-            # Use GENERATE_FROM_JD_PROMPT for complete JD mode
-            logger.info("[EXPERIENCE] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
-            prompt = GENERATE_FROM_JD_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Experience"],
-                section_edits_json=json.dumps(experience_edits, ensure_ascii=False) if experience_edits else "[]"
-            )
-        else:  # resume_jd mode
-            # Use APPLY_EDITS_PROMPT for resume + JD mode
-            logger.info("[EXPERIENCE] Using APPLY_EDITS_PROMPT (resume_jd mode)")
-            prompt = APPLY_EDITS_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Experience"],
-                section_edits_json=json.dumps(experience_edits, ensure_ascii=False) if experience_edits else "[]"
-            )
-        rewritten["Experience"] = chat_completion(prompt).strip()
-        logger.info("[EXPERIENCE] Experience section rewritten successfully")
-       
-        
-        # Save intermediate experience for debugging
-        #_save_debug_file(rewritten["Experience"], "experience_after_rewrite.txt", prefix="experience")
-    
-    # _save_debug_file(rewritten, "rewritten_sections.json", prefix="rewritten_sections")
-    
-    if request_id:
-        send_progress(request_id, 80, "Structuring final resume data...")
-    
-    # get summary from rewritten into final_json
-    if rewritten.get("Summary"):
-        final_json["summary"] = rewritten["Summary"]
-
-    # Enhancements (Experience + Skills) for DOCX too
-    if rewritten.get("Experience"):
-        # First parse to JSON structure
-
-        experience_json = parse_experience_to_json(rewritten["Experience"])
-        # print(f"\n\n experience_json before balancing: {experience_json} \n\n")
-        logger.info(f"[EXPERIENCE] Parsed experience JSON: {experience_json}")
-
-        if request_id:
-            send_progress(request_id, 85, "Balancing experience bullets...")
-
-        # Apply enhancements using JSON structure
-        new_experience_json = _balance_experience_roles(experience_json, jd_hints)
-        # print(f"\n\nnew_experience_json: {new_experience_json}\n\n")
-        logger.info("[EXPERIENCE] Balanced experience JSON")
-
-        #add experience to final_json
-        final_json["experience"] = new_experience_json
-
-    if rewritten.get("Skills"):
-        # First parse to JSON structure
-        skills_json = parse_skills_to_json(rewritten["Skills"])
-        logger.info(f"[SKILLS] Parsed skills JSON: {skills_json}")
-        # print(f"\n\n skills_json before formatting: {skills_json} \n\n")
-        
-        if request_id:
-            send_progress(request_id, 90, "Organizing skills...")
-        
-        # Apply formatting using JSON structure
-        prompt = ORGANIZE_SKILLS_PROMPT.format(skills_json=json.dumps(skills_json, ensure_ascii=False, indent=2))
-        response = chat_completion(prompt)
-
-        # Optional safety parsing
-        def extract_json(text):
-            match = re.search(r"\{.*\}", text, re.DOTALL)
-            return json.loads(match.group(0)) if match else None
-
-        organized_skills = extract_json(response)
-        # print(f"skills_json after formatting: {organized_skills} \n\n")
-        logger.info(f"[SKILLS] Organized skills JSON: {organized_skills}")
-        final_json["technical_skills"] = organized_skills
-    else:
-        # Fallback: Use original skills from resume_json if rewrite failed
-        logger.warning("[SKILLS] No Skills section in rewritten content, using original")
-        final_json["technical_skills"] = resume_json.get("technical_skills", {})
+# --------------------- Job Search Endpoints ---------------------
 
 app.post("/api/search-jobs")(limiter.limit("10/minute")(search_jobs_endpoint))
 app.post("/api/search-greenhouse-jobs")(limiter.limit("15/minute")(search_greenhouse_jobs_endpoint))
 app.post("/api/scrape-job-details")(limiter.limit("10/minute")(scrape_job_details_endpoint))
 
+# --------------------- Cache Management Endpoints ---------------------
+
 app.get("/api/cache/stats")(get_cache_stats_endpoint)
 app.post("/api/cache/clear")(clear_cache_endpoint)
 app.post("/api/cache/refresh")(refresh_cache_endpoint)
-
-# --------------------- Cleanup Endpoints ---------------------
