@@ -343,6 +343,7 @@ GENERAL RULES:
 - Use the company/industry context to guide realism and terminology.
 - Match bullet complexity to the candidate’s seniority and timeline.
 - Integrate technical_keywords, soft_skills, and phrases naturally—never force them.
+- Must use past tense throughout.
 - Write polished, human, achievement-oriented bullets.
 
 KEYWORD POLICY:
@@ -363,7 +364,6 @@ BULLET WRITING CONSTRAINTS:
 - Produce exactly 8–10 bullets per role.
 - 20–25 words per bullet.
 - Use only ONE connector per bullet (“using”, “to”, “for”, “with”, “enabling”).
-- Must use past tense only.
 - Use realistic tools for the given time period and industry.
 - Never combine equivalent/conflicting tools (e.g., AWS + Azure in same role, Tableau + Power BI in same role).
 - Include metrics in 2–3 bullets ONLY where logical.
