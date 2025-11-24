@@ -18,6 +18,24 @@ var/
 wheels/
 *.egg-info/
 .installed.cfg
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+resume_editor.db
+
+# Generated files
+*.docx
+generated_resumes/
+debug_files/*.json
+debug_files/*.txt
+debug_files/app.log
+
+# Environment
+.env
+.venv
+venv/
 *.egg
 MANIFEST
 
@@ -65,3 +83,4 @@ htmlcov/
 
 # Thumbnails
 ._*
+.env.render

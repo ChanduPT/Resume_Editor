@@ -167,8 +167,8 @@ def add_structured_contact(paragraph, contact_data):
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
         
-        # Handle phone and email as plain text (email gets mailto link)
-        if key == "phone":
+        # Handle phone, location, and email as plain text (email gets mailto link)
+        if key == "phone" or key == "location":
             run = paragraph.add_run(value)
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
@@ -187,7 +187,21 @@ def add_structured_contact(paragraph, contact_data):
             add_hyperlink(paragraph, display_text, url)
 
 
-def create_resume(data, file_name):
+def create_resume_classic(data, file_name):
+    """
+    Create a resume document with CLASSIC format - traditional layout with underlined sections.
+    Raises ValueError if required fields are missing.
+    """
+    # Validate required fields
+    if not data.get("name"):
+        raise ValueError("Name is required to generate resume")
+    if not data.get("summary"):
+        raise ValueError("Professional summary is required to generate resume")
+    if not data.get("experience") or len(data.get("experience", [])) == 0:
+        raise ValueError("At least one experience entry is required to generate resume")
+    if not data.get("education") or len(data.get("education", [])) == 0:
+        raise ValueError("At least one education entry is required to generate resume")
+    
     doc = Document()
 
     # --- Name ---
@@ -296,14 +310,20 @@ def create_resume(data, file_name):
     
     for exp in data["experience"]:
         company_para = doc.add_paragraph()
-        run = company_para.add_run(f"{exp['company']} | {exp['title']} | {exp['dates']}")
+        # Handle both 'role' and 'title' field names
+        job_title = exp.get('role') or exp.get('title', 'Position')
+        # Handle both 'period' and 'dates' field names
+        dates = exp.get('period') or exp.get('dates', '')
+        run = company_para.add_run(f"{exp['company']} | {job_title} | {dates}")
         run.bold = True
         run.font.name = "Times New Roman"
         run.font.size = Pt(11)
         set_paragraph_format(company_para, font_size=10, spacing=1.0)
 
         # Bullets aligned full width
-        for point in exp["bullets"]:
+        # Handle both 'points' and 'bullets' field names
+        bullets = exp.get('points') or exp.get('bullets', [])
+        for point in bullets:
             bullet = doc.add_paragraph(point, style="List Bullet")
             set_paragraph_format(bullet, font_size=10, spacing=1.0, alignment=WD_ALIGN_PARAGRAPH.JUSTIFY)
 
@@ -409,6 +429,287 @@ def create_resume(data, file_name):
     doc.save(file_name)
     print(f"✅ Document created successfully: {file_name}")
 
+
+def create_resume_modern(data, file_name):
+    """
+    Create a resume document with MODERN format - cleaner layout inspired by professional ATS-friendly designs.
+    This format features better spacing, bold section headers, and a more modern aesthetic.
+    Raises ValueError if required fields are missing.
+    """
+    # Validate required fields
+    if not data.get("name"):
+        raise ValueError("Name is required to generate resume")
+    if not data.get("summary"):
+        raise ValueError("Professional summary is required to generate resume")
+    if not data.get("experience") or len(data.get("experience", [])) == 0:
+        raise ValueError("At least one experience entry is required to generate resume")
+    if not data.get("education") or len(data.get("education", [])) == 0:
+        raise ValueError("At least one education entry is required to generate resume")
+    
+    doc = Document()
+
+    # --- Name (Larger, Bold, Centered) ---
+    name = doc.add_paragraph()
+    run = name.add_run(data["name"].upper())
+    run.bold = True
+    run.font.size = Pt(16)
+    run.font.name = "Calibri"
+    name.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    name.paragraph_format.space_after = Pt(2)
+
+    # --- Contact Info (Centered, One Line) ---
+    contact = doc.add_paragraph()
+    contact_data = data.get("contact", {})
+    
+    # Handle both old format (string) and new format (dict)
+    if isinstance(contact_data, str):
+        add_contact_with_links(contact, contact_data)
+    else:
+        add_structured_contact(contact, contact_data)
+    
+    contact.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    contact.paragraph_format.space_after = Pt(8)
+    for run in contact.runs:
+        run.font.size = Pt(10)
+        run.font.name = "Calibri"
+
+    # Add horizontal line separator
+    separator = doc.add_paragraph()
+    pPr = separator._element.get_or_add_pPr()
+    pBdr = OxmlElement('w:pBdr')
+    bottom = OxmlElement('w:bottom')
+    bottom.set(qn('w:val'), 'single')
+    bottom.set(qn('w:sz'), '12')
+    bottom.set(qn('w:space'), '1')
+    bottom.set(qn('w:color'), '000000')
+    pBdr.append(bottom)
+    pPr.append(pBdr)
+    separator.paragraph_format.space_after = Pt(6)
+
+    # --- PROFESSIONAL SUMMARY ---
+    heading = doc.add_paragraph()
+    run = heading.add_run("PROFESSIONAL SUMMARY")
+    run.bold = True
+    run.font.size = Pt(11)
+    run.font.name = "Calibri"
+    heading.paragraph_format.space_before = Pt(4)
+    heading.paragraph_format.space_after = Pt(4)
+    
+    para = doc.add_paragraph(data["summary"])
+    para.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    para.paragraph_format.space_after = Pt(8)
+    for run in para.runs:
+        run.font.size = Pt(10)
+        run.font.name = "Calibri"
+
+    # --- TECHNICAL SKILLS ---
+    if data.get("technical_skills"):
+        heading = doc.add_paragraph()
+        run = heading.add_run("TECHNICAL SKILLS")
+        run.bold = True
+        run.font.size = Pt(11)
+        run.font.name = "Calibri"
+        heading.paragraph_format.space_before = Pt(4)
+        heading.paragraph_format.space_after = Pt(4)
+        
+        for key, value in data["technical_skills"].items():
+            skill_para = doc.add_paragraph()
+            skill_para.paragraph_format.left_indent = Inches(0.15)
+            skill_para.paragraph_format.space_after = Pt(2)
+            
+            run = skill_para.add_run(f"• {key}: ")
+            run.bold = True
+            run.font.name = "Calibri"
+            run.font.size = Pt(10)
+            
+            # Handle different value types
+            if isinstance(value, list):
+                value_text = ", ".join(value)
+            elif isinstance(value, dict):
+                sub_parts = []
+                for sub_key, sub_vals in value.items():
+                    if isinstance(sub_vals, list):
+                        sub_parts.append(f"{sub_key}: {', '.join(sub_vals)}")
+                    else:
+                        sub_parts.append(f"{sub_key}: {sub_vals}")
+                value_text = "; ".join(sub_parts)
+            else:
+                value_text = str(value)
+            
+            run = skill_para.add_run(value_text)
+            run.font.name = "Calibri"
+            run.font.size = Pt(10)
+        
+        # Add space after skills section
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
+
+    # --- EXPERIENCE ---
+    heading = doc.add_paragraph()
+    run = heading.add_run("EXPERIENCE")
+    run.bold = True
+    run.font.size = Pt(11)
+    run.font.name = "Calibri"
+    heading.paragraph_format.space_before = Pt(4)
+    heading.paragraph_format.space_after = Pt(4)
+    
+    for idx, exp in enumerate(data["experience"]):
+        # Company and Location Line
+        company_para = doc.add_paragraph()
+        company_para.paragraph_format.space_after = Pt(0)
+        
+        # Company name (bold)
+        run = company_para.add_run(exp['company'])
+        run.bold = True
+        run.font.size = Pt(10)
+        run.font.name = "Calibri"
+        
+        # Location if available
+        if exp.get('location'):
+            run = company_para.add_run(f", {exp['location']}")
+            run.font.size = Pt(10)
+            run.font.name = "Calibri"
+        
+        # Job Title and Dates Line (Italicized)
+        title_para = doc.add_paragraph()
+        title_para.paragraph_format.space_after = Pt(2)
+        
+        job_title = exp.get('role') or exp.get('title', 'Position')
+        run = title_para.add_run(job_title)
+        run.italic = True
+        run.font.size = Pt(10)
+        run.font.name = "Calibri"
+        
+        dates = exp.get('period') or exp.get('dates', '')
+        if dates:
+            run = title_para.add_run(f" | {dates}")
+            run.italic = True
+            run.font.size = Pt(10)
+            run.font.name = "Calibri"
+        
+        # Responsibilities/Bullets
+        bullets = exp.get('points') or exp.get('bullets', [])
+        for point in bullets:
+            bullet = doc.add_paragraph(point, style="List Bullet")
+            bullet.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            bullet.paragraph_format.space_after = Pt(2)
+            bullet.paragraph_format.left_indent = Inches(0.25)
+            for run in bullet.runs:
+                run.font.size = Pt(10)
+                run.font.name = "Calibri"
+        
+        # Add spacing between experiences
+        if idx < len(data["experience"]) - 1:
+            doc.add_paragraph().paragraph_format.space_after = Pt(6)
+
+    # --- PROJECTS ---
+    if data.get("projects") and len(data["projects"]) > 0:
+        heading = doc.add_paragraph()
+        run = heading.add_run("PROJECTS")
+        run.bold = True
+        run.font.size = Pt(11)
+        run.font.name = "Calibri"
+        heading.paragraph_format.space_before = Pt(8)
+        heading.paragraph_format.space_after = Pt(4)
+        
+        for proj in data["projects"]:
+            if proj.get("title"):
+                proj_title = doc.add_paragraph()
+                proj_title.paragraph_format.space_after = Pt(2)
+                run = proj_title.add_run(proj["title"])
+                run.bold = True
+                run.font.name = "Calibri"
+                run.font.size = Pt(10)
+                
+                for bullet in proj.get("bullets", []):
+                    if bullet.strip():
+                        bullet_para = doc.add_paragraph(bullet, style="List Bullet")
+                        bullet_para.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                        bullet_para.paragraph_format.space_after = Pt(2)
+                        bullet_para.paragraph_format.left_indent = Inches(0.25)
+                        for run in bullet_para.runs:
+                            run.font.size = Pt(10)
+                            run.font.name = "Calibri"
+
+    # --- EDUCATION ---
+    heading = doc.add_paragraph()
+    run = heading.add_run("EDUCATION")
+    run.bold = True
+    run.font.size = Pt(11)
+    run.font.name = "Calibri"
+    heading.paragraph_format.space_before = Pt(8)
+    heading.paragraph_format.space_after = Pt(4)
+    
+    for edu in data["education"]:
+        edu_para = doc.add_paragraph()
+        edu_para.paragraph_format.space_after = Pt(2)
+        
+        # Degree and Institution
+        run = edu_para.add_run(f"{edu['degree']}, {edu['institution']}")
+        run.font.size = Pt(10)
+        run.font.name = "Calibri"
+        
+        # Year
+        run = edu_para.add_run(f" ({edu['year']})")
+        run.font.size = Pt(10)
+        run.font.name = "Calibri"
+
+    # --- CERTIFICATIONS ---
+    if data.get("certifications") and len(data["certifications"]) > 0:
+        heading = doc.add_paragraph()
+        run = heading.add_run("CERTIFICATIONS")
+        run.bold = True
+        run.font.size = Pt(11)
+        run.font.name = "Calibri"
+        heading.paragraph_format.space_before = Pt(8)
+        heading.paragraph_format.space_after = Pt(4)
+        
+        for cert in data["certifications"]:
+            if cert.get("name"):
+                cert_para = doc.add_paragraph()
+                cert_para.paragraph_format.space_after = Pt(2)
+                
+                cert_text = cert["name"]
+                if cert.get("organization"):
+                    cert_text += f", {cert['organization']}"
+                if cert.get("year"):
+                    cert_text += f" ({cert['year']})"
+                
+                run = cert_para.add_run(cert_text)
+                run.font.size = Pt(10)
+                run.font.name = "Calibri"
+
+    # --- Margins ---
+    for section in doc.sections:
+        section.top_margin = Inches(0.5)
+        section.bottom_margin = Inches(0.5)
+        section.left_margin = Inches(0.5)
+        section.right_margin = Inches(0.5)
+    
+    folder_path = "./generated_resumes/"
+    import os
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    file_name = os.path.join(folder_path, file_name)
+    
+    doc.save(file_name)
+    print(f"✅ Modern format document created successfully: {file_name}")
+
+
+def create_resume(data, file_name, format="classic"):
+    """
+    Main wrapper function to create resume with selected format.
+    
+    Args:
+        data: Resume data dictionary
+        file_name: Output filename
+        format: "classic" (default) or "modern"
+    """
+    if format == "modern":
+        return create_resume_modern(data, file_name)
+    else:
+        return create_resume_classic(data, file_name)
+
+
 # Example usage with OLD format (backward compatible)
 resume_data_old = {
     "name": "John Doe",
@@ -496,8 +797,8 @@ resume_data_new = {
 }
 
 if __name__ == "__main__":
-    # Test with new structured format
-    create_resume(resume_data_new, "Jane_Smith_Resume_New_Format.docx")
+    # Test with new structured format - MODERN
+    create_resume(resume_data_new, "Jane_Smith_Resume_Modern.docx", format="modern")
     print("\n" + "="*50)
-    # Test with old format (backward compatible)
-    create_resume(resume_data_old, "John_Doe_Resume_Old_Format.docx")
+    # Test with old format - CLASSIC (backward compatible)
+    create_resume(resume_data_old, "John_Doe_Resume_Classic.docx", format="classic")

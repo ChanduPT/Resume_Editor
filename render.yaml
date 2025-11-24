@@ -1,0 +1,41 @@
+# Render Blueprint for Resume Editor
+# This file enables one-click deployment on Render.com
+
+services:
+  # Web Service (FastAPI Application)
+  - type: web
+    name: resume-editor
+    env: python
+    region: oregon  # Choose closest region
+    plan: free      # Free tier
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: LLM_PROVIDER
+        value: GEMINI
+      - key: MAX_WORKERS
+        value: 2
+      - key: MAX_CONCURRENT_JOBS
+        value: 2
+      - key: ENVIRONMENT
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Auto-generate secure random secret
+      - key: JSEARCH_API_KEY
+        sync: false  # Optional: Set if using job search feature
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resume-editor-db
+          property: connectionString
+
+databases:
+  # PostgreSQL Database (90-day free trial)
+  - name: resume-editor-db
+    databaseName: resume_editor
+    plan: free
+    region: oregon

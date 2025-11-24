@@ -7,3 +7,11 @@ openai==1.51.2
 python-multipart==0.0.9
 python-dotenv==1.0.1
 docxtpl==0.20.1
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+slowapi==0.1.9
+google-generativeai==0.8.5
+beautifulsoup4==4.12.3
+aiohttp==3.9.1
+lxml==5.1.0
+PyJWT==2.8.0

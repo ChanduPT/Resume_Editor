@@ -1,12 +1,10 @@
 # app/main.py
+# Main FastAPI application - thin entry point with modular imports
+
 import os
-import json
+import sys
 import logging
-from typing import Dict, List, Any
-import re
-import tempfile
-import random
-import traceback
+from pathlib import Path
 from datetime import datetime
 import json
 import asyncio
@@ -15,19 +13,40 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from app.create_resume import create_resume
 
-from app.utils import ( 
-    normalize_whitespace,
-    split_resume_sections, chat_completion, parse_experience_to_json, parse_skills_to_json
-)
+# Load environment variables
+load_dotenv()
 
-from app.prompts import (
-    JD_HINTS_PROMPT, SCORING_PROMPT_JSON, APPLY_EDITS_PROMPT,
-    BALANCE_BULLETS_PROMPT, ORGANIZE_SKILLS_PROMPT, GENERATE_FROM_JD_PROMPT,
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBasic
+from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+from app.database import init_db
+from app.auth import register_user, login_user, reset_password
+from app.endpoints import (
+    generate_resume_json, get_job_status, get_job_keywords, get_job_result, update_job_resume,
+    download_resume, download_job_description,
+    get_user_jobs, get_user_stats,
+    save_resume_template, get_resume_template,
+    delete_job, cleanup_stale_jobs, parse_resume_document,
+    search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
+    get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint,
+    extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint
 )
 
 # --------------------- App Setup ---------------------
 app = FastAPI(title="Resume Tailor MVP")
 
+# Rate limiting setup
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,157 +54,81 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files directory
+static_dir = Path(__file__).parent.parent / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    logger = logging.getLogger(__name__)
+    logger.info(f"Static files mounted from: {static_dir}")
+
+security = HTTPBasic()
+
 # --------------------- Logging Setup ---------------------
+log_handlers = [logging.StreamHandler(sys.stdout)]
 
+if os.environ.get('ENVIRONMENT') != 'production':
+    os.makedirs('debug_files', exist_ok=True)
+    log_handlers.append(logging.FileHandler(os.path.join('debug_files', 'app.log')))
 
-# Setup enhanced logging configuration
 logging.basicConfig(
-    level=logging.DEBUG,  # Set to DEBUG level to capture all logs
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),  # Log to console
-        logging.FileHandler(os.path.join('debug_files', 'app.log'))  # Log to file
-    ]
+    handlers=log_handlers
 )
-logger = logging.getLogger("resume_tailor")
 
-# Create and configure debug directory
+logger = logging.getLogger(__name__)
+
+# Setup debug directory
 debug_dir = os.path.join(os.getcwd(), "debug_files")
 try:
-    # Create directory with proper permissions
     os.makedirs(debug_dir, exist_ok=True)
-    os.chmod(debug_dir, 0o755)  # rwxr-xr-x permissions
-    
-    # Test directory is writable
+    os.chmod(debug_dir, 0o755)
     test_file = os.path.join(debug_dir, '.write_test')
     with open(test_file, 'w') as f:
         f.write('test')
     os.remove(test_file)
-    
     logger.info(f"Debug directory ready at: {debug_dir}")
 except Exception as e:
     logger.error(f"Failed to setup debug directory: {str(e)}")
     raise
 
-# --------------------- Helpers ---------------------
-def extract_json(text: str) -> dict:
-    """Extract JSON from text that might contain other content."""
-    try:
-        # First try direct JSON parsing
-        return json.loads(text)
-    except json.JSONDecodeError:
-        # Try to find JSON between curly braces
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(0))
-            except json.JSONDecodeError:
-                return None
-    return None
+# --------------------- Database Startup ---------------------
 
-def _save_debug_file(content: Any, filename: str, prefix: str = "debug") -> None:
-    """Save content to a debug file with timestamp."""
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
     try:
-        debug_dir = os.path.join(os.getcwd(), "debug_files")
+        init_db()
+        logger.info("Database initialized successfully")
+        logger.info(f"MAX_WORKERS: {os.getenv('MAX_WORKERS', '2')}")
+        logger.info(f"MAX_CONCURRENT_JOBS: {os.getenv('MAX_CONCURRENT_JOBS', '2')}")
         
-        # Ensure directory exists and is writable
-        os.makedirs(debug_dir, exist_ok=True)
-        if not os.access(debug_dir, os.W_OK):
-            os.chmod(debug_dir, 0o755)
-            
-        # Generate unique filename with timestamp only until minute precision
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        safe_filename = "".join(c for c in filename if c.isalnum() or c in "._-")
-        full_filename = f"{prefix}__{timestamp}_{safe_filename}"
-        filepath = os.path.join(debug_dir, full_filename)
-        
-        # Save content with appropriate formatting
-        if isinstance(content, (dict, list)):
-            content_str = json.dumps(content, ensure_ascii=False, indent=2)
-        else:
-            content_str = str(content)
-            
-        # Add metadata header
-        header = f"""# Debug File
-        # Generated: {datetime.now().isoformat()}
-        # Type: {type(content).__name__}
-        # File: {filename}
-        # Prefix: {prefix}
-        # {"="*50}
-        """
-        # Write content with header
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(header + content_str)
-            
-        # Set file permissions
-        os.chmod(filepath, 0o644)
-        
-        # Verify file
-        if not os.path.exists(filepath):
-            raise Exception(f"File was not created: {filepath}")
-            
-        file_size = os.path.getsize(filepath)
-        logger.info(f"[debug] Saved {prefix} to {filepath} ({file_size} bytes)")
-        
-        # List all debug files periodically
-        if random.random() < 0.1:  # 10% chance to list files
-            files = os.listdir(debug_dir)
-            logger.info(f"[debug] Current debug files ({len(files)}): {', '.join(files[:5])}...")
+        # Clean up any stale jobs from previous runs
+        from app.database import SessionLocal
+        db = SessionLocal()
+        try:
+            cleanup_stale_jobs(db)
+        finally:
+            db.close()
             
     except Exception as e:
-        logger.error(f"[debug] Failed to save debug file {filename}")
-        logger.error(f"[debug] Error: {str(e)}")
-        logger.error(f"[debug] Traceback: {traceback.format_exc()}")
-        # Try alternate location
-        try:
-            alt_path = os.path.join(tempfile.gettempdir(), full_filename)
-            with open(alt_path, 'w', encoding='utf-8') as f:
-                f.write(content_str)
-            logger.info(f"[debug] Saved to alternate location: {alt_path}")
-        except Exception as e2:
-            logger.error(f"[debug] Alternate save also failed: {str(e2)}")
+        logger.error(f"Failed to initialize database: {str(e)}")
+        raise
 
-def _balance_experience_roles(experience_json: List[dict], jd_hints: str) -> List[dict]:
-    """
-    Balance each role's bullet points between 6-8 bullets using the structured JSON format.
-    Each role in experience_json should have: company, title, date, and bullets fields.
-    """
-    if not experience_json:
-        return experience_json
+# --------------------- Static Files ---------------------
 
-    balanced_roles = []
-    for role in experience_json:
-        bullets = role.get("bullets", [])
-        if 6 <= len(bullets) <= 8:
-            balanced_roles.append(role)
-            continue
-
-        # Balance bullets using LLM
-        bullets_text = "\n".join(f"- {b}" for b in bullets)
-        prompt = BALANCE_BULLETS_PROMPT.format(jd_hints=jd_hints, section_text=bullets_text)
-        balanced_text = chat_completion(prompt)
-        
-        # Parse balanced bullets back into list
-        new_bullets = [
-            b.strip("- ").strip() 
-            for b in balanced_text.split("\n") 
-            if b.strip().startswith(("-", "•", "*"))
-        ]
-        
-        logger.info(
-            "[balance] Role: '%s' bullets %d → %d",
-            role.get("title", "Unknown"),
-            len(bullets),
-            len(new_bullets)
+@app.get("/", response_class=HTMLResponse)
+async def serve_index():
+    """Serve the main index.html"""
+    index_path = Path(__file__).parent.parent / "index.html"
+    if index_path.exists():
+        with open(index_path, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    else:
+        return HTMLResponse(
+            content="<h1>Resume Builder not found</h1><p>Please ensure index.html exists.</p>",
+            status_code=404
         )
-        
-        # Create new role with balanced bullets
-        balanced_role = dict(role)  # Create a copy
-        balanced_role["bullets"] = new_bullets
-        balanced_roles.append(balanced_role)
-    
-    return balanced_roles
-
 
 def _safe_load_json(raw: str):
     try:
@@ -567,7 +510,9 @@ def process_resume(data: dict, request_id: str = None) -> dict:
         logger.warning("[SKILLS] No Skills section in rewritten content, using original")
         final_json["technical_skills"] = resume_json.get("technical_skills", {})
 
-    # _save_debug_file(final_json, "final_resume_json.json", prefix="final_resume_json")
+app.post("/api/search-jobs")(limiter.limit("10/minute")(search_jobs_endpoint))
+app.post("/api/search-greenhouse-jobs")(limiter.limit("15/minute")(search_greenhouse_jobs_endpoint))
+app.post("/api/scrape-job-details")(limiter.limit("10/minute")(scrape_job_details_endpoint))
 
     if request_id:
         send_progress(request_id, 95, "Generating Word document...")
@@ -576,8 +521,11 @@ def process_resume(data: dict, request_id: str = None) -> dict:
     # file name - company_name_date_time.docx
     file_name = f"{comapny_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
 
+app.get("/api/cache/stats")(get_cache_stats_endpoint)
+app.post("/api/cache/clear")(clear_cache_endpoint)
+app.post("/api/cache/refresh")(refresh_cache_endpoint)
 
-    create_resume(final_json, file_name)
+# --------------------- Cleanup Endpoints ---------------------
 
     if request_id:
         send_progress(request_id, 100, "Resume generated successfully!")
