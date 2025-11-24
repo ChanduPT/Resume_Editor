@@ -363,7 +363,7 @@ BULLET WRITING CONSTRAINTS:
 - Produce exactly 8–10 bullets per role.
 - 20–25 words per bullet.
 - Use only ONE connector per bullet (“using”, “to”, “for”, “with”, “enabling”).
-- Past tense only.
+- Must use past tense only.
 - Use realistic tools for the given time period and industry.
 - Never combine equivalent/conflicting tools (e.g., AWS + Azure in same role, Tableau + Power BI in same role).
 - Include metrics in 2–3 bullets ONLY where logical.
