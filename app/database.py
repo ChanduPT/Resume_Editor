@@ -124,13 +124,22 @@ class ResumeJob(Base):
     final_resume_json = Column(JSON)
     
     # Job status
-    status = Column(String(50), default="pending")  # pending, processing, completed, failed
+    status = Column(String(50), default="pending")  # pending, processing, awaiting_feedback, completed, failed
     progress = Column(Integer, default=0)  # 0-100
     error_message = Column(Text, nullable=True)
+    
+    # Human feedback support (optional DB persistence)
+    intermediate_state = Column(JSON, nullable=True)  # Stores extracted JD keywords for review
+    feedback_submitted_at = Column(DateTime, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
+    
+    # Composite index for efficient cleanup queries
+    __table_args__ = (
+        Index('idx_status_created_at', 'status', 'created_at'),
+    )
 
 # Database connection
 def get_database_url():

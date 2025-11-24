@@ -3582,3 +3582,113 @@ select:focus {
     font-size: 1.5rem;
   }
 }
+
+/* ===== KEYWORD REVIEW MODAL STYLES ===== */
+.keyword-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--bg), var(--card));
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--text);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin: 4px;
+}
+
+.keyword-item:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  padding-right: 40px; /* Make room for delete button only */
+}
+
+.keyword-text {
+  font-weight: 500;
+  user-select: none;
+  flex: 1;
+}
+
+.keyword-text:hover {
+  color: var(--accent);
+}
+
+.keyword-text.editing {
+  outline: none;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid var(--accent);
+  min-width: 80px;
+  user-select: text;
+  cursor: text;
+}
+
+/* Remove button - hidden by default, appears on hover */
+.keyword-remove-btn {
+  position: absolute;
+  right: 8px;
+  background: white;
+  border: 1.5px solid var(--border);
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  opacity: 0;
+  transform: translateX(5px);
+  pointer-events: none;
+  color: var(--danger);
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.keyword-item:hover .keyword-remove-btn {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+.keyword-remove-btn:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+  transform: scale(1.15) rotate(90deg);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.keywords-list:empty::before {
+  content: '✨ No keywords yet. Add some to get started!';
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  opacity: 0.7;
+}
+
+/* Make phrases display line-by-line for better readability */
+#phrasesList .keyword-item {
+  display: flex;
+  width: 100%;
+  margin: 8px 0;
+  border-radius: 12px;
+}
+
+#phrasesList .keyword-text {
+  flex: 1;
+  word-break: break-word;
+}
+

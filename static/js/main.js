@@ -520,7 +520,7 @@
   });
 
   async function generateResume(){
-    console.log('[DEBUG] Generate Resume clicked');
+    console.log('[DEBUG] Generate Resume clicked - Using two-phase workflow');
     
     // Get selected resume mode
     const resumeModeRadio = document.querySelector('input[name="resumeMode"]:checked');
@@ -536,49 +536,256 @@
     
     // Add request to UI tracking
     addRequestToUI(requestId, companyName);
+    updateRequestProgress(requestId, 0, 'Extracting keywords...');
     
     const payload = {
       resume_data: resumeObj,
       job_description_data: jobObj,
-      mode: resumeMode  // Add mode to payload
+      mode: resumeMode
     };
     
-    // Call new endpoint for JSON output (use correct backend port)
-    const apiUrl = 'http://localhost:5001/api/generate_resume_json';
     try {
-      const res = await fetch(apiUrl, {
+      // PHASE 1: Extract keywords from JD
+      console.log('[FEEDBACK] Phase 1: Extracting keywords...');
+      const extractUrl = `${API_BASE_URL}/api/resume/extract-keywords`;
+      const extractRes = await fetch(extractUrl, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(payload)
       });
-      if(res.ok){
-        const json = await res.json();
-        // Show success message with file name
-        const fileName = json.file_name || 'resume.docx';
-        const result = json.result || 'Resume generated successfully';
-        
-        // Mark request as complete in UI
-        markRequestComplete(requestId, fileName);
-        
-        showResult(`✅ ${result} - ${fileName}`);
+      
+      if (!extractRes.ok) {
+        const errorData = await extractRes.json().catch(() => ({detail: 'Failed to extract keywords'}));
+        throw new Error(errorData.detail || 'Failed to extract keywords');
       }
-      else {
-        const errorText = await res.text();
-        console.error('API Error:', errorText);
-        
-        // Mark request as failed in UI
-        markRequestFailed(requestId, errorText);
-        
-        showResult('❌ Error generating resume.');
-      }
+      
+      const extractData = await extractRes.json();
+      console.log('[FEEDBACK] Phase 1 complete. Request ID:', extractData.request_id);
+      
+      updateRequestProgress(requestId, 25, 'Keywords extracted - Review required');
+      
+      // Show keyword review modal
+      showKeywordReviewModal(extractData.jd_hints, extractData.request_id, requestId, companyName);
+      
     } catch (error) {
-      console.error('Request failed:', error);
-      
-      // Mark request as failed in UI
+      console.error('[FEEDBACK] Error in Phase 1:', error);
       markRequestFailed(requestId, error.message);
-      
-      showResult('❌ Failed to connect to server.');
+      showResult('❌ Failed to extract keywords: ' + error.message);
     }
+  }
+  
+  // Show keyword review modal for user feedback
+  function showKeywordReviewModal(jdHints, backendRequestId, uiRequestId, companyName) {
+    const modal = document.getElementById('keywordReviewModal');
+    if (!modal) {
+      console.error('Keyword review modal not found!');
+      return;
+    }
+    
+    // Store request IDs for later use
+    modal.dataset.backendRequestId = backendRequestId;
+    modal.dataset.uiRequestId = uiRequestId;
+    modal.dataset.companyName = companyName;
+    
+    // Populate keyword lists
+    populateKeywordList('technicalKeywordsList', jdHints.technical_keywords || []);
+    populateKeywordList('softSkillsList', jdHints.soft_skills || []);
+    populateKeywordList('phrasesList', jdHints.phrases || []);
+    
+    // Update counts
+    updateKeywordCounts();
+    
+    // Show modal
+    modal.style.display = 'flex';
+  }
+  
+  // Populate keyword list with add/remove functionality
+  function populateKeywordList(listId, keywords) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    
+    list.innerHTML = '';
+    keywords.forEach(keyword => {
+      const item = document.createElement('div');
+      item.className = 'keyword-item';
+      item.innerHTML = `
+        <span class="keyword-text">${keyword}</span>
+        <button class="keyword-remove" onclick="removeKeyword(this)" title="Remove">×</button>
+      `;
+      list.appendChild(item);
+    });
+  }
+  
+  // Update keyword counts in badges
+  function updateKeywordCounts() {
+    document.getElementById('technicalCount').textContent = 
+      document.getElementById('technicalKeywordsList').children.length;
+    document.getElementById('softSkillsCount').textContent = 
+      document.getElementById('softSkillsList').children.length;
+    document.getElementById('phrasesCount').textContent = 
+      document.getElementById('phrasesList').children.length;
+  }
+  
+  // Continue to Phase 2 after keyword review
+  async function continueToGeneration() {
+    const modal = document.getElementById('keywordReviewModal');
+    const backendRequestId = modal.dataset.backendRequestId;
+    const uiRequestId = modal.dataset.uiRequestId;
+    const companyName = modal.dataset.companyName;
+    
+    // Collect modified keywords
+    const feedback = {
+      technical_keywords: getKeywordsFromList('technicalKeywordsList'),
+      soft_skills: getKeywordsFromList('softSkillsList'),
+      phrases: getKeywordsFromList('phrasesList')
+    };
+    
+    console.log('[FEEDBACK] User feedback collected:', feedback);
+    
+    // Close modal
+    closeKeywordReviewModal();
+    
+    // Update UI progress
+    updateRequestProgress(uiRequestId, 30, 'Generating resume with your keywords...');
+    
+    try {
+      // PHASE 2: Generate resume with feedback
+      const generateUrl = `${API_BASE_URL}/api/resume/generate`;
+      const generateRes = await fetch(generateUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          request_id: backendRequestId,
+          feedback: feedback
+        })
+      });
+      
+      if (!generateRes.ok) {
+        const errorData = await generateRes.json().catch(() => ({detail: 'Failed to generate resume'}));
+        throw new Error(errorData.detail || 'Failed to generate resume');
+      }
+      
+      const generateData = await generateRes.json();
+      console.log('[FEEDBACK] Phase 2 started. Job ID:', generateData.job_id);
+      
+      // Poll for completion
+      pollResumeStatus(generateData.job_id, uiRequestId, companyName);
+      
+    } catch (error) {
+      console.error('[FEEDBACK] Error in Phase 2:', error);
+      markRequestFailed(uiRequestId, error.message);
+      showResult('❌ Failed to generate resume: ' + error.message);
+    }
+  }
+  
+  // Get keywords from a list element
+  function getKeywordsFromList(listId) {
+    const list = document.getElementById(listId);
+    if (!list) return [];
+    
+    return Array.from(list.querySelectorAll('.keyword-text')).map(el => el.textContent.trim());
+  }
+  
+  // Poll resume status until completion
+  async function pollResumeStatus(jobId, uiRequestId, companyName) {
+    const maxAttempts = 60; // 5 minutes max
+    let attempts = 0;
+    
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      
+      try {
+        const statusUrl = `${API_BASE_URL}/api/status/${jobId}`;
+        const statusRes = await fetch(statusUrl, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (!statusRes.ok) {
+          throw new Error('Failed to fetch status');
+        }
+        
+        const statusData = await statusRes.json();
+        console.log('[FEEDBACK] Status:', statusData.status, 'Progress:', statusData.progress);
+        
+        // Update progress in UI
+        updateRequestProgress(uiRequestId, statusData.progress, statusData.status);
+        
+        if (statusData.status === 'completed') {
+          clearInterval(pollInterval);
+          markRequestComplete(uiRequestId, statusData.file_name || 'resume.docx');
+          showResult(`✅ Resume generated successfully! - ${statusData.file_name || 'resume.docx'}`);
+        } else if (statusData.status === 'failed') {
+          clearInterval(pollInterval);
+          markRequestFailed(uiRequestId, statusData.error || 'Unknown error');
+          showResult('❌ Resume generation failed: ' + (statusData.error || 'Unknown error'));
+        }
+        
+        if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          markRequestFailed(uiRequestId, 'Timeout waiting for resume');
+          showResult('❌ Resume generation timed out');
+        }
+      } catch (error) {
+        console.error('[FEEDBACK] Error polling status:', error);
+        clearInterval(pollInterval);
+        markRequestFailed(uiRequestId, error.message);
+        showResult('❌ Failed to check status: ' + error.message);
+      }
+    }, 5000); // Poll every 5 seconds
+  }
+  
+  // Close keyword review modal
+  function closeKeywordReviewModal() {
+    const modal = document.getElementById('keywordReviewModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+  
+  // Remove keyword from list
+  function removeKeyword(button) {
+    button.closest('.keyword-item').remove();
+    updateKeywordCounts();
+  }
+  
+  // Add keyword to list
+  function addKeywordToList(listId, inputId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    
+    if (!input || !list) return;
+    
+    const keyword = input.value.trim();
+    if (keyword) {
+      const item = document.createElement('div');
+      item.className = 'keyword-item';
+      item.innerHTML = `
+        <span class="keyword-text">${keyword}</span>
+        <button class="keyword-remove" onclick="removeKeyword(this)" title="Remove">×</button>
+      `;
+      list.appendChild(item);
+      input.value = '';
+      updateKeywordCounts();
+    }
+  }
+  
+  // Reset keywords to original
+  function resetKeywords() {
+    const modal = document.getElementById('keywordReviewModal');
+    const backendRequestId = modal.dataset.backendRequestId;
+    const uiRequestId = modal.dataset.uiRequestId;
+    
+    // Re-fetch original keywords (they're still in intermediate state)
+    // For now, just close and reopen would work, but better to reload from backend
+    alert('Reset functionality - would reload original keywords from backend');
   }
   
 

@@ -53,106 +53,179 @@
 #     {jd_text}
 #     """
 
+# JD_HINTS_PROMPT = """
+# You are an expert in analyzing job descriptions (JDs) for technical and analytical roles.
+# Your task is to extract ONLY the most relevant keywords, skills, and phrases that will improve an Applicant Tracking System (ATS) score when tailoring a resume.
+
+# -------------------------------------------------------
+# INPUT CONTEXT
+# -------------------------------------------------------
+# The JD provided below has been PREPROCESSED and STRUCTURED.
+# It contains:
+# - Cleaned, normalized text (no fluff or boilerplate)
+# - Metadata (Job Title, Seniority, Domain, Location)
+# - Segmented sections: [RESPONSIBILITIES], [REQUIREMENTS], [PREFERRED]
+# - Section weighting (Responsibilities = highest priority, then Requirements, then Preferred)
+
+# Use this structure to prioritize keyword extraction:
+# 1. Focus heavily on the [RESPONSIBILITIES] section for technical keywords.
+# 2. Use [REQUIREMENTS] for confirming skills and tools.
+# 3. Reference [PREFERRED] only for secondary or supporting skills.
+
+# -------------------------------------------------------
+# GOAL
+# -------------------------------------------------------
+# From the provided preprocessed JD, extract and validate three structured categories:
+# 1. Technical Keywords (hard skills, tools, frameworks)
+# 2. Soft Skills (behavioral or action-oriented verbs)
+# 3. Key Phrases (domain-specific, multi-word phrases)
+
+# -------------------------------------------------------
+# VALIDATION LOGIC & RULES
+# -------------------------------------------------------
+
+# PART 1 – TECHNICAL KEYWORDS
+# Extract up to 15 unique technical or domain-specific tools and technologies such as:
+# - Programming languages, frameworks, APIs
+# - Cloud, DevOps, and infrastructure tools (AWS, Azure, Docker, Kubernetes)
+# - Databases, data warehouses, ETL, pipelines, orchestration tools
+# - BI, analytics, visualization, ML/AI frameworks
+# - SDLC, testing, CI/CD, version control tools
+# - Domain tech (CRM, ERP, Salesforce, SAP, Snowflake, etc.)
+
+# Validation Criteria:
+# - Include only if explicitly mentioned in the JD.
+# - Prefer terms from [RESPONSIBILITIES] > [REQUIREMENTS] > [PREFERRED].
+# - Must appear near an action verb or competency phrase (e.g., “experience with”, “hands-on using”).
+# - Prefer modern/relevant stacks over outdated ones.
+# - Deduplicate synonyms (“AWS Cloud” → “AWS”).
+# - Return as a clean list of capitalized skill names.
+
+# PART 2 – SOFT SKILLS / ACTION VERBS
+# Extract up to 7 strong soft skills or action verbs that reflect behavior, ownership, or leadership qualities.
+# Examples: Led, Collaborated, Optimized, Designed, Implemented, Mentored, Analyzed.
+
+# Validation Criteria:
+# - Must appear in context (e.g., “collaborate with teams”, “led initiatives”).
+# - Exclude generic verbs without measurable impact (“worked on”, “helped with”, “supported”).
+# - Exclude adjectives or personality traits (“passionate”, “self-motivated”).
+# - Use unique verbs only; no duplicates across list.
+# - Preserve the verb’s original tense and form as in JD.
+
+# PART 3 – KEY PHRASES
+# Extract the top 10 multi-word phrases or short clauses (exact text, no paraphrasing) that increase ATS match likelihood.
+# Examples:
+# - “design and implement scalable data pipelines”
+# - “develop and deploy RESTful APIs”
+# - “work in cross-functional agile teams”
+
+# Validation Criteria:
+# - Must be 3–6 words long.
+# - Must contain at least one noun and one verb.
+# - Must represent a distinct responsibility, domain concept, or measurable outcome.
+# - Must appear exactly in the JD (no paraphrasing or hallucination).
+# - Remove duplicates or slight rewordings.
+
+# -------------------------------------------------------
+# GENERAL RULES
+# -------------------------------------------------------
+# - Always prefer terms appearing in the [RESPONSIBILITIES] section first.
+# - Preserve capitalization for technologies, acronyms, and frameworks.
+# - Maintain concise wording (phrases ≤ 15 words).
+# - Prioritize high-frequency and domain-relevant terms.
+# - Ensure balanced ratio: ~60% technical, ~25% soft, ~15% phrases.
+# - Return only validated, unique, contextually grounded items.
+
+# -------------------------------------------------------
+# OUTPUT FORMAT (STRICT JSON)
+# -------------------------------------------------------
+# Return ONLY valid JSON with three fields:
+# {{
+#   "technical_keywords": ["keyword1", "keyword2", ...],
+#   "soft_skills": ["skill1", "skill2", ...],
+#   "phrases": ["exact phrase 1", "exact phrase 2", ...]
+# }}
+
+# Do NOT include markdown, commentary, or extra text.
+
+# -------------------------------------------------------
+# PREPROCESSED JOB DESCRIPTION (JD):
+# {jd_text}
+# """
+
+
+
 JD_HINTS_PROMPT = """
-You are an expert in analyzing job descriptions (JDs) for technical and analytical roles.
-Your task is to extract ONLY the most relevant keywords, skills, and phrases that will improve an Applicant Tracking System (ATS) score when tailoring a resume.
+You are an expert in analyzing job descriptions (JDs) to extract key information for resume optimization.
+Your task is to extract keywords, skills, and phrases that will improve an Applicant Tracking System (ATS) score when tailoring a resume.
 
--------------------------------------------------------
 INPUT CONTEXT
--------------------------------------------------------
-The JD provided below has been PREPROCESSED and STRUCTURED.
-It contains:
-- Cleaned, normalized text (no fluff or boilerplate)
-- Metadata (Job Title, Seniority, Domain, Location)
-- Segmented sections: [RESPONSIBILITIES], [REQUIREMENTS], [PREFERRED]
-- Section weighting (Responsibilities = highest priority, then Requirements, then Preferred)
+The Job Description contains segmented sections [RESPONSIBILITIES], [REQUIREMENTS], [PREFERRED]
 
-Use this structure to prioritize keyword extraction:
-1. Focus heavily on the [RESPONSIBILITIES] section for technical keywords.
-2. Use [REQUIREMENTS] for confirming skills and tools.
-3. Reference [PREFERRED] only for secondary or supporting skills.
-
--------------------------------------------------------
 GOAL
--------------------------------------------------------
-From the provided preprocessed JD, extract and validate three structured categories:
-1. Technical Keywords (hard skills, tools, frameworks)
+From the provided Job Description, extract and validate three structured categories:
+1. Technical Keywords (technical skills, tools, frameworks, etc.)
 2. Soft Skills (behavioral or action-oriented verbs)
-3. Key Phrases (domain-specific, multi-word phrases)
+3. Key Phrases (domain-specific, multi-word phrases, etc.)
 
--------------------------------------------------------
+
 VALIDATION LOGIC & RULES
--------------------------------------------------------
 
 PART 1 – TECHNICAL KEYWORDS
-Extract up to 15 unique technical or domain-specific tools and technologies such as:
-- Programming languages, frameworks, APIs
+Go through the JD([RESPONSIBILITIES], [REQUIREMENTS], [PREFERRED]) and Extract unique technical or domain-specific tools and technologies such as:
+- Programming languages, frameworks, technologies 
 - Cloud, DevOps, and infrastructure tools (AWS, Azure, Docker, Kubernetes)
 - Databases, data warehouses, ETL, pipelines, orchestration tools
 - BI, analytics, visualization, ML/AI frameworks
 - SDLC, testing, CI/CD, version control tools
+- front-end, back-end, full-stack frameworks
 - Domain tech (CRM, ERP, Salesforce, SAP, Snowflake, etc.)
 
 Validation Criteria:
-- Include only if explicitly mentioned in the JD.
-- Prefer terms from [RESPONSIBILITIES] > [REQUIREMENTS] > [PREFERRED].
-- Must appear near an action verb or competency phrase (e.g., “experience with”, “hands-on using”).
+- Include only if explicitly mentioned in the Job Description.
 - Prefer modern/relevant stacks over outdated ones.
 - Deduplicate synonyms (“AWS Cloud” → “AWS”).
-- Return as a clean list of capitalized skill names.
 
 PART 2 – SOFT SKILLS / ACTION VERBS
-Extract up to 7 strong soft skills or action verbs that reflect behavior, ownership, or leadership qualities.
-Examples: Led, Collaborated, Optimized, Designed, Implemented, Mentored, Analyzed.
+Extract up to 7-10 strong soft skills or action verbs that reflect behavior, ownership, or leadership qualities.
+Examples: Led, Collaborated, Optimized, Designed, Implemented, Mentored, Analyzed etc.
 
 Validation Criteria:
-- Must appear in context (e.g., “collaborate with teams”, “led initiatives”).
+- Must appear in context (e.g., “collaborate with teams”, “led initiatives”).   
 - Exclude generic verbs without measurable impact (“worked on”, “helped with”, “supported”).
 - Exclude adjectives or personality traits (“passionate”, “self-motivated”).
 - Use unique verbs only; no duplicates across list.
 - Preserve the verb’s original tense and form as in JD.
 
 PART 3 – KEY PHRASES
-Extract the top 10 multi-word phrases or short clauses (exact text, no paraphrasing) that increase ATS match likelihood.
+Extract the top 10-12 multi-word phrases or clauses from responsibilities and requirements (exact text, no paraphrasing) that must reflect in a resume to increase ATS match likelihood.
 Examples:
 - “design and implement scalable data pipelines”
 - “develop and deploy RESTful APIs”
-- “work in cross-functional agile teams”
 
 Validation Criteria:
-- Must be 3–6 words long.
+- Must be transferable across companies.
+- **REMOVE possessive pronouns**: "our", "their", "your" → make generic
+- **REMOVE company-specific terms**: company names, internal team names, proprietary tech
+- **ADD CONTEXT to vague verbs**
+- **Length**: 3-8 words (concise but meaningful)
+- Dont include company-specific terms, team names, or proprietary technologies.
 - Must contain at least one noun and one verb.
 - Must represent a distinct responsibility, domain concept, or measurable outcome.
 - Must appear exactly in the JD (no paraphrasing or hallucination).
 - Remove duplicates or slight rewordings.
 
--------------------------------------------------------
 GENERAL RULES
--------------------------------------------------------
-- Always prefer terms appearing in the [RESPONSIBILITIES] section first.
-- Preserve capitalization for technologies, acronyms, and frameworks.
-- Maintain concise wording (phrases ≤ 15 words).
 - Prioritize high-frequency and domain-relevant terms.
-- Ensure balanced ratio: ~60% technical, ~25% soft, ~15% phrases.
 - Return only validated, unique, contextually grounded items.
 
--------------------------------------------------------
 OUTPUT FORMAT (STRICT JSON)
--------------------------------------------------------
-Return ONLY valid JSON with three fields:
-{{
-  "technical_keywords": ["keyword1", "keyword2", ...],
-  "soft_skills": ["skill1", "skill2", ...],
-  "phrases": ["exact phrase 1", "exact phrase 2", ...]
-}}
+- Return the output in the exact provided JSON structure.
+- Do NOT include markdown, commentary, or extra text.
 
-Do NOT include markdown, commentary, or extra text.
-
--------------------------------------------------------
-PREPROCESSED JOB DESCRIPTION (JD):
+JOB DESCRIPTION (JD):
 {jd_text}
 """
-
 
 
 # Properly formatted JSON schema for Gemini

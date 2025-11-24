@@ -167,8 +167,8 @@ def add_structured_contact(paragraph, contact_data):
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
         
-        # Handle phone and email as plain text (email gets mailto link)
-        if key == "phone":
+        # Handle phone, location, and email as plain text (email gets mailto link)
+        if key == "phone" or key == "location":
             run = paragraph.add_run(value)
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
@@ -682,8 +682,8 @@ def create_resume_modern(data, file_name):
     for section in doc.sections:
         section.top_margin = Inches(0.5)
         section.bottom_margin = Inches(0.5)
-        section.left_margin = Inches(0.7)
-        section.right_margin = Inches(0.7)
+        section.left_margin = Inches(0.5)
+        section.right_margin = Inches(0.5)
     
     folder_path = "./generated_resumes/"
     import os

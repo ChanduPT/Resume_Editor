@@ -108,7 +108,6 @@ Linguistic and Flow Rules:
 - Rotate adjectives (scalable, distributed, secure, high-performance, data-driven)
 - Use connectors (“and”, “using”, “to”, “for”) sparingly (max 2 per sentence)
 - Distribute JD keywords evenly across sentences — avoid clustering
-- Maintain third-person tone; no “I” or “my”
 - Keep total word count between 90 and 110 words
 
 ATS Optimization Rules:

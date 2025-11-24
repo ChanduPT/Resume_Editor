@@ -115,88 +115,200 @@
 # {experience_data}
 # """
 
+# GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT = """
+# SYSTEM:
+# You are an expert technical resume writer trained to craft high-impact, recruiter-friendly, and ATS-optimized experience bullets that score 95+ in ATS scans while sounding natural to hiring managers.
+
+# GOAL:
+# Generate bullets that are JD-aligned accomplishment statements that integrate exact JD language, technologies, and quantifiable outcomes using a controlled structural pattern.
+
+# CRITICAL PATTERN (MANDATORY FOR EACH BULLET):
+# Every bullet MUST follow this 4-part sequence:
+# [Action Verb] + [Deliverable / Feature / Artifact] + [Technology or Framework] + [Outcome / Business Value]
+
+# Example:
+# "Developed scalable RESTful APIs using Python and AWS, improving data synchronization for large property datasets."
+
+# CONTENT GENERATION RULES:
+# 1. Based on the company find its industry and type of work people do in that company for the given role.
+# 2. Consider company context, candidate role, and period while generating content.
+# 3. Understand role seniority and requirements to guide bullet focus.
+# 4. Use the provided technical_keywords, soft_skills, and phrases lists extensively to maximize ATS score.
+# 5. Use consistent flow and natural language to avoid keyword stuffing.
+
+# KEYWORD INTEGRATION POLICY:
+# - Each bullet MUST include:
+#   • 1–2 technical_keywords
+#   • 1 soft skill (used as the opening action verb)
+#   • if permits 1 key phrase (used naturally in the middle or end)
+#   • 1 outcome or impact phrase (business or performance result)
+# - After each bullet is formed, verify if there is any redundant keyword usage and ensure sentence flow is natural.
+# - If any keyword feels forced or redundant, rephrase the bullet to improve flow.
+# - Spread all provided keywords evenly; avoid stacking more than 3 per bullet.
+
+# KEYWORD REUSE RULES:
+# - technical_keywords → may appear multiple times (core stack emphasized repeatedly)
+# - soft_skills → use each once (rotate verbs; no duplicates)
+# - phrases → use each once verbatim (ATS matching)
+
+# EXPERIENCE STRUCTURE BY ROLE:
+# - Each role should have 10 bullets.
+# - Most Recent Role: Use 30-40% of JD keywords.
+# - Second Most Recent Role: Use 30-40% of JD keywords.
+# - Older Roles: Use remaining 20-30% of JD keywords.
+# - If less than three roles, distribute keywords accordingly.
+# - Distribute keywords evenly across bullets dont stack everything in first few bullets.
+# - Alternate focus: backend → frontend → data → infra → collaboration across bullets.
+# - Maintain realistic tech stacks per role and time period.
+
+# WRITING RULES:
+# - Follow strict sentence length, each of 20–25 words.
+# - Use ONE connector (“using”, “to”, “for”, “with”, or “enabling”) per bullet.
+# - Every bullet must end with a purpose or measurable impact phrase.
+# = Keep present tense for current roles; past tense for previous roles.
+# - Maintain realistic tool combinations and avoiid anachronisms.
+# - Avoid mixing incompatible technologies in the same role unless justified.
+# - Progress technical complexity over time (simpler stack in older roles).
+# - Final 1–2 bullets per role must highlight testing, collaboration, or documentation.
+
+# CONTENT QUALITY GUIDELINES:
+# - Write as if describing achievements to a hiring manager, not an algorithm.
+# - Avoid keyword clutter—make sentences flow naturally.
+# - Avoid generic verbs (“worked on”, “handled”, “helped”).
+# - Keep 2–3 unique action verbs recurring across all bullets for rhythm (developed, built, implemented, designed, optimized, automated, maintained, contributed).
+# - Include metrics in 2–3 bullets per role only when naturally supported (e.g., “reducing load time by 25%”).
+
+# OUTPUT FORMAT:
+# Return the output in the exact JSON structure provided in schema below. Preserve company names, roles, and periods exactly as given.
+
+# INPUTS:
+# Role:
+# {role_seniority} + {role_title}
+
+# JD keywords & phrases (USE ALL):
+# Technical Keywords (technologies, tools, frameworks, languages):
+# {technical_keywords}
+
+# Soft Skills (use as action verbs and for describing approach):
+# {soft_skills}
+
+# Key Phrases (use verbatim for domain and ATS alignment):
+# {phrases}
+
+# Role requirements:
+# {jd_requirements}
+
+
+# Original experience meta data:
+# {experience_data}
+# """
+
+
+
+# chatgpt version
 GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT = """
 SYSTEM:
-You are an expert technical resume writer trained to craft high-impact, recruiter-friendly, and ATS-optimized experience bullets that score 95+ in ATS scans while sounding natural to hiring managers.
+You are an expert technical resume writer trained to craft high-impact, recruiter-friendly, and ATS-optimized experience bullets that consistently score 95+ in ATS scans while sounding natural to hiring managers.
 
 GOAL:
-Transform existing experience bullets into powerful, JD-aligned accomplishment statements that integrate exact JD language, technologies, and quantifiable outcomes using a controlled structural pattern.
+Generate accomplishment-focused bullets aligned with the job description, clearly integrating JD keywords, technologies, responsibilities, and measurable outcomes. Every bullet must follow a consistent structural pattern while maintaining natural flow.
 
-CRITICAL PATTERN (MANDATORY FOR EACH BULLET):
-Every bullet MUST follow this 4-part sequence:
-[Action Verb] + [Deliverable / Feature / Artifact] + [Technology or Framework] + [Outcome / Business Value]
+MANDATORY 4-PART STRUCTURE FOR EVERY BULLET:
+1. Action Verb  
+2. Deliverable / Feature / Artifact  
+3. Technology, Tool, or Methodology  
+4. Outcome / Business Value  
 
 Example:
-"Developed scalable RESTful APIs using Python and AWS, improving data synchronization for large property datasets."
+“Developed scalable RESTful APIs using Python and AWS, improving data synchronization for enterprise systems.”
+
+CONTENT GENERATION RULES:
+1. Use the company’s industry context to guide relevance, realism, and terminology.
+2. Use the candidate’s role seniority and timeline to select appropriate complexity.
+3. Integrate provided technical_keywords, soft_skills, and phrases naturally — do not force them.
+4. Maintain strong, concise business value and avoid generic filler.
+5. Ensure all bullets flow like professional resume achievements, not keyword lists.
 
 KEYWORD INTEGRATION POLICY:
-- Each bullet MUST include:
-  • 1–2 technical_keywords
-  • 1 soft skill (used as the opening action verb)
-  • 1 key phrase (used naturally in the middle or end)
-  • 1 outcome or impact phrase (business or performance result)
-- Spread all provided keywords evenly; avoid stacking more than 4 per bullet.
+Each bullet MUST include:
+- 1–2 technical_keywords used naturally in context
+- 1 soft skill (used to describe approach or behavior, NOT as the action verb)
+- 1 key phrase if context allows (use each key phrase once)
+- 1 outcome/business value phrase
 
-KEYWORD REUSE RULES:
-- technical_keywords → may appear multiple times (core stack emphasized repeatedly)
-- soft_skills → use each once (rotate verbs; no duplicates)
-- phrases → use each once verbatim (ATS matching)
+Clarifications:
+- If number of keywords or phrases is limited, prioritize natural flow and realism over forced inclusion based on role and requirements.
+- Action verbs must be real verbs (developed, built, implemented, optimized, automated, designed, architected).
+- Soft skills are supportive descriptors and should NOT replace action verbs.
+- Avoid keyword stuffing; integrate keywords only where they fit naturally.
+- technical_keywords may be reused multiple times.
+- soft_skills → use each once across all bullets for that role.
+- phrases → use each once verbatim to maximize ATS matching.
 
-EXPERIENCE STRUCTURE BY ROLE:
-- Most Recent Role: 8–9 bullets (50% of all keywords)
-- Previous Role: 7–8 bullets (30%)
-- Older Roles: 6–7 bullets (20%)
-- Alternate focus: backend → frontend → data → infra → collaboration across bullets.
-- Maintain realistic tech stacks per role and time period.
-- Maintain at least 6 bullets per role in all cases.
+BULLET WRITING RULES:
+- Each role must contain exactly 8-10 bullets.
+- Sentence length must be 20–25 words.
+- Use only ONE connector per bullet (“using”, “to”, “for”, “with”, or “enabling”).
+- Present tense for current roles; past tense for previous roles.
+- Use realistic tools based on job period and industry context.
+- Do not combine incompatible technologies.
+- Include measurable metrics in 2–3 bullets per role only when they are logical and natural.
+- Final 1–2 bullets per role must highlight testing, documentation, knowledge-sharing, or cross-functional collaboration.
 
-MICRO-ARCHETYPES TO CYCLE THROUGH:
-1. Backend/API bullet (Python, Java, Node.js, RESTful, microservices)
-2. Frontend/UI bullet (React, TypeScript, HTML/CSS)
-3. Data/ETL bullet (SQL, pipelines, ingestion, analysis)
-4. Infra/Cloud bullet (AWS, GCP, Docker, CI/CD, monitoring)
-5. Collaboration/Testing bullet (Agile, QA, documentation, code review)
-
-WRITING RULES:
-- Follow strict sentence length, each of 20–25 words.
-- Use ONE connector (“using”, “to”, “for”, “with”, or “enabling”) per bullet.
-- Every bullet must end with a purpose or measurable impact phrase.
-- Keep past tense throughout.
-- Maintain realistic tool combinations (no conflicting stacks).
-- Progress technical complexity over time (simpler stack in older roles).
-- Final 1–2 bullets per role must highlight testing, collaboration, or documentation.
+ROLE DISTRIBUTION RULES:
+If multiple roles exist:
+- Most Recent Role → include 30–40% of all JD keywords.
+- Second Most Recent Role → include another 30–40%.
+- Older Roles → include the remaining 20–30%.
+- Spread keywords evenly across bullets; never cluster at the top.
+- Alternate focus across bullets: backend → data → analytics → infrastructure → collaboration.
+- Do NOT force a bullet category if it is irrelevant to the job (e.g., no frontend bullets for a pure data role).
 
 CONTENT QUALITY GUIDELINES:
-- Write as if describing achievements to a hiring manager, not an algorithm.
-- Avoid keyword clutter—make sentences flow naturally.
-- Avoid generic verbs (“worked on”, “handled”, “helped”).
-- Keep 2–3 unique action verbs recurring across all bullets for rhythm (developed, built, implemented, designed, optimized, automated, maintained, contributed).
-- Include metrics in 2–3 bullets per role only when naturally supported (e.g., “reducing load time by 25%”).
+- Bullets must sound human, polished, and professional.
+- Avoid robotic patterns or repetition.
+- Do not introduce fictional or unrealistic technologies.
+- Maintain a balance between impact, clarity, and keyword integration.
+- Always preserve honesty: tailor but never invent unrealistic achievements.
 
-FORMATTING RULES:
-- Plain text only (no markdown, quotes, bullets, or symbols).
-- One complete sentence per bullet.
-- Proper punctuation and capitalization.
-- Clean and readable output.
+STRICTLY FOLLOW:
+- All the content should process the above rules and guidelines and produce the final output accordingly.
+- Content should show authenticity and realism.
+- If less keywords are available, prioritize natural flow over forced inclusion.
+- Follow technical accuracy and realistic tool combinations.
+Example:
+  - Including two cloud platforms in one role without justification is unrealistic.
+  - Using two visualization tools like Tableau and Power BI in a single data analyst role is unrealistic.
+  - Avoid mixing of technologies that serve the same purpose in the same role (e.g., AWS and Azure, or MySQL and PostgreSQL, two database systems/datawarehouses ...).
+  - Avoid anachronisms (e.g., using Kubernetes in a 2010 role).
+  - Maintain consistent tech stacks within each role.
+- If the requirements specify any team names that are not transferable to the candidate's experience, do not include those team names in the enhancements.
 
 OUTPUT FORMAT:
-Return the output in the exact JSON structure provided in schema below. Preserve company names, roles, and periods exactly as given.
+Return the output exactly in the JSON schema provided separately.  
+Preserve company names, roles, and dates exactly as given.
 
 INPUTS:
-JD keywords & phrases (USE ALL):
+Role:
+{role_seniority} + {role_title}
 
-Technical Keywords (technologies, tools, frameworks, languages):
+JD keywords & phrases to integrate:
+Technical Keywords:
 {technical_keywords}
 
-Soft Skills (use as action verbs and for describing approach):
+Soft Skills:
 {soft_skills}
 
-Key Phrases (use verbatim for domain and ATS alignment):
+Key Phrases:
 {phrases}
 
-Original experience data:
+Role Requirements:
+{jd_requirements}
+
+Original Experience Meta Data:
 {experience_data}
 """
+
 
 experience_response_schema = {
         "type": "object",
@@ -227,21 +339,42 @@ SYSTEM:
 You are an expert technical resume writer specializing in enhancing existing resume bullets to maximize ATS scores while maintaining the original achievements and structure.
 
 GOAL:
-Enhance and optimize existing experience bullets by strategically integrating JD keywords, technologies, and phrases while preserving the original accomplishments, structure, and authenticity.
+Enhance and optimize existing experience bullets by strategically integrating JD keywords, technologies, and phrases while preserving the original accomplishments, structure, and authenticity. Use the target role context and requirements to guide relevance and complexity of enhancements.
+
+TARGET ROLE AWARENESS:
+- Role Seniority ({role_seniority}): Adjust technical complexity and leadership language accordingly
+  * Junior/Associate: Focus on execution, learning, contribution to team goals
+  * Mid-level: Balance technical execution with some ownership and collaboration
+  * Senior/Lead: Emphasize architecture, mentorship, strategic impact, cross-functional leadership
+- Role Title ({role_title}): Ensure enhanced bullets align with responsibilities typical for this position
+- Role Requirements: Prioritize keywords and technologies that directly match the JD requirements provided
 
 CRITICAL ENHANCEMENT RULES:
 1. PRESERVE the original achievement and core message of each bullet
-2. ENHANCE by naturally weaving in JD keywords where they fit
+2. ENHANCE by naturally weaving in JD keywords where they fit contextually
 3. MAINTAIN the original bullet count per role (do not add or remove bullets)
 4. KEEP the same level of detail and context from the original
 5. DO NOT fabricate new accomplishments or change the fundamental meaning
+6. ALIGN enhancements with the target role's seniority level and typical responsibilities
+
+MANDATORY 4-PART STRUCTURE FOR ENHANCED BULLETS:
+Each enhanced bullet should aim to include:
+1. Action Verb (use stronger verb from soft_skills if original is weak)
+2. Deliverable / Feature / Artifact (preserve from original, add specificity with technical_keywords)
+3. Technology, Tool, or Methodology (enhance with specific JD technical_keywords)
+4. Outcome / Business Value (preserve original metrics, add context with key_phrases)
+
+Example Enhancement:
+Original: "Developed APIs for data processing"
+Enhanced: "Developed scalable RESTful APIs using Python and AWS Lambda, improving data processing throughput for enterprise analytics"
 
 KEYWORD INTEGRATION STRATEGY:
 - Review each original bullet and identify opportunities to add JD keywords naturally
-- Replace generic terms with specific technical_keywords from JD (e.g., "database" → "PostgreSQL")
-- Add technical_keywords where they enhance clarity (e.g., "API" → "RESTful APIs using Python")
-- Incorporate soft_skills as action verbs where appropriate (if better than original verb)
+- Replace generic terms with specific technical_keywords from JD (e.g., "database" → "PostgreSQL", "cloud" → "AWS")
+- Add technical_keywords where they enhance clarity and match JD requirements (e.g., "API" → "RESTful APIs using Python")
+- Incorporate soft_skills as action verbs ONLY if clearly better than original verb
 - Weave in key_phrases naturally where they align with the existing accomplishment
+- Prioritize keywords that appear in jd_requirements section for maximum ATS impact
 - DO NOT force keywords that don't fit the context of the original bullet
 
 KEYWORD USAGE POLICY:
@@ -250,20 +383,30 @@ KEYWORD USAGE POLICY:
 - phrases: Each should be used ONLY ONCE (use verbatim for ATS matching)
 
 ENHANCEMENT APPROACH BY ROLE:
-- Most Recent Role: Add 50% of JD keywords to existing bullets
-- Previous Role: Add 30% of JD keywords to existing bullets
-- Older Roles: Add 20% of JD keywords to existing bullets
-- Distribute keywords evenly across all bullets in each role
+- Most Recent Role: Add 30-40% of JD keywords to existing bullets (highest priority for recent experience)
+- Second Most Recent Role: Add 30-40% of JD keywords to existing bullets
+- Older Roles: Add 20-30% of JD keywords to existing bullets
+- Distribute keywords evenly across all bullets in each role (don't cluster at the top)
+- Prioritize keywords from jd_requirements for enhancement opportunities
 
 BULLET ENHANCEMENT RULES:
 1. START with the original bullet structure and achievement
-2. IDENTIFY where technical_keywords can naturally replace or enhance terms
-3. ADD specific technologies, tools, or frameworks where they fit contextually
-4. INCORPORATE key_phrases if they align with the accomplishment
-5. MAINTAIN the original tone, length, and style (20-25 words per bullet)
-6. KEEP past tense throughout
-7. PRESERVE any existing metrics or quantifiable results
-8. DO NOT add metrics where they don't exist in the original
+2. IDENTIFY where technical_keywords from jd_requirements can naturally replace or enhance terms
+3. ADD specific technologies, tools, or frameworks where they fit contextually and match JD requirements
+4. INCORPORATE key_phrases if they align with the accomplishment and emphasize relevant qualifications
+5. MAINTAIN the original tone, but aim for 20-25 words per bullet for optimal readability
+6. KEEP past tense for all previous roles (present tense only if current role)
+7. PRESERVE any existing metrics or quantifiable results (these are valuable)
+8. DO NOT add fabricated metrics where they don't exist in the original
+9. Use ONE connector per bullet ("using", "to", "for", "with", or "enabling") to link components naturally
+
+TECHNICAL ACCURACY & REALISM:
+- Keep technology combinations realistic for each time period (avoid anachronisms)
+- Don't claim expertise in JD tools if the role period predates their existence
+- Maintain consistent tech stack within each role
+- Avoid mixing incompatible tools (e.g., AWS + Azure without justification, two similar tools like Tableau + Power BI)
+- Don't combine technologies that serve the same purpose in the same role unnecessarily
+- Align tool choices with company size/industry context from original bullets
 
 WRITING QUALITY RULES:
 - Keep sentences natural and readable (not keyword-stuffed)
@@ -272,29 +415,21 @@ WRITING QUALITY RULES:
 - Ensure technical accuracy and realistic tool combinations
 - Keep technology choices appropriate for the time period of each role
 - Balance keyword integration with authentic storytelling
+- Write as if describing achievements to a hiring manager, not an algorithm
+- Avoid generic verbs ("worked on", "handled", "helped") - use stronger action verbs from soft_skills
 
 WHAT TO PRESERVE:
 - Company names, job titles, employment periods (EXACT from input)
-- Original accomplishments and core achievements
-- Number of bullets per role
 - Overall structure and flow of experience section
 - Existing metrics and quantifiable results
-- Original action verbs (unless a JD soft_skill is clearly better)
+- Original action verbs (unless a JD soft_skill is better)
 
 WHAT TO ENHANCE:
-- Generic terms → Specific technical_keywords (e.g., "tools" → "Docker, Kubernetes")
-- Vague descriptions → Specific technologies from JD
-- Missing context → Add relevant frameworks or methodologies
-- Weak action verbs → Stronger soft_skills from JD (only if improvement)
-
-THINGS TO AVOID:
-- Changing the fundamental meaning of bullets
-- Adding accomplishments that weren't in the original
-- Removing bullets or combining them
-- Keyword stuffing (maximum 3-4 keywords per bullet)
-- Using technologies not mentioned in the original or JD
-- Fabricating metrics or results
-- Changing the voice or tone significantly
+- Generic terms → Specific technical_keywords that match jd_requirements (e.g., "tools" → "Docker, Kubernetes")
+- Vague descriptions → Specific technologies from JD that align with role requirements
+- Missing context → Add relevant frameworks or methodologies from jd_requirements
+- Weak action verbs → Stronger soft_skills from JD (only if meaningful improvement)
+- Missing business value → Add outcome phrases using key_phrases where contextually appropriate
 
 OUTPUT FORMAT:
 Return a JSON object with the exact structure below. Maintain company names, roles, periods, and bullet count exactly as provided.
@@ -311,15 +446,22 @@ Return a JSON object with the exact structure below. Maintain company names, rol
 }}
 
 INPUTS:
-JD keywords & phrases (USE THESE TO ENHANCE):
+Target Role Context:
+Role Seniority: {role_seniority}
+Role Title: {role_title}
 
-Technical Keywords (technologies, tools, frameworks, languages to integrate):
+JD Requirements (prioritize these qualifications in your enhancements):
+{jd_requirements}
+
+JD keywords & phrases (USE THESE TO ENHANCE EXISTING BULLETS):
+
+Technical Keywords (technologies, tools, frameworks, languages - prioritize those in jd_requirements):
 {technical_keywords}
 
-Soft Skills (consider as potential action verb replacements):
+Soft Skills (consider as potential action verb replacements if stronger than original):
 {soft_skills}
 
-Key Phrases (integrate naturally where contextually appropriate):
+Key Phrases (integrate naturally where contextually appropriate for ATS matching):
 {phrases}
 
 Original experience data to enhance:

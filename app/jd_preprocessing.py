@@ -136,24 +136,23 @@ def clean_jd_text(raw_text: str) -> str:
 async def extract_with_llm(clean_text: str) -> Dict:
     """
     Use LLM to extract sections and metadata with high accuracy.
-    
     This is the PRIMARY extraction method - no hallucination, only exact extraction.
     """
     
     prompt = f"""You are a precise Job Description parser. Extract EXACT information from the JD below.
 
-CRITICAL RULES:
-1. Extract ONLY what exists in the text - DO NOT hallucinate or infer
-2. Copy text VERBATIM - do not paraphrase or summarize
-3. If a section doesn't exist, return empty array
-4. Preserve original wording exactly
+    CRITICAL RULES:
+    1. Extract ONLY what exists in the text - DO NOT hallucinate or infer
+    2. Copy text VERBATIM - do not paraphrase or summarize
+    3. If a section doesn't exist, return empty array
+    4. Preserve original wording exactly
+    
+    JOB DESCRIPTION:
+    ```
+        {clean_text}
+    ```
 
-JOB DESCRIPTION:
-```
-{clean_text}
-```
-
-Extract the following in JSON format:
+    Extract the following in JSON format:
 
 1. JOB TITLE: Find the exact job title (e.g., "Senior HR Data Analyst", "Software Engineer")
    - Look for phrases like "The [Job Title] is..." or "We are hiring a [Job Title]"
@@ -647,31 +646,32 @@ async def classify_domain_with_llm(clean_text: str, title: str) -> str:
     
     This is a fallback when keyword-based extraction is ambiguous.
     """
-    prompt = f"""You are a job domain classifier. Analyze this job description and classify it into ONE of these domains:
+    prompt = f"""
+    
+    You are a job domain classifier. Analyze this job description and classify it into ONE of these domains:
+        DOMAINS:
+        - Data Engineering
+        - Machine Learning
+        - AI/ML
+        - Data Science
+        - Cloud Engineering
+        - DevOps
+        - Backend Engineering
+        - Frontend Engineering
+        - Full Stack
+        - Mobile Development
+        - QA/Testing
+        - Security
+        - Embedded Systems
+        - Software Engineering (general)
 
-DOMAINS:
-- Data Engineering
-- Machine Learning
-- AI/ML
-- Data Science
-- Cloud Engineering
-- DevOps
-- Backend Engineering
-- Frontend Engineering
-- Full Stack
-- Mobile Development
-- QA/Testing
-- Security
-- Embedded Systems
-- Software Engineering (general)
+        JOB TITLE: {title}
 
-JOB TITLE: {title}
+        JD TEXT (first 1500 chars):
+            {clean_text[:1500]}
 
-JD TEXT (first 1500 chars):
-{clean_text[:1500]}
-
-Return ONLY the domain name, nothing else.
-"""
+        Return ONLY the domain name, nothing else.
+    """
     
     try:
         response = await chat_completion_async(prompt)
@@ -687,11 +687,7 @@ Return ONLY the domain name, nothing else.
 # 5️⃣ MAIN PREPROCESSING PIPELINE
 # ====================================================
 
-async def preprocess_jd(
-    raw_text: str,
-    job_title: Optional[str] = None,
-    use_llm_extraction: bool = True
-) -> Dict:
+async def preprocess_jd( raw_text: str, job_title: Optional[str] = None, use_llm_extraction: bool = True ) -> Dict:
     """
     Complete JD preprocessing pipeline with LLM-based extraction for 100% accuracy.
     
@@ -901,15 +897,82 @@ def get_jd_summary(jd_data: Dict) -> str:
     sections = jd_data.get("sections", {})
     
     summary = f"""
-JD Preprocessing Summary
-========================
-Title:     {metadata.get('title', 'Unknown')}
-Seniority: {metadata.get('seniority', 'Unknown')}
-Domain:    {metadata.get('domain', 'Unknown')}
-Location:  {metadata.get('location', 'Unknown')}
+        JD Preprocessing Summary
+        ========================
+        Title:     {metadata.get('title', 'Unknown')}
+        Seniority: {metadata.get('seniority', 'Unknown')}
+        Domain:    {metadata.get('domain', 'Unknown')}
+        Location:  {metadata.get('location', 'Unknown')}
 
-Text:      {stats.get('original_length', 0)} → {stats.get('cleaned_length', 0)} chars
-Sections:  {', '.join(stats.get('sections_found', []))}
-Bullets:   Resp={len(sections.get('responsibilities', []))}, Req={len(sections.get('requirements', []))}, Pref={len(sections.get('preferred', []))}
-"""
+        Text:      {stats.get('original_length', 0)} → {stats.get('cleaned_length', 0)} chars
+        Sections:  {', '.join(stats.get('sections_found', []))}
+        Bullets:   Resp={len(sections.get('responsibilities', []))}, Req={len(sections.get('requirements', []))}, Pref={len(sections.get('preferred', []))}
+    """
     return summary.strip()
+
+
+
+if __name__ == "__main__":
+    # Example usage
+    sample_jd = """ 
+About The Position
+
+Data Analysis & Reporting
+
+Develop, maintain, and automate revenue cycle reports and dashboards (e.g., AR days, denial rates, net collection rate, DNFB, clean claim rate).
+Perform variance and root-cause analysis on key performance indicators.
+Identify trends and root causes of revenue leakage, claim denials, and payment delays.
+Collect, clean and analyze data from EHR, billing, and financial systems (e.g., Epic, Cerner, Meditech, Athena, SSI, or Waystar).
+Monitor charge capture, reimbursement, and payment posting trends for anomalies.
+Conduct variance analysis between actual and expected reimbursement.
+Develop monthly and quarterly performance reporting to finance and revenue cycle leadership.
+Ensure accuracy, consistency, and integrity of data used for financial and operational reporting.
+Document analytical methodologies and maintain standard reporting definitions.
+ 
+
+Operational Performance Optimization
+
+Partner with revenue cycle and operational leadership to identify revenue cycle gaps and recommend improvement
+Conduct deep dives into issues such as billing delays, denials, and underpayments.
+Support business cases for new tools, automation, or technology enhancements.
+Provide data for regulatory reporting, audits, and compliance reviews.
+Project Support
+
+Support implementation of new revenue cycle initiatives, business intelligence tools, software and external partnerships.
+Document business requirements and translate them for technical teams.
+Participate in testing, validation, and training for new processes or tools.
+Collaboration & Communication
+
+Work closely with HIM, Coding, Patient Financial Services, and Support teams.
+Present findings and recommendations to leadership through clear visualizations and summaries.
+Provide education to end-users on interpreting data and using dashboards.
+ 
+
+Minimum Requirements:
+
+Bachelor's degree in Business, Healthcare Administration, Health Information Management, Finance, Data Analytics, or related field required.
+Experience with healthcare billing, payer policies, and reimbursement methodologies (Medicare, Medicaid, commercial).
+Strong understanding of the revenue cycle continuum: patient access, charge capture, coding, billing, denials, and collections
+Strong analytical and problem-solving skills with attention to detail.
+Proficiency in Excel, SQL, Power BI/Tableau/Dundas and EHR reporting tools.
+Knowledge of KPIs and benchmarks across registration, billing, and AR management.
+Excellent presentation and written and verbal communication skills.
+Ability to work cross-functionally and manage multiple priorities in a fast-paced environment.
+Preferred Requirements:
+
+3--5 years of experience in revenue cycle operations, healthcare financial analysis or financial performance analysis
+ 
+
+"""
+    import asyncio
+
+    async def main():
+        result = await preprocess_jd(sample_jd, job_title="Data Analyst", use_llm_extraction=True)
+        is_valid, error = validate_preprocessed_jd(result)
+        if is_valid:
+            print(get_jd_summary(result))
+            print(json.dumps(result, indent=2))
+        else:
+            print(f"Validation failed: {error}")
+
+    asyncio.run(main())

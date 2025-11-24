@@ -21,7 +21,11 @@ from app.database import (
 )
 from app.auth import get_current_user, get_current_user_optional
 from app.create_resume import create_resume
-from app.job_processing import process_resume_parallel, job_progress
+from app.job_processing import (
+    process_resume_parallel, job_progress, send_progress,
+    extract_jd_keywords, generate_resume_content,
+    load_intermediate_state, cleanup_expired_intermediate_states
+)
 from app.job_scraper import job_scraper
 
 logger = logging.getLogger(__name__)
@@ -204,12 +208,437 @@ async def generate_resume_json(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+async def extract_keywords_from_jd(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Phase 1: Extract JD keywords and pause for human feedback.
+    Returns extracted keywords for user review/editing.
+    """
+    try:
+        MAX_CONCURRENT_JOBS = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
+        active_jobs = db.query(ResumeJob).filter(
+            ResumeJob.user_id == current_user.user_id,
+            ResumeJob.status.in_(["pending", "processing", "awaiting_feedback"])
+        ).count()
+        if active_jobs >= MAX_CONCURRENT_JOBS:
+            raise HTTPException(status_code=429, detail=f"Too many concurrent jobs")
+        
+        data = await request.json()
+        
+        # Validate input payload
+        validation_errors = validate_resume_payload(data)
+        if validation_errors:
+            raise HTTPException(status_code=400, detail=f"Validation failed: {'; '.join(validation_errors)}")
+        
+        request_id = data.get("request_id", f"req_{int(time.time())}_{current_user.user_id}")
+        
+        # Extract job description data
+        job_data = data.get("job_description_data", {})
+        company_name = job_data.get("company_name") or data.get("company_name", "Unknown")
+        job_title = job_data.get("job_title") or data.get("job_title", "Unknown")
+        jd_text = job_data.get("job_description") or data.get("jd", "")
+        
+        # Get format selection
+        resume_format = data.get("format", "classic")
+        if resume_format not in ["classic", "modern"]:
+            resume_format = "classic"
+        
+        # Create job record
+        resume_job = ResumeJob(
+            user_id=current_user.user_id,
+            request_id=request_id,
+            company_name=company_name,
+            job_title=job_title,
+            mode=data.get("mode", "complete_jd"),
+            format=resume_format,
+            jd_text=jd_text,
+            resume_input_json=data.get("resume_data", {}),
+            status="processing",
+            progress=0
+        )
+        db.add(resume_job)
+        db.commit()
+        db.refresh(resume_job)
+        
+        # Extract keywords (Phase 1)
+        result = await extract_jd_keywords(data, request_id, db)
+        
+        # Update job status to awaiting_feedback
+        resume_job.status = "awaiting_feedback"
+        resume_job.progress = 25
+        
+        # Store the full intermediate state (not just user-facing result)
+        # Load the full state from memory which includes jd, preprocessed_jd, etc.
+        full_state = load_intermediate_state(request_id)
+        resume_job.intermediate_state = full_state if full_state else result
+        db.commit()
+        
+        return {
+            "message": "Keywords extracted successfully",
+            "request_id": request_id,
+            "job_id": resume_job.id,
+            "keywords": result
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error extracting keywords: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def regenerate_keywords(
+    request_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Regenerate keywords for an existing job in awaiting_feedback status.
+    Uses the stored intermediate state to re-run JD keyword extraction.
+    """
+    try:
+        # Find the job
+        job = db.query(ResumeJob).filter(
+            ResumeJob.request_id == request_id,
+            ResumeJob.user_id == current_user.user_id
+        ).first()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        if job.status != "awaiting_feedback":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Can only regenerate keywords for jobs awaiting feedback (current status: {job.status})"
+            )
+        
+        # Load intermediate state
+        intermediate_data = job.intermediate_state
+        if not intermediate_data:
+            intermediate_data = load_intermediate_state(request_id)
+        
+        if not intermediate_data:
+            raise HTTPException(
+                status_code=404,
+                detail="Original job data not found. The session may have expired."
+            )
+        
+        logger.info(f"[REGENERATE] Regenerating keywords for request_id: {request_id}")
+        logger.info(f"[REGENERATE] Intermediate data keys: {list(intermediate_data.keys())}")
+        
+        # Try to get JD text from multiple sources
+        jd_text = intermediate_data.get("jd", "") or job.jd_text or ""
+        
+        logger.info(f"[REGENERATE] JD text length: {len(jd_text)}")
+        logger.info(f"[REGENERATE] Company: {intermediate_data.get('company_name') or job.company_name}")
+        logger.info(f"[REGENERATE] Job title: {intermediate_data.get('job_title') or job.job_title}")
+        
+        if not jd_text:
+            logger.error(f"[REGENERATE] JD text is empty in both intermediate_data and job.jd_text")
+            raise HTTPException(
+                status_code=400,
+                detail="Job description text not found in stored data. Cannot regenerate."
+            )
+        
+        # Update progress
+        job.progress = 15
+        db.commit()
+        send_progress(request_id, 15, "Regenerating keywords...", db)
+        
+        # Reconstruct the original data payload for re-extraction
+        # Use data from intermediate_state or fallback to job record
+        original_data = {
+            "job_description_data": {
+                "job_description": jd_text,
+                "company_name": intermediate_data.get("company_name") or job.company_name,
+                "job_title": intermediate_data.get("job_title") or job.job_title
+            },
+            "resume_data": intermediate_data.get("resume_json") or job.resume_input_json or {},
+            "mode": intermediate_data.get("mode") or job.mode or "complete_jd"
+        }
+        
+        logger.info(f"[REGENERATE] Reconstructed data - JD length: {len(jd_text)}, mode: {original_data['mode']}")
+        
+        # Re-run keyword extraction
+        result = await extract_jd_keywords(original_data, request_id, db)
+        
+        # Update job with new keywords
+        job.intermediate_state = result
+        job.progress = 25
+        db.commit()
+        
+        send_progress(request_id, 25, "Keywords regenerated - Review updated", db)
+        
+        logger.info(f"[REGENERATE] Keywords regenerated successfully for request_id: {request_id}")
+        
+        return {
+            "message": "Keywords regenerated successfully",
+            "request_id": request_id,
+            "job_id": job.id,
+            "keywords": result
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error regenerating keywords: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def generate_resume_with_feedback(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Phase 2: Generate resume with user-approved keywords.
+    Accepts request_id and optional feedback modifications.
+    """
+    try:
+        data = await request.json()
+        
+        request_id = data.get("request_id")
+        if not request_id:
+            raise HTTPException(status_code=400, detail="request_id is required")
+        
+        # Validate request belongs to user
+        resume_job = db.query(ResumeJob).filter(
+            ResumeJob.request_id == request_id,
+            ResumeJob.user_id == current_user.user_id
+        ).first()
+        
+        if not resume_job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        if resume_job.status not in ["awaiting_feedback"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Job is not awaiting feedback (current status: {resume_job.status})"
+            )
+        
+        # Validate feedback format (if provided)
+        feedback = data.get("feedback")
+        if feedback:
+            validation_errors = validate_feedback_data(feedback)
+            if validation_errors:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid feedback format: {'; '.join(validation_errors)}"
+                )
+            logger.info(f"[FEEDBACK] User provided keyword edits for request {request_id}")
+        else:
+            logger.info(f"[FEEDBACK] No feedback provided - using original extracted keywords for request {request_id}")
+        
+        # Update job status
+        resume_job.status = "processing"
+        resume_job.progress = 30
+        resume_job.feedback_submitted_at = datetime.utcnow()
+        db.commit()
+        
+        # Start background generation
+        background_tasks.add_task(
+            generate_resume_background,
+            request_id,
+            feedback,
+            resume_job.id
+        )
+        
+        return {
+            "message": "Resume generation started with feedback",
+            "request_id": request_id,
+            "job_id": resume_job.id
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error generating resume with feedback: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def generate_resume_background(request_id: str, feedback: dict, job_id: int):
+    """Background task for Phase 2 generation"""
+    db = SessionLocal()
+    try:
+        job = db.query(ResumeJob).filter(ResumeJob.id == job_id).first()
+        if not job:
+            logger.error(f"Job {job_id} not found")
+            return
+        
+        # Update user active jobs count
+        user = db.query(User).filter(User.user_id == job.user_id).first()
+        if user:
+            user.active_jobs_count = (user.active_jobs_count or 0) + 1
+        db.commit()
+        
+        # Generate resume with feedback
+        result = asyncio.run(generate_resume_content(request_id, feedback, db))
+        
+        # Update job with results
+        job.final_resume_json = result
+        job.status = "completed"
+        job.progress = 100
+        job.completed_at = datetime.utcnow()
+        job.intermediate_state = None  # Clear intermediate state
+        
+        if user:
+            user.total_resumes_generated = (user.total_resumes_generated or 0) + 1
+            user.active_jobs_count = max(0, (user.active_jobs_count or 1) - 1)
+        
+        db.commit()
+        logger.info(f"Resume generation with feedback completed for job {job_id}")
+        
+    except Exception as e:
+        logger.error(f"Error in feedback background processing: {str(e)}")
+        logger.error(traceback.format_exc())
+        
+        job = db.query(ResumeJob).filter(ResumeJob.id == job_id).first()
+        if job:
+            job.status = "failed"
+            job.error_message = str(e)
+            user = db.query(User).filter(User.user_id == job.user_id).first()
+            if user:
+                user.active_jobs_count = max(0, (user.active_jobs_count or 1) - 1)
+            db.commit()
+    finally:
+        db.close()
+
+
+def validate_feedback_data(feedback: dict) -> list:
+    """
+    Validate feedback data structure.
+    Returns list of error messages (empty if valid).
+    """
+    errors = []
+    
+    if not isinstance(feedback, dict):
+        errors.append("Feedback must be a JSON object")
+        return errors
+    
+    # Check for required keys
+    if "technical_keywords" not in feedback:
+        errors.append("technical_keywords is required")
+    elif not isinstance(feedback["technical_keywords"], list):
+        errors.append("technical_keywords must be an array")
+    
+    if "soft_skills" not in feedback:
+        errors.append("soft_skills is required")
+    elif not isinstance(feedback["soft_skills"], list):
+        errors.append("soft_skills must be an array")
+    
+    if "phrases" not in feedback:
+        errors.append("phrases is required")
+    elif not isinstance(feedback["phrases"], list):
+        errors.append("phrases must be an array")
+    
+    # Validate array contents are strings
+    if "technical_keywords" in feedback and isinstance(feedback["technical_keywords"], list):
+        for idx, item in enumerate(feedback["technical_keywords"]):
+            if not isinstance(item, str):
+                errors.append(f"technical_keywords[{idx}] must be a string")
+    
+    if "soft_skills" in feedback and isinstance(feedback["soft_skills"], list):
+        for idx, item in enumerate(feedback["soft_skills"]):
+            if not isinstance(item, str):
+                errors.append(f"soft_skills[{idx}] must be a string")
+    
+    if "phrases" in feedback and isinstance(feedback["phrases"], list):
+        for idx, item in enumerate(feedback["phrases"]):
+            if not isinstance(item, str):
+                errors.append(f"phrases[{idx}] must be a string")
+    
+    return errors
+
+
+async def cleanup_expired_states_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Admin endpoint to cleanup expired intermediate states.
+    Removes states older than configured TTL.
+    """
+    try:
+        ttl_hours = int(os.getenv("INTERMEDIATE_STATE_TTL_HOURS", "2"))
+        
+        # Cleanup in-memory states
+        cleanup_expired_intermediate_states(ttl_hours)
+        
+        # Cleanup DB persisted states
+        cutoff_time = datetime.utcnow() - timedelta(hours=ttl_hours)
+        expired_jobs = db.query(ResumeJob).filter(
+            ResumeJob.status == "awaiting_feedback",
+            ResumeJob.created_at < cutoff_time
+        ).all()
+        
+        count = 0
+        for job in expired_jobs:
+            job.status = "failed"
+            job.error_message = "Session expired - feedback not provided within time limit"
+            job.intermediate_state = None
+            count += 1
+        
+        db.commit()
+        
+        return {
+            "message": "Cleanup completed",
+            "expired_jobs_marked_failed": count,
+            "ttl_hours": ttl_hours
+        }
+    except Exception as e:
+        logger.error(f"Error cleaning up expired states: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 async def get_job_status(request_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id, ResumeJob.user_id == current_user.user_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     memory_progress = job_progress.get(request_id, {})
     return {"job_id": job.id, "request_id": job.request_id, "status": job.status, "progress": memory_progress.get("progress", job.progress), "message": memory_progress.get("message", ""), "company_name": job.company_name, "job_title": job.job_title, "created_at": job.created_at.isoformat(), "completed_at": job.completed_at.isoformat() if job.completed_at else None, "error_message": job.error_message}
+
+
+async def get_job_keywords(request_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Retrieve stored keywords from intermediate_state for awaiting_feedback jobs"""
+    job = db.query(ResumeJob).filter(
+        ResumeJob.request_id == request_id,
+        ResumeJob.user_id == current_user.user_id
+    ).first()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job.status != "awaiting_feedback":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job is not awaiting feedback (current status: {job.status})"
+        )
+    
+    # Get keywords from intermediate_state (DB) or memory
+    keywords = job.intermediate_state
+    if not keywords:
+        # Try to load from memory as fallback
+        keywords = load_intermediate_state(request_id)
+    
+    if not keywords:
+        raise HTTPException(
+            status_code=404,
+            detail="Keywords not found. The session may have expired."
+        )
+    
+    return {
+        "request_id": request_id,
+        "job_id": job.id,
+        "keywords": keywords,
+        "company_name": job.company_name,
+        "job_title": job.job_title
+    }
 
 
 async def get_job_result(request_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

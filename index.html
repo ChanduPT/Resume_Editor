@@ -40,7 +40,7 @@
         <span class="btn-icon">✏️</span>
         <span id="editBtnText">Edit</span>
       </button>
-      <button id="viewModalSaveBtn" class="view-modal-btn primary" style="display: none;" onclick="saveResumeChanges()">
+      <button id="viewModalSaveBtn" class="view-modal-btn primary" style="display: none; background: #4a5568; border: none;" onclick="saveResumeChanges()" onmouseover="this.style.background='#2d3748'" onmouseout="this.style.background='#4a5568'">
         <span class="btn-icon">💾</span>
         <span>Save Changes</span>
       </button>
@@ -59,40 +59,137 @@
 
 <!-- Format Selection Modal -->
 <div id="formatModal" class="view-modal" style="display: none;">
-  <div class="view-modal-content" style="max-width: 600px;">
-    <div class="view-modal-header">
-      <h2>📄 Choose Resume Format</h2>
-      <button class="view-modal-close" onclick="closeFormatModal()">✕</button>
+  <div class="view-modal-content" style="max-width: 480px;">
+    <div class="view-modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border); position: relative;">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text);">
+        <span>📄</span>
+        <span>Choose Resume Format</span>
+      </h2>
+      <button class="view-modal-close" onclick="closeFormatModal()" style="position: absolute; top: 18px; right: 20px; background: transparent; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'; this.style.color='var(--text)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">✕</button>
     </div>
-    <div class="view-modal-body">
-      <p style="margin-bottom: 20px; color: var(--text-secondary);">Select the format for your resume download:</p>
+    <div class="view-modal-body" style="padding: 20px 24px;">
+      <p style="margin: 0 0 16px 0; color: var(--text-secondary); font-size: 13px;">Select the format for your resume download:</p>
       
-      <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-        <label class="format-choice-card" style="flex: 1; cursor: pointer; padding: 20px; border: 2px solid var(--border); border-radius: 8px; transition: all 0.2s;">
-          <input type="radio" name="downloadFormat" value="classic" checked style="margin-right: 8px;">
-          <div>
-            <h3 style="margin: 0 0 8px 0; color: var(--text);">📋 Classic</h3>
-            <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">Traditional Times New Roman with underlined headers</p>
-            <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--accent); font-weight: 600;">Best for: Corporate, Finance, Law</p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <label class="format-choice-card" style="cursor: pointer; padding: 14px; border: 2px solid var(--border); border-radius: 6px; transition: all 0.2s; display: flex; align-items: start; gap: 10px; background: var(--bg);" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='var(--hover)'" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--border)'; this.style.background='var(--bg)' }">
+          <input type="radio" name="downloadFormat" value="classic" checked style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="font-size: 16px;">📋</span>
+              <h3 style="margin: 0; color: var(--text); font-size: 15px; font-weight: 600;">Classic</h3>
+            </div>
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Traditional Times New Roman with underlined headers</p>
           </div>
         </label>
         
-        <label class="format-choice-card" style="flex: 1; cursor: pointer; padding: 20px; border: 2px solid var(--border); border-radius: 8px; transition: all 0.2s;">
-          <input type="radio" name="downloadFormat" value="modern" style="margin-right: 8px;">
-          <div>
-            <h3 style="margin: 0 0 8px 0; color: var(--text);">✨ Modern</h3>
-            <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">Contemporary Calibri with bold headers</p>
-            <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--accent); font-weight: 600;">Best for: Tech, Startups, Creative</p>
+        <label class="format-choice-card" style="cursor: pointer; padding: 14px; border: 2px solid var(--border); border-radius: 6px; transition: all 0.2s; display: flex; align-items: start; gap: 10px; background: var(--bg);" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='var(--hover)'" onmouseout="if(!this.querySelector('input').checked) { this.style.borderColor='var(--border)'; this.style.background='var(--bg)' }">
+          <input type="radio" name="downloadFormat" value="modern" style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="font-size: 16px;">✨</span>
+              <h3 style="margin: 0; color: var(--text); font-size: 15px; font-weight: 600;">Modern</h3>
+            </div>
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Contemporary Calibri with bold headers</p>
           </div>
         </label>
       </div>
     </div>
-    <div class="view-modal-footer">
-      <button class="view-modal-btn primary" onclick="confirmFormatDownload()">
-        <span class="btn-icon">⬇️</span>
+    <div class="view-modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);">
+      <button class="view-modal-btn cancel" onclick="closeFormatModal()" style="padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">Cancel</button>
+      <button class="view-modal-btn primary" onclick="confirmFormatDownload()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: var(--primary); color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+        <span>⬇️</span>
         <span>Download Resume</span>
       </button>
-      <button class="view-modal-btn cancel" onclick="closeFormatModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Keyword Review Modal -->
+<div id="keywordReviewModal" class="view-modal" style="display: none;">
+  <div class="view-modal-content" style="max-width: 1000px; position: relative;">
+    <!-- Close button in top right corner -->
+    <button class="view-modal-close" onclick="closeKeywordReviewModal()" style="position: absolute; top: 16px; right: 16px; z-index: 10; color: white; background: rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; border: none; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(8px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">✕</button>
+    
+    <div class="view-modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 28px 32px; border-radius: 12px 12px 0 0;">
+      <div>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.5px;">🎯 Review & Customize Keywords</h2>
+        <p style="margin: 6px 0 0 0; font-size: 14px; opacity: 0.9;">Click keywords to edit or remove them • Add new ones to match your experience</p>
+      </div>
+    </div>
+    <div class="view-modal-body" style="padding: 32px; max-height: 65vh; overflow-y: auto; background: var(--bg);">
+      
+      <!-- Technical Keywords Section -->
+      <div class="keyword-section" style="margin-bottom: 28px; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+          <h3 style="margin: 0; color: var(--text); display: flex; align-items: center; gap: 10px; font-size: 18px;">
+            <span style="font-size: 24px;">💻</span>
+            <span>Technical Keywords</span>
+            <span id="technicalCount" class="keyword-count" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 16px; padding: 4px 12px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(102,126,234,0.3);">0</span>
+          </h3>
+        </div>
+        <div id="technicalKeywordsList" class="keywords-list" style="display: flex; flex-wrap: wrap; gap: 10px; min-height: 50px; padding: 16px; background: var(--bg); border-radius: 8px; border: 2px dashed var(--border);"></div>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <input type="text" id="technicalInput" placeholder="e.g., Python, React, AWS..." style="flex: 1; padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;" onkeypress="if(event.key==='Enter') addKeywordToList('technicalKeywordsList', 'technicalInput')" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='var(--border)'">
+          <button onclick="addKeywordToList('technicalKeywordsList', 'technicalInput')" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(102,126,234,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(102,126,234,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102,126,234,0.3)'">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Soft Skills Section -->
+      <div class="keyword-section" style="margin-bottom: 28px; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+          <h3 style="margin: 0; color: var(--text); display: flex; align-items: center; gap: 10px; font-size: 18px;">
+            <span style="font-size: 24px;">🤝</span>
+            <span>Soft Skills</span>
+            <span id="softSkillsCount" class="keyword-count" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 16px; padding: 4px 12px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(16,185,129,0.3);">0</span>
+          </h3>
+        </div>
+        <div id="softSkillsList" class="keywords-list" style="display: flex; flex-wrap: wrap; gap: 10px; min-height: 50px; padding: 16px; background: var(--bg); border-radius: 8px; border: 2px dashed var(--border);"></div>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <input type="text" id="softSkillsInput" placeholder="e.g., Leadership, Communication..." style="flex: 1; padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;" onkeypress="if(event.key==='Enter') addKeywordToList('softSkillsList', 'softSkillsInput')" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='var(--border)'">
+          <button onclick="addKeywordToList('softSkillsList', 'softSkillsInput')" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16,185,129,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Phrases Section -->
+      <div class="keyword-section" style="background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+          <h3 style="margin: 0; color: var(--text); display: flex; align-items: center; gap: 10px; font-size: 18px;">
+            <span style="font-size: 24px;">💬</span>
+            <span>Key Phrases</span>
+            <span id="phrasesCount" class="keyword-count" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 16px; padding: 4px 12px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(245,158,11,0.3);">0</span>
+          </h3>
+        </div>
+        <div id="phrasesList" class="keywords-list" style="display: flex; flex-wrap: wrap; gap: 10px; min-height: 50px; padding: 16px; background: var(--bg); border-radius: 8px; border: 2px dashed var(--border);"></div>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <input type="text" id="phrasesInput" placeholder="e.g., data-driven solutions, cross-functional teams..." style="flex: 1; padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; transition: border-color 0.2s;" onkeypress="if(event.key==='Enter') addKeywordToList('phrasesList', 'phrasesInput')" onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='var(--border)'">
+          <button onclick="addKeywordToList('phrasesList', 'phrasesInput')" style="padding: 10px 20px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(245,158,11,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(245,158,11,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(245,158,11,0.3)'">+ Add</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 16px 20px; background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1)); border-radius: 12px; border-left: 4px solid #667eea;">
+        <p style="margin: 0; font-size: 14px; color: var(--text); line-height: 1.6;">
+          <span style="font-size: 18px;">💡</span> <strong>Pro Tip:</strong> Click any keyword to edit it inline. Add relevant skills and phrases that match both your experience and the job requirements for better ATS optimization.
+        </p>
+      </div>
+
+    </div>
+    <div class="view-modal-footer" style="padding: 20px 32px; display: flex; gap: 12px; justify-content: space-between; align-items: center; background: var(--card); border-top: 2px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="font-size: 13px; color: var(--text-secondary);">
+          <span id="totalKeywordsCount" style="font-weight: 600; color: var(--text);">0</span> keywords total
+        </div>
+        <button onclick="regenerateKeywords()" style="padding: 8px 16px; background: transparent; color: var(--primary); border: 2px solid var(--primary); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary)';">
+          <span style="font-size: 16px;">🔄</span>
+          <span>Regenerate Keywords</span>
+        </button>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="view-modal-btn cancel" onclick="closeKeywordReviewModal()" style="padding: 12px 24px; font-size: 15px; border: 2px solid var(--border); background: transparent; color: var(--text); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--border)';" onmouseout="this.style.background='transparent';">Cancel</button>
+        <button class="view-modal-btn primary" onclick="continueToGeneration()" style="padding: 12px 28px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102,126,234,0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(102,126,234,0.4)'">
+          <span style="font-size: 18px;">✨</span>
+          <span>Generate Resume</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -131,8 +228,8 @@
             Choose Resume Format
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
-            <p><strong>📄 Classic Format:</strong> Traditional layout with Times New Roman and underlined headers. Best for corporate, finance, law, and government positions.</p>
-            <p><strong>✨ Modern Format:</strong> Contemporary design with Calibri and bold headers. Best for tech companies, startups, and creative industries.</p>
+            <p><strong>📄 Classic Format:</strong> Traditional layout with Times New Roman and underlined headers.</p>
+            <p><strong>✨ Modern Format:</strong> Contemporary design with Calibri and bold headers.</p>
             <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>Tip: Choose Classic if you're unsure about company culture!</em></p>
           </div>
         </div>
@@ -718,17 +815,14 @@
                 <p id="modeDescription" class="mode-description">
                   Creates a complete resume from scratch using only the job description
                 </p>
-              </div>
-              
-              <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
-                <span class="btn-icon">🚀</span>
-                <span class="btn-text">Generate Resume</span>
-              </button>
-            </div>
-          </div>
-                <p class="mode-description" style="font-size: 11px; margin-top: 2px;">
-                  Choose resume layout style
-                </p>
+                
+                <!-- Optional Keyword Review Checkbox -->
+                <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="enableKeywordReview" name="enableKeywordReview" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary);">
+                  <label for="enableKeywordReview" style="cursor: pointer; font-size: 13px; color: var(--text-secondary); margin: 0; user-select: none;">
+                    Review keywords before generation (optional)
+                  </label>
+                </div>
               </div>
               
               <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
@@ -1155,6 +1249,10 @@
   // Track all active resume generation requests
   const activeRequests = new Map(); // key: requestId, value: {company, status, element}
   let requestIdCounter = 0;
+  
+  // Queue for keyword review requests
+  const keywordReviewQueue = [];
+  let isModalOpen = false;
 
   function generateRequestId() {
     return `req_${Date.now()}_${++requestIdCounter}`;
@@ -2431,11 +2529,11 @@
   }
 
   async function generateResume(){
-    console.log('[DEBUG] Generate Resume clicked');
+    console.log('[DEBUG] Generate Resume clicked - Using two-phase workflow');
     
     // Get selected resume mode
     const resumeModeRadio = document.querySelector('input[name="resumeMode"]:checked');
-    const resumeMode = resumeModeRadio ? resumeModeRadio.value : 'complete_jd'; // Default to complete_jd
+    const resumeMode = resumeModeRadio ? resumeModeRadio.value : 'complete_jd';
     
     const {resume_data: resumeObj, job_description_data: jobObj} = buildJSON();
     
@@ -2447,7 +2545,6 @@
       alert(errorMessage);
       showResult('❌ Validation failed - check required fields');
       
-      // Highlight first error field if possible
       if (validationErrors[0].includes('Summary')) {
         document.querySelector('textarea[name="summary"]')?.focus();
       } else if (validationErrors[0].includes('Job Description')) {
@@ -2464,52 +2561,795 @@
     
     // Add request to UI tracking
     addRequestToUI(requestId, companyName);
+    updateRequestProgress(requestId, 5, 'Starting keyword extraction...');
     
     const payload = {
       resume_data: resumeObj,
       job_description_data: jobObj,
-      mode: resumeMode  // Add mode to payload
+      mode: resumeMode
     };
     
-    // Use dynamic API URL that works in both development and production
+    // Use dynamic API URL
     const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:5001'
       : '';
-    const apiUrl = `${apiBaseUrl}/api/generate_resume_json`;
     
     try {
-      const res = await fetch(apiUrl, {
+      // PHASE 1: Extract keywords from JD
+      console.log('[FEEDBACK] Phase 1: Extracting keywords...');
+      const extractUrl = `${apiBaseUrl}/api/resume/extract-keywords`;
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Please login first');
+      }
+      
+      const extractRes = await fetch(extractUrl, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       });
-      if(res.ok){
-        const json = await res.json();
-        // Show success message with file name
-        const fileName = json.file_name || 'resume.docx';
-        const result = json.result || 'Resume generated successfully';
-        
-        // Mark request as complete in UI
-        markRequestComplete(requestId, fileName);
-        
-        showResult(`✅ ${result} - ${fileName}`);
+      
+      if (!extractRes.ok) {
+        const errorData = await extractRes.json().catch(() => ({detail: 'Failed to extract keywords'}));
+        throw new Error(errorData.detail || 'Failed to extract keywords');
       }
-      else {
-        const errorText = await res.text();
-        console.error('API Error:', errorText);
-        
-        // Mark request as failed in UI
-        markRequestFailed(requestId, errorText);
-        
-        showResult('❌ Error generating resume.');
+      
+      const extractData = await extractRes.json();
+      console.log('[FEEDBACK] Phase 1 complete. Request ID:', extractData.request_id);
+      
+      // Check if keyword review is enabled
+      const enableKeywordReview = document.getElementById('enableKeywordReview')?.checked;
+      
+      if (enableKeywordReview) {
+        // Show keyword review modal for user to edit
+        console.log('[FEEDBACK] Keyword review enabled - showing modal');
+        updateRequestProgress(requestId, 26, '✓ Keywords extracted - Awaiting your review');
+        showKeywordReviewModal(extractData.jd_hints, extractData.request_id, requestId, companyName);
+      } else {
+        // Skip review, proceed directly to Phase 2
+        console.log('[FEEDBACK] Keyword review disabled - proceeding directly to generation');
+        updateRequestProgress(requestId, 30, 'Generating resume...');
+        await proceedToGenerationPhase(extractData.request_id, requestId, companyName, null);
       }
+      
     } catch (error) {
-      console.error('Request failed:', error);
-      
-      // Mark request as failed in UI
+      console.error('[FEEDBACK] Error in Phase 1:', error);
       markRequestFailed(requestId, error.message);
+      showResult('❌ Failed to extract keywords: ' + error.message);
+    }
+  }
+  
+  // Show keyword review modal for user feedback
+  function showKeywordReviewModal(jdHints, backendRequestId, uiRequestId, companyName) {
+    console.log(`[QUEUE][${uiRequestId}] Requesting keyword review modal`);
+    console.log(`[QUEUE][${uiRequestId}] Current queue length BEFORE adding:`, keywordReviewQueue.length);
+    console.log(`[QUEUE][${uiRequestId}] Modal currently open:`, isModalOpen);
+    
+    // Add to queue
+    keywordReviewQueue.push({
+      jdHints,
+      backendRequestId,
+      uiRequestId,
+      companyName
+    });
+    
+    console.log(`[QUEUE][${uiRequestId}] Added to queue. New queue length:`, keywordReviewQueue.length);
+    console.log(`[QUEUE] Full queue state:`, keywordReviewQueue.map(q => q.uiRequestId));
+    
+    // Process queue if modal is not currently open
+    processKeywordReviewQueue();
+  }
+  
+  // Process the keyword review queue
+  function processKeywordReviewQueue() {
+    console.log('[QUEUE] Processing queue - Modal open:', isModalOpen, 'Queue length:', keywordReviewQueue.length);
+    
+    // If modal is already open or queue is empty, do nothing
+    if (isModalOpen || keywordReviewQueue.length === 0) {
+      console.log('[QUEUE] Processing skipped - Modal open:', isModalOpen, 'Queue empty:', keywordReviewQueue.length === 0);
+      return;
+    }
+    
+    // Get next item from queue
+    const nextReview = keywordReviewQueue.shift();
+    console.log(`[QUEUE] Processing request: ${nextReview.uiRequestId}`);
+    console.log(`[QUEUE] Remaining in queue after shift:`, keywordReviewQueue.length);
+    console.log(`[QUEUE] Remaining requests:`, keywordReviewQueue.map(q => q.uiRequestId));
+    
+    const modal = document.getElementById('keywordReviewModal');
+    if (!modal) {
+      console.error('[QUEUE] ERROR: Keyword review modal not found!');
+      return;
+    }
+    
+    // Mark modal as open
+    isModalOpen = true;
+    console.log(`[QUEUE] Modal marked as OPEN for request: ${nextReview.uiRequestId}`);
+    
+    // Store request IDs for later use
+    modal.dataset.backendRequestId = nextReview.backendRequestId;
+    modal.dataset.uiRequestId = nextReview.uiRequestId;
+    modal.dataset.companyName = nextReview.companyName;
+    
+    console.log(`[QUEUE] Stored in modal dataset - Backend ID: ${nextReview.backendRequestId}, UI ID: ${nextReview.uiRequestId}`);
+    
+    // Show queue status if there are more items
+    if (keywordReviewQueue.length > 0) {
+      showToast(`📋 ${keywordReviewQueue.length} more keyword review(s) in queue`, 'info');
+    }
+    
+    // Debug logging
+    console.log('[MODAL] Soft skills data:', nextReview.jdHints.soft_skills, 'Length:', (nextReview.jdHints.soft_skills || []).length);
+    
+    // Populate keyword lists
+    populateKeywordList('technicalKeywordsList', nextReview.jdHints.technical_keywords || []);
+    populateKeywordList('softSkillsList', nextReview.jdHints.soft_skills || []);
+    populateKeywordList('phrasesList', nextReview.jdHints.phrases || []);
+    
+    // Update counts
+    updateKeywordCounts();
+    
+    // Show modal
+    modal.style.display = 'flex';
+    console.log(`[QUEUE] Modal displayed for request: ${nextReview.uiRequestId}`);
+  }
+  
+  // Populate keyword list with edit and remove functionality
+  function populateKeywordList(listId, keywords) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    
+    list.innerHTML = '';
+    keywords.forEach(keyword => {
+      const item = document.createElement('div');
+      item.className = 'keyword-item';
+      item.innerHTML = `
+        <span class="keyword-text" contenteditable="false" onclick="editKeyword(this)" title="Click to edit">${keyword}</span>
+        <button class="keyword-remove-btn" onclick="removeKeyword(this)" title="Remove">×</button>
+      `;
+      list.appendChild(item);
+    });
+  }
+  
+  // Update keyword counts in badges
+  function updateKeywordCounts() {
+    const techCount = document.getElementById('technicalKeywordsList').children.length;
+    const softCount = document.getElementById('softSkillsList').children.length;
+    const phrasesCount = document.getElementById('phrasesList').children.length;
+    
+    document.getElementById('technicalCount').textContent = techCount;
+    document.getElementById('softSkillsCount').textContent = softCount;
+    document.getElementById('phrasesCount').textContent = phrasesCount;
+    document.getElementById('totalKeywordsCount').textContent = techCount + softCount + phrasesCount;
+  }
+  
+  // Edit keyword inline
+  function editKeyword(textElement) {
+    if (!textElement) return;
+    
+    // If already editing, ignore
+    if (textElement.getAttribute('contenteditable') === 'true') return;
+    
+    // Store original value
+    const originalText = textElement.textContent;
+    
+    // Make editable
+    textElement.setAttribute('contenteditable', 'true');
+    textElement.classList.add('editing');
+    textElement.focus();
+    
+    // Select all text
+    const range = document.createRange();
+    range.selectNodeContents(textElement);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Handle save on Enter or blur
+    const saveEdit = () => {
+      const newText = textElement.textContent.trim();
       
-      showResult('❌ Failed to connect to server.');
+      if (!newText) {
+        // If empty, revert to original
+        textElement.textContent = originalText;
+      } else {
+        textElement.textContent = newText;
+      }
+      
+      textElement.setAttribute('contenteditable', 'false');
+      textElement.classList.remove('editing');
+    };
+    
+    // Save on Enter key
+    textElement.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveEdit();
+      } else if (e.key === 'Escape') {
+        textElement.textContent = originalText;
+        textElement.setAttribute('contenteditable', 'false');
+        textElement.classList.remove('editing');
+      }
+    }, { once: true });
+    
+    // Save on blur
+    textElement.addEventListener('blur', saveEdit, { once: true });
+  }
+  
+  // Continue to Phase 2 after keyword review
+  async function continueToGeneration() {
+    const modal = document.getElementById('keywordReviewModal');
+    const backendRequestId = modal.dataset.backendRequestId;
+    const uiRequestId = modal.dataset.uiRequestId;
+    const companyName = modal.dataset.companyName;
+    
+    // Collect modified keywords
+    const feedback = {
+      technical_keywords: getKeywordsFromList('technicalKeywordsList'),
+      soft_skills: getKeywordsFromList('softSkillsList'),
+      phrases: getKeywordsFromList('phrasesList')
+    };
+    
+    console.log('[FEEDBACK] User feedback collected:', feedback);
+    console.log('[FEEDBACK] Keywords - Technical:', feedback.technical_keywords.length, 'Soft:', feedback.soft_skills.length, 'Phrases:', feedback.phrases.length);
+    
+    // Close modal WITHOUT marking as failed (user approved, not cancelled)
+    closeKeywordReviewModal(false);
+    
+    // Proceed to generation with feedback
+    await proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback);
+  }
+  
+  // Proceed to Phase 2 generation (with or without feedback)
+  async function proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback) {
+    // Update UI progress
+    updateRequestProgress(uiRequestId, 30, 'Generating resume...');
+    
+    const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5001'
+      : '';
+    
+    try {
+      // PHASE 2: Generate resume with feedback (or null for auto-proceed)
+      const generateUrl = `${apiBaseUrl}/api/resume/generate`;
+      
+      // Use Basic auth (same as Phase 1)
+      const auth = dashboardCredentials 
+        ? 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
+        : `Bearer ${localStorage.getItem('token')}`;
+      
+      const payload = {
+        request_id: backendRequestId
+      };
+      
+      // Only add feedback if provided (when user reviews keywords)
+      if (feedback) {
+        payload.feedback = feedback;
+        console.log('[FEEDBACK] Phase 2: Calling generate endpoint with user feedback...');
+      } else {
+        console.log('[FEEDBACK] Phase 2: Calling generate endpoint without feedback (auto-proceed)...');
+      }
+      
+      const generateRes = await fetch(generateUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': auth
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      console.log('[FEEDBACK] Generate response status:', generateRes.status);
+      
+      if (!generateRes.ok) {
+        const errorData = await generateRes.json().catch(() => ({detail: 'Failed to generate resume'}));
+        throw new Error(errorData.detail || 'Failed to generate resume');
+      }
+      
+      const generateData = await generateRes.json();
+      console.log('[FEEDBACK] Phase 2 started successfully! Job ID:', generateData.job_id);
+      
+      // Switch to dashboard to track progress
+      switchTab('dashboard');
+      loadDashboardHistory();
+      
+      // Poll for completion using request_id (not job_id which is DB id)
+      pollResumeStatusV2(backendRequestId, uiRequestId, companyName, auth);
+      
+    } catch (error) {
+      console.error('[FEEDBACK] Error in Phase 2:', error);
+      markRequestFailed(uiRequestId, error.message);
+      alert('❌ Failed to generate resume: ' + error.message);
+    }
+  }
+  
+  // Poll resume status - Version 2 with auth parameter
+  async function pollResumeStatusV2(requestId, uiRequestId, companyName, auth) {
+    const maxAttempts = 60;
+    let attempts = 0;
+    
+    const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5001'
+      : '';
+    
+    console.log('[FEEDBACK] Starting status polling for request:', requestId);
+    
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      
+      try {
+        const statusUrl = `${apiBaseUrl}/api/jobs/${requestId}/status`;
+        
+        const statusRes = await fetch(statusUrl, {
+          headers: {
+            'Authorization': auth
+          }
+        });
+        
+        if (!statusRes.ok) {
+          throw new Error('Failed to fetch status');
+        }
+        
+        const statusData = await statusRes.json();
+        console.log('[FEEDBACK] Status poll #' + attempts + ':', statusData.status, statusData.progress + '%', statusData.message);
+        
+        // Update progress in UI with proper message
+        const progressMsg = statusData.message || statusData.status;
+        if (typeof updateRequestProgress === 'function' && statusData.status === 'processing') {
+          updateRequestProgress(uiRequestId, statusData.progress || 30, progressMsg);
+        }
+        
+        if (statusData.status === 'completed') {
+          clearInterval(pollInterval);
+          console.log('[FEEDBACK] Resume generation COMPLETED!');
+          if (typeof markRequestComplete === 'function') {
+            markRequestComplete(uiRequestId, statusData.file_name || 'resume.docx');
+          }
+          console.log(`✅ Resume generated successfully! - ${statusData.file_name || 'resume.docx'}`);
+          showToast(`✅ Resume generated successfully!`, 'success');
+          // Reload dashboard to show new resume
+          if (typeof loadDashboardHistory === 'function') {
+            loadDashboardHistory();
+          }
+        } else if (statusData.status === 'failed') {
+          clearInterval(pollInterval);
+          console.error('[FEEDBACK] Resume generation FAILED:', statusData.error_message);
+          if (typeof markRequestFailed === 'function') {
+            markRequestFailed(uiRequestId, statusData.error_message || 'Unknown error');
+          }
+          console.error('❌ Resume generation failed: ' + (statusData.error_message || 'Unknown error'));
+          showToast('❌ Resume generation failed: ' + (statusData.error_message || 'Unknown error'), 'error');
+        }
+        
+        if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          console.error('[FEEDBACK] Polling TIMEOUT after', maxAttempts, 'attempts');
+          if (typeof markRequestFailed === 'function') {
+            markRequestFailed(uiRequestId, 'Timeout waiting for resume');
+          }
+          showToast('❌ Resume generation timed out', 'error');
+        }
+      } catch (error) {
+        console.error('[FEEDBACK] Error polling status:', error);
+        clearInterval(pollInterval);
+        if (typeof markRequestFailed === 'function') {
+          markRequestFailed(uiRequestId, error.message);
+        }
+        showToast('❌ Failed to check status: ' + error.message, 'error');
+      }
+    }, 5000);
+  }
+  
+  // Get keywords from a list element
+  function getKeywordsFromList(listId) {
+    const list = document.getElementById(listId);
+    if (!list) return [];
+    
+    return Array.from(list.querySelectorAll('.keyword-text')).map(el => el.textContent.trim());
+  }
+  
+  // Resume keyword review for awaiting_feedback jobs
+  async function resumeKeywordReview(requestId, companyName) {
+    try {
+      const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5001'
+        : '';
+      
+      // Fetch the stored intermediate state (keywords)
+      const response = await dashApiCall(`/api/jobs/${requestId}/keywords`);
+      
+      if (!response.keywords) {
+        throw new Error('No keywords found for this job');
+      }
+      
+      console.log('[RESUME REVIEW] Retrieved keywords:', response.keywords);
+      
+      // Show the keyword review modal with the stored keywords
+      showKeywordReviewModal(response.keywords, requestId, requestId, companyName);
+      
+      // Only add to processing banner if not already there
+      if (!activeRequests.has(requestId)) {
+        addRequestToUI(requestId, companyName);
+      }
+      // Update progress regardless (in case it exists)
+      updateRequestProgress(requestId, 26, '✓ Keywords ready - Review and approve');
+      
+    } catch (error) {
+      console.error('[RESUME REVIEW] Error:', error);
+      alert('❌ Failed to load keywords: ' + error.message);
+    }
+  }
+  
+  // Poll resume status until completion
+  async function pollResumeStatus(jobId, uiRequestId, companyName) {
+    const maxAttempts = 60;
+    let attempts = 0;
+    
+    const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5001'
+      : '';
+    
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      
+      try {
+        const statusUrl = `${apiBaseUrl}/api/status/${jobId}`;
+        const token = localStorage.getItem('token');
+        
+        const statusRes = await fetch(statusUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!statusRes.ok) {
+          throw new Error('Failed to fetch status');
+        }
+        
+        const statusData = await statusRes.json();
+        console.log('[FEEDBACK] Status:', statusData.status, 'Progress:', statusData.progress);
+        
+        // Update progress in UI
+        updateRequestProgress(uiRequestId, statusData.progress, statusData.status);
+        
+        if (statusData.status === 'completed') {
+          clearInterval(pollInterval);
+          markRequestComplete(uiRequestId, statusData.file_name || 'resume.docx');
+          showResult(`✅ Resume generated successfully! - ${statusData.file_name || 'resume.docx'}`);
+        } else if (statusData.status === 'failed') {
+          clearInterval(pollInterval);
+          markRequestFailed(uiRequestId, statusData.error || 'Unknown error');
+          showResult('❌ Resume generation failed: ' + (statusData.error || 'Unknown error'));
+        }
+        
+        if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          markRequestFailed(uiRequestId, 'Timeout waiting for resume');
+          showResult('❌ Resume generation timed out');
+        }
+      } catch (error) {
+        console.error('[FEEDBACK] Error polling status:', error);
+        clearInterval(pollInterval);
+        markRequestFailed(uiRequestId, error.message);
+        showResult('❌ Failed to check status: ' + error.message);
+      }
+    }, 5000);
+  }
+  
+  // Toast notification system
+  function showToast(message, type = 'info') {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'custom-toast';
+    
+    const bgColors = {
+      'success': 'linear-gradient(135deg, #10b981, #059669)',
+      'error': 'linear-gradient(135deg, #ef4444, #dc2626)',
+      'info': 'linear-gradient(135deg, #667eea, #764ba2)',
+      'warning': 'linear-gradient(135deg, #f59e0b, #d97706)'
+    };
+    
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: ${bgColors[type] || bgColors.info};
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      font-size: 15px;
+      font-weight: 500;
+      max-width: 400px;
+      animation: slideInRight 0.3s ease-out;
+      cursor: pointer;
+    `;
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Click to dismiss
+    toast.addEventListener('click', () => {
+      toast.style.animation = 'slideOutRight 0.3s ease-out';
+      setTimeout(() => toast.remove(), 300);
+    });
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 5000);
+  }
+  
+  // Add CSS animation for toast
+  if (!document.getElementById('toastAnimationStyles')) {
+    const style = document.createElement('style');
+    style.id = 'toastAnimationStyles';
+    style.textContent = `
+      @keyframes slideInRight {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // Regenerate keywords function
+  async function regenerateKeywords() {
+    const modal = document.getElementById('keywordReviewModal');
+    const backendRequestId = modal.dataset.backendRequestId;
+    const uiRequestId = modal.dataset.uiRequestId;
+    const companyName = modal.dataset.companyName;
+    
+    if (!backendRequestId) {
+      showToast('❌ Unable to regenerate - missing request data', 'error');
+      return;
+    }
+    
+    try {
+      console.log(`[REGENERATE][${uiRequestId}] Starting keyword regeneration for backend request:`, backendRequestId);
+      
+      // Update progress in UI
+      updateRequestProgress(uiRequestId, 20, '🔄 Regenerating keywords...');
+      showToast('🔄 Regenerating keywords...', 'info');
+      
+      // Disable the regenerate button to prevent multiple clicks
+      const regenerateBtn = document.querySelector('#keywordReviewModal button[onclick="regenerateKeywords()"]');
+      if (regenerateBtn) {
+        regenerateBtn.disabled = true;
+        regenerateBtn.textContent = '⏳ Regenerating...';
+      }
+      
+      const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5001'
+        : '';
+      
+      // Get auth
+      const auth = dashboardCredentials 
+        ? 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
+        : `Bearer ${localStorage.getItem('token')}`;
+      
+      // Call backend to regenerate keywords
+      console.log('[REGENERATE] Calling regenerate-keywords endpoint...');
+      const response = await fetch(`${apiBaseUrl}/api/resume/regenerate-keywords/${backendRequestId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': auth,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({detail: 'Failed to regenerate keywords'}));
+        throw new Error(errorData.detail || 'Failed to regenerate keywords');
+      }
+      
+      const result = await response.json();
+      console.log('[REGENERATE] New keywords received:', result);
+      
+      // Update the modal with new keywords
+      updateKeywordReviewModal(result.keywords);
+      
+      updateRequestProgress(uiRequestId, 25, '✨ Keywords regenerated - Review updated');
+      showToast('✨ Keywords regenerated successfully!', 'success');
+      
+      // Re-enable the button
+      if (regenerateBtn) {
+        regenerateBtn.disabled = false;
+        regenerateBtn.textContent = '🔄 Regenerate Keywords';
+      }
+      
+    } catch (error) {
+      console.error('[REGENERATE] Error:', error);
+      showToast('❌ Failed to regenerate keywords: ' + error.message, 'error');
+      
+      // Re-enable the button on error
+      const regenerateBtn = document.querySelector('#keywordReviewModal button[onclick="regenerateKeywords()"]');
+      if (regenerateBtn) {
+        regenerateBtn.disabled = false;
+        regenerateBtn.textContent = '🔄 Regenerate Keywords';
+      }
+      
+      // Reset progress
+      updateRequestProgress(uiRequestId, 25, '⚠️ Regeneration failed - Review original keywords');
+    }
+  }
+  
+  // Helper function to update modal with new keywords
+  function updateKeywordReviewModal(keywords) {
+    console.log('[MODAL-UPDATE] Updating modal with new keywords');
+    
+    // Update technical keywords
+    const techList = document.getElementById('technicalKeywordsList');
+    if (techList && keywords.technical_keywords) {
+      techList.innerHTML = '';
+      keywords.technical_keywords.forEach(keyword => {
+        const item = document.createElement('div');
+        item.className = 'keyword-item';
+        item.innerHTML = `
+          <span class="keyword-text" contenteditable="false" onclick="editKeyword(this)" title="Click to edit">${keyword}</span>
+          <button class="keyword-remove-btn" onclick="removeKeyword(this)" title="Remove">×</button>
+        `;
+        techList.appendChild(item);
+      });
+    }
+    
+    // Update soft skills
+    const softList = document.getElementById('softSkillsList');
+    if (softList && keywords.soft_skills_role_keywords) {
+      softList.innerHTML = '';
+      keywords.soft_skills_role_keywords.forEach(skill => {
+        const item = document.createElement('div');
+        item.className = 'keyword-item';
+        item.innerHTML = `
+          <span class="keyword-text" contenteditable="false" onclick="editKeyword(this)" title="Click to edit">${skill}</span>
+          <button class="keyword-remove-btn" onclick="removeKeyword(this)" title="Remove">×</button>
+        `;
+        softList.appendChild(item);
+      });
+    }
+    
+    // Update phrases
+    const phrasesList = document.getElementById('phrasesList');
+    if (phrasesList && keywords.phrases) {
+      phrasesList.innerHTML = '';
+      keywords.phrases.forEach(phrase => {
+        const item = document.createElement('div');
+        item.className = 'keyword-item';
+        item.innerHTML = `
+          <span class="keyword-text" contenteditable="false" onclick="editKeyword(this)" title="Click to edit">${phrase}</span>
+          <button class="keyword-remove-btn" onclick="removeKeyword(this)" title="Remove">×</button>
+        `;
+        phrasesList.appendChild(item);
+      });
+    }
+    
+    // Update counts
+    updateKeywordCounts();
+    
+    console.log('[MODAL-UPDATE] Modal updated successfully');
+  }
+  
+  // Close keyword review modal
+  async function closeKeywordReviewModal(markAsCancelled = true) {
+    const modal = document.getElementById('keywordReviewModal');
+    if (modal) {
+      // Get both request IDs before closing
+      const uiRequestId = modal.dataset.uiRequestId;
+      const backendRequestId = modal.dataset.backendRequestId;
+      
+      console.log(`[CLOSE][${uiRequestId}] Closing modal - markAsCancelled:`, markAsCancelled);
+      console.log(`[CLOSE] Backend request ID:`, backendRequestId);
+      console.log(`[CLOSE] Current queue length:`, keywordReviewQueue.length);
+      console.log(`[CLOSE] Remaining requests in queue:`, keywordReviewQueue.map(q => q.uiRequestId));
+      
+      // Only mark as cancelled if explicitly requested (user clicked X or Cancel button)
+      // Don't mark as cancelled when user clicks "Save Changes" (markAsCancelled = false)
+      if (markAsCancelled && backendRequestId) {
+        console.log('[KEYWORD MODAL] Cancelling job on backend:', backendRequestId);
+        
+        // Cancel the job on the backend
+        try {
+          const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5001'
+            : '';
+          
+          const auth = dashboardCredentials 
+            ? 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
+            : `Bearer ${localStorage.getItem('token')}`;
+          
+          const response = await fetch(`${apiBaseUrl}/api/jobs/${backendRequestId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': auth
+            }
+          });
+          
+          if (response.ok) {
+            console.log('[KEYWORD MODAL] Job cancelled successfully on backend');
+            showToast('🚫 Job cancelled successfully', 'info');
+          } else {
+            console.error('[KEYWORD MODAL] Failed to cancel job on backend:', response.status);
+          }
+        } catch (error) {
+          console.error('[KEYWORD MODAL] Error cancelling job:', error);
+        }
+        
+        // Also clean up frontend state
+        if (uiRequestId && activeRequests.has(uiRequestId)) {
+          markRequestFailed(uiRequestId, 'Cancelled by user');
+        }
+      }
+      
+      // Clear modal data
+      modal.dataset.backendRequestId = '';
+      modal.dataset.uiRequestId = '';
+      modal.dataset.companyName = '';
+      
+      modal.style.display = 'none';
+      
+      // Mark modal as closed
+      isModalOpen = false;
+      console.log(`[CLOSE] Modal marked as CLOSED`);
+      
+      // Process next item in queue if any
+      console.log('[CLOSE] Checking queue for next item...');
+      setTimeout(() => {
+        processKeywordReviewQueue();
+      }, 300); // Small delay to ensure smooth transition
+    }
+  }
+  
+  // Remove keyword from list
+  function removeKeyword(button) {
+    button.closest('.keyword-item').remove();
+    updateKeywordCounts();
+  }
+  
+  // Add keyword to list
+  function addKeywordToList(listId, inputId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    
+    if (!input || !list) return;
+    
+    const keyword = input.value.trim();
+    if (keyword) {
+      const item = document.createElement('div');
+      item.className = 'keyword-item';
+      item.innerHTML = `
+        <span class="keyword-text" contenteditable="false" onclick="editKeyword(this)" title="Click to edit">${keyword}</span>
+        <button class="keyword-remove-btn" onclick="removeKeyword(this)" title="Remove">×</button>
+      `;
+      list.appendChild(item);
+      input.value = '';
+      updateKeywordCounts();
     }
   }
   
@@ -2650,9 +3490,9 @@
   console.log('Generate JD Resume Button found:', generateJDResumeBtn);
   
   if (generateJDResumeBtn) {
-    console.log('Adding click listener to Generate JD Resume button');
+    console.log('Adding TWO-PHASE click listener to Generate JD Resume button');
     generateJDResumeBtn.addEventListener('click', async function() {
-      console.log('Generate JD Resume button clicked!');
+      console.log('[FEEDBACK] Generate JD Resume button clicked - Starting two-phase workflow!');
       
       const jdText = jobDescriptionTab.value.trim();
       const companyName = document.getElementById('companyNameJD').value.trim();
@@ -2698,7 +3538,18 @@
       console.log('Selected mode:', resumeMode);
       console.log('Selected format:', resumeFormat);
       
-      // Generate using authenticated endpoint
+      const uiRequestId = `req_${Date.now()}_${dashboardCredentials.username}`;
+      
+      // Check and store keyword review preference for THIS request
+      const checkboxElement = document.getElementById('enableKeywordReview');
+      const enableKeywordReview = checkboxElement?.checked || false;
+      console.log(`[FEEDBACK][${uiRequestId}] Checkbox checked status at request start:`, enableKeywordReview);
+      
+      // Add to processing banner
+      addRequestToUI(uiRequestId, companyName);
+      updateRequestProgress(uiRequestId, 0, 'Extracting keywords...');
+      
+      // PHASE 1: Extract keywords
       try {
         const requestData = {
           mode: resumeMode,
@@ -2708,13 +3559,12 @@
             company_name: companyName,
             job_title: jobTitle,
             job_description: jdText
-          },
-          request_id: `req_${Date.now()}_${dashboardCredentials.username}`
+          }
         };
 
-        console.log('Sending request:', requestData);
+        console.log('[FEEDBACK] Phase 1: Calling extract-keywords endpoint...');
 
-        const response = await fetch(`${API_BASE_URL}/api/generate_resume_json`, {
+        const extractResponse = await fetch(`${API_BASE_URL}/api/resume/extract-keywords`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2723,30 +3573,58 @@
           body: JSON.stringify(requestData)
         });
 
-        console.log('Response status:', response.status);
+        console.log('[FEEDBACK] Extract response status:', extractResponse.status);
 
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-          throw new Error(error.detail || 'Failed to generate resume');
+        if (!extractResponse.ok) {
+          const error = await extractResponse.json().catch(() => ({ detail: 'Failed to extract keywords' }));
+          throw new Error(error.detail || 'Failed to extract keywords');
         }
 
-        const result = await response.json();
-        console.log('Success:', result);
+        const extractResult = await extractResponse.json();
+        console.log(`[FEEDBACK][${uiRequestId}] Phase 1 SUCCESS! Keywords extracted:`, extractResult);
+        console.log(`[FEEDBACK][${uiRequestId}] Using stored keyword review preference:`, enableKeywordReview);
         
-        // Add to processing banner
-        addRequestToUI(result.request_id, companyName);
-        
-        // Automatically switch to dashboard to track progress
-        switchTab('dashboard');
-        loadDashboardHistory();
+        if (enableKeywordReview) {
+          // Show keyword review modal for user to edit
+          console.log(`[FEEDBACK][${uiRequestId}] Keyword review ENABLED - adding to modal queue`);
+          updateRequestProgress(uiRequestId, 25, 'Keywords extracted - Review required');
+          showKeywordReviewModalV2(extractResult.keywords, extractResult.request_id, uiRequestId, companyName);
+        } else {
+          // Skip review, proceed directly to Phase 2
+          console.log(`[FEEDBACK][${uiRequestId}] Keyword review DISABLED - proceeding directly to generation`);
+          updateRequestProgress(uiRequestId, 30, 'Generating resume...');
+          await proceedToGenerationPhase(extractResult.request_id, uiRequestId, companyName, null);
+        }
         
       } catch (error) {
-        console.error('Generation failed:', error);
-        alert(`Error: ${error.message}`);
+        console.error('[FEEDBACK] Phase 1 failed:', error);
+        markRequestFailed(uiRequestId, error.message);
+        alert(`Error extracting keywords: ${error.message}`);
       }
     });
   } else {
     console.error('Generate JD Resume button NOT found in DOM!');
+  }
+  
+  // Show keyword review modal - Version 2 for this button
+  function showKeywordReviewModalV2(jdHints, backendRequestId, uiRequestId, companyName) {
+    console.log(`[QUEUE-V2][${uiRequestId}] Requesting keyword review modal`);
+    console.log(`[QUEUE-V2][${uiRequestId}] Current queue length BEFORE adding:`, keywordReviewQueue.length);
+    console.log(`[QUEUE-V2][${uiRequestId}] Modal currently open:`, isModalOpen);
+    
+    // Add to queue
+    keywordReviewQueue.push({
+      jdHints,
+      backendRequestId,
+      uiRequestId,
+      companyName
+    });
+    
+    console.log(`[QUEUE-V2][${uiRequestId}] Added to queue. New queue length:`, keywordReviewQueue.length);
+    console.log(`[QUEUE-V2] Full queue state:`, keywordReviewQueue.map(q => q.uiRequestId));
+    
+    // Process queue if modal is not currently open
+    processKeywordReviewQueue();
   }
 
   // Load Sample JD for the tab textarea
@@ -3272,9 +4150,10 @@
         console.log('[POLLING] Progress:', status.progress);
         console.log('[POLLING] Message:', status.message);
         
-        // Update processing banner with progress
-        if (status.status === 'processing' && status.progress !== undefined) {
-          updateRequestProgress(requestId, status.progress, status.message);
+        // Update processing banner with progress (only for processing and pending states)
+        if ((status.status === 'processing' || status.status === 'pending') && status.progress !== undefined) {
+          const progressMsg = status.message || `${status.progress}% complete`;
+          updateRequestProgress(requestId, status.progress, progressMsg);
         }
         
         updateDashboardJobCard(requestId, status);
@@ -3335,23 +4214,25 @@
     
     if (progressCell) {
       if (data.status === 'processing' || data.status === 'pending') {
+        // Ensure progress is a valid number
+        const progressValue = Math.min(Math.max(parseInt(data.progress) || 0, 0), 100);
+        
         const progressFill = progressCell.querySelector('.progress-fill');
         const progressText = progressCell.querySelector('.progress-text');
         
         console.log('[DASHBOARD UPDATE] Progress fill element:', !!progressFill);
         console.log('[DASHBOARD UPDATE] Progress text element:', !!progressText);
+        console.log('[DASHBOARD UPDATE] Progress value sanitized:', progressValue);
         
         if (progressFill) {
-          const newWidth = `${data.progress}%`;
+          const newWidth = `${progressValue}%`;
           progressFill.style.width = newWidth;
           console.log('[DASHBOARD UPDATE] Set progress bar width to:', newWidth);
-          console.log('[DASHBOARD UPDATE] Actual width after set:', progressFill.style.width);
         }
         if (progressText) {
-          const newText = `${data.progress}%`;
+          const newText = `${progressValue}%`;
           progressText.textContent = newText;
           console.log('[DASHBOARD UPDATE] Set progress text to:', newText);
-          console.log('[DASHBOARD UPDATE] Actual text after set:', progressText.textContent);
         }
       } else if (data.status === 'completed') {
         progressCell.innerHTML = '<span style="color: var(--success); font-weight: 600;">✓ 100%</span>';
@@ -3359,6 +4240,9 @@
       } else if (data.status === 'failed') {
         progressCell.innerHTML = '<span style="color: var(--danger);">✗ Failed</span>';
         console.log('[DASHBOARD UPDATE] Set failed status');
+      } else if (data.status === 'awaiting_feedback') {
+        progressCell.innerHTML = '<span style="color: var(--accent); font-weight: 600;">⏸ Awaiting Review</span>';
+        console.log('[DASHBOARD UPDATE] Set awaiting feedback status');
       }
     }
 
@@ -3390,6 +4274,15 @@
               <span>Delete</span>
             </button>
           </div>
+        `;
+      } else if (data.status === 'awaiting_feedback') {
+        actionsCell.innerHTML = `
+          <button onclick="resumeKeywordReview('${requestId}', '${companyName}')" 
+                  style="padding: 8px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
+                  onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.2)'">
+            📝 Review Keywords
+          </button>
         `;
       } else if (data.status === 'failed') {
         actionsCell.innerHTML = `
@@ -3455,6 +4348,8 @@
                 </div>
                 <div class="progress-text" style="font-size: 0.75em; color: var(--text-secondary); margin-top: 4px;">${job.progress}%</div>
               </div>
+            ` : job.status === 'awaiting_feedback' ? `
+              <span style="color: var(--accent); font-weight: 600;">⏸ Awaiting Review</span>
             ` : job.status === 'completed' ? `
               <span style="color: var(--success); font-weight: 600;">✓ 100%</span>
             ` : `
@@ -3486,13 +4381,26 @@
                 </button>
               </div>
             ` : job.status === 'processing' || job.status === 'pending' ? `
-              <button class="sub-btn" style="padding: 6px 16px; font-size: 0.9em;" onclick="checkDashboardStatus('${job.request_id}')">
+              <button class="sub-btn" style="padding: 6px 12px; font-size: 0.9em; margin-right: 4px;" onclick="checkDashboardStatus('${job.request_id}')">
                 🔄 Refresh
               </button>
+              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="if(confirm('Cancel this job?')) { deleteResume('${job.request_id}'); }">
+                ✕ Cancel
+              </button>
+            ` : job.status === 'awaiting_feedback' ? `
+              <button onclick="resumeKeywordReview('${job.request_id}', '${job.company_name}')" 
+                      style="padding: 8px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2); margin-right: 4px;"
+                      onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
+                      onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.2)'">
+                📝 Review Keywords
+              </button>
+              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="if(confirm('Cancel this job?')) { deleteResume('${job.request_id}'); }">
+                ✕ Cancel
+              </button>
             ` : `
-              <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px; display: inline-block;" title="${job.error_message || 'Generation failed'}">
-                ❌ Error
-              </div>
+              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="if(confirm('Delete this failed job?')) { deleteResume('${job.request_id}'); }">
+                🗑️ Delete
+              </button>
             `}
           </td>
         </tr>
@@ -3645,6 +4553,23 @@
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Failed to delete resume');
+      }
+
+      // Remove from processing banner if it exists
+      const request = activeRequests.get(requestId);
+      if (request) {
+        request.element.style.opacity = '0';
+        setTimeout(() => {
+          request.element.remove();
+          activeRequests.delete(requestId);
+          updateBannerCount();
+        }, 300);
+      }
+
+      // Stop polling if active
+      if (dashboardPollIntervals[requestId]) {
+        clearInterval(dashboardPollIntervals[requestId]);
+        delete dashboardPollIntervals[requestId];
       }
 
       // Remove the row from the table
