@@ -682,6 +682,78 @@ Uncomment `_save_debug_file()` calls in `app/main.py` to enable.
 - **Average Processing Time**: 30-60 seconds per resume (depends on LLM API)
 - **Rate Limits**: Constrained by your LLM provider's API limits
 
+## Deployment to Render
+
+### First-Time Deployment
+
+1. **Connect Repository**: Link your GitHub repo to Render
+2. **Configure Build**: Render will auto-detect `render.yaml`
+3. **Set Environment Variables** in Render Dashboard:
+   - `GEMINI_API_KEY` - Your Gemini API key
+   - `JWT_SECRET` - Will auto-generate if using `generateValue: true`
+
+### Database Migration
+
+**Important**: After first deployment, you MUST run the database migration to add required columns.
+
+#### Quick Fix via Render Shell
+
+1. Go to Render Dashboard → Your Service → **Shell** tab
+2. Run the migration script:
+```bash
+python3 migrate_database.py
+```
+
+3. Restart your service (it will restart automatically)
+
+#### What This Does
+
+The migration adds these required columns to `resume_jobs` table:
+- `format` - Resume format preference (classic/modern)
+- `intermediate_state` - Stores extracted keywords for review
+- `feedback_submitted_at` - Feedback timestamp
+
+**Note**: The migration is idempotent (safe to run multiple times).
+
+### Common Deployment Issues
+
+#### Error: `column resume_jobs.format does not exist`
+
+**Cause**: Production database missing columns from recent schema updates.
+
+**Fix**: Run `python3 migrate_database.py` in Render Shell (see above).
+
+#### Error: `JWT_SECRET not set`
+
+**Fix**: Add to `render.yaml`:
+```yaml
+- key: JWT_SECRET
+  generateValue: true
+```
+
+#### Health Check Failing
+
+**Check**:
+1. Ensure `/health` endpoint returns 200 OK
+2. Verify `PORT` environment variable is set by Render
+3. Check application logs for startup errors
+
+### Automatic Migrations (Optional)
+
+To run migrations automatically on every deploy, update `render.yaml`:
+
+```yaml
+services:
+  - type: web
+    name: resume-editor
+    buildCommand: "pip install -r requirements.txt && python3 migrate_database.py"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+```
+
+**Important**: Only add this after verifying the migration works manually first.
+
+See [`migrations/README.md`](migrations/README.md) for detailed migration documentation.
+
 ## Security Notes
 
 ⚠️ **Important**: Never commit `.env` file to version control!

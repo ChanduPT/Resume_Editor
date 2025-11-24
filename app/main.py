@@ -4,22 +4,28 @@
 import os
 import sys
 import logging
+import re
 from pathlib import Path
 from datetime import datetime
+import json
+import asyncio
+from typing import Dict, Any
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, HTTPException
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.security import HTTPBasic
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+from app.create_resume import create_resume
 from app.database import init_db
 from app.auth import register_user, login_user, reset_password
 from app.endpoints import (
@@ -30,6 +36,19 @@ from app.endpoints import (
     delete_job, cleanup_stale_jobs, parse_resume_document,
     search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
     get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint
+)
+from app.utils import (
+    normalize_whitespace, split_resume_sections,
+    chat_completion, parse_experience_to_json, parse_skills_to_json
+)
+from app.helpers import (
+    save_debug_file as _save_debug_file, 
+    balance_experience_roles as _balance_experience_roles,
+    safe_load_json as _safe_load_json
+)
+from app.prompts import (
+    JD_HINTS_PROMPT, SCORING_PROMPT_JSON, APPLY_EDITS_PROMPT,
+    ORGANIZE_SKILLS_PROMPT, GENERATE_FROM_JD_PROMPT
 )
 
 # --------------------- App Setup ---------------------
