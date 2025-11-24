@@ -631,704 +631,6 @@
           </button>
         </div>
 
-    header button, .dropdown-btn {
-      font-size: 11px;
-      padding: 6px 10px;
-    }
-    
-    #toggleTheme {
-      padding: 6px;
-      font-size: 14px;
-    }
-
-    main {
-      padding: 100px 16px 32px;
-    }
-
-    .entry {
-      padding: 12px;
-    }
-
-    #processingBanner {
-      top: 70px;
-      right: 12px;
-      min-width: 240px;
-      padding: 10px 16px;
-    }
-
-    #processingBanner .message {
-      font-size: 13px;
-    }
-  }
-
-  /* Additional Polish */
-  form {
-    margin-bottom: 24px;
-    max-width: 100%;
-  }
-
-  .entry input {
-    margin-bottom: 8px;
-  }
-
-  .entry input:last-of-type {
-    margin-bottom: 0;
-  }
-
-  /* Skill entries styling */
-  #skillsList .entry {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 12px;
-  }
-
-  #skillsList .entry input {
-    margin-bottom: 0;
-  }
-  
-  /* Contact entries styling - same as skills */
-  #contactList .entry {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 12px;
-  }
-
-  #contactList .entry input {
-    margin-bottom: 0;
-  }
-  
-  /* Readonly contact labels styling */
-  #contactList .entry input[readonly] {
-    background: var(--bg);
-    border-color: var(--border);
-    cursor: default;
-    opacity: 0.8;
-  }
-  
-  /* Ensure inputs don't overflow */
-  input, textarea {
-    max-width: 100%;
-  }
-
-  /* Form Section Navigation */
-  .form-nav-container {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 24px;
-    margin-top: 16px;
-    align-items: start;
-  }
-
-  .form-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    position: sticky;
-    top: 0px;
-    height: fit-content;
-    align-self: start;
-  }
-  
-  .form-sections {
-    min-height: 500px;
-  }
-
-  .form-nav-btn {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 12px 16px;
-    text-align: left;
-    cursor: pointer;
-    border-radius: var(--radius-md);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .form-nav-btn:hover {
-    background: var(--accent-light);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .form-nav-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-    font-weight: 600;
-  }
-
-  .form-nav-btn .icon {
-    font-size: 18px;
-  }
-
-  .form-section-panel {
-    display: none;
-    animation: fadeIn 0.3s ease;
-    min-height: 400px;
-  }
-
-  .form-section-panel.active {
-    display: block;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .form-section-panel h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 20px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  /* Responsive: Stack navigation on mobile */
-  @media (max-width: 850px) {
-    .form-nav-container {
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-
-    .form-nav {
-      position: static;
-      flex-direction: row;
-      overflow-x: auto;
-      padding-bottom: 8px;
-    }
-
-    .form-nav-btn {
-      white-space: nowrap;
-      min-width: fit-content;
-    }
-  }
-
-  /* Better focus states */
-  button:focus-visible, .tab-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  /* Smooth scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--bg);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
-  }
-
-  /* Loading spinner for status modal */
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--accent-light);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-  }
-
-  /* Processing Banner */
-  #processingBanner {
-    position: fixed;
-    top: 80px;
-    right: 24px;
-    background: var(--card);
-    color: var(--text);
-    border: 1px solid var(--accent);
-    border-radius: var(--radius-md);
-    padding: 16px 20px;
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    box-shadow: var(--shadow-lg);
-    z-index: 1100;
-    min-width: 320px;
-    max-width: 400px;
-    pointer-events: auto;
-    animation: slideInFromRight 0.3s ease;
-  }
-
-  #processingBanner.active {
-    display: flex;
-  }
-
-  @keyframes slideInFromRight {
-    from {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  #processingBanner .banner-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  #processingBanner .banner-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  #processingBanner .close-banner {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: all 0.15s ease;
-  }
-
-  #processingBanner .close-banner:hover {
-    background: var(--accent-light);
-    color: var(--accent);
-  }
-
-  #processingBanner .spinner-small {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--accent-light);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    flex-shrink: 0;
-  }
-
-  #processingBanner .requests-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  #processingBanner .request-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 12px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    transition: all 0.3s ease, opacity 0.3s ease;
-    opacity: 1;
-  }
-
-  #processingBanner .request-item.completed {
-    background: var(--accent-light);
-    border-left: 3px solid var(--success);
-  }
-
-  #processingBanner .request-item.failed {
-    background: #fee;
-    border-left: 3px solid var(--danger);
-  }
-
-  #processingBanner .request-item .item-icon {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  #processingBanner .request-item .item-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  #processingBanner .request-company {
-    font-weight: 600;
-    color: var(--text);
-    font-size: 14px;
-  }
-
-  #processingBanner .request-progress {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  #processingBanner .progress-bar {
-    width: 100%;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  #processingBanner .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-    transition: width 0.3s ease;
-    border-radius: 2px;
-  }
-
-  #processingBanner .progress-text {
-    font-size: 11px;
-    color: var(--text-secondary);
-    font-weight: 400;
-  }
-
-  #processingBanner .request-item.completed .item-text {
-    color: var(--text);
-  }
-
-  #processingBanner .message {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  #processingBanner .requests-list::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  #processingBanner .requests-list::-webkit-scrollbar-track {
-    background: var(--bg);
-    border-radius: 3px;
-  }
-
-  #processingBanner .requests-list::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
-  }
-
-  #processingBanner .requests-list::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
-  }
-
-  /* ===== FAQ Section ===== */
-  .faq-section {
-    display: none; /* Hidden by default */
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 48px 24px;
-    max-width: 100%;
-    position: relative;
-  }
-  
-  .faq-section.active {
-    display: block;
-    animation: slideDown 0.3s ease;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .faq-header {
-    max-width: 900px;
-    margin: 0 auto 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .faq-section h2 {
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--text);
-    letter-spacing: -0.02em;
-  }
-
-  .faq-close {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .faq-close:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    transform: scale(1.05);
-  }
-
-  .faq-section .faq-item {
-    max-width: 900px;
-    margin: 0 auto 12px;
-  }
-
-  .faq-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    transition: all 0.15s ease;
-  }
-
-  .faq-item:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--accent);
-  }
-
-  .faq-question {
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    padding: 18px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.15s ease;
-  }
-
-  .faq-question:hover {
-    color: var(--accent);
-  }
-
-  .faq-icon {
-    font-size: 20px;
-    transition: transform 0.3s ease;
-    color: var(--accent);
-  }
-
-  .faq-item.active .faq-icon {
-    transform: rotate(180deg);
-  }
-
-  .faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
-    padding: 0 24px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-  }
-
-  .faq-item.active .faq-answer {
-    max-height: 200px;
-    padding: 0 24px 18px;
-  }
-
-  /* ===== Footer ===== */
-  footer {
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border);
-    padding: 48px 32px 24px;
-    margin-top: 0;
-    clear: both;
-    width: 100%;
-    position: relative;
-  }
-
-  .footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 40px;
-  }
-
-  .footer-about h3 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .footer-about p {
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 16px;
-    font-size: 14px;
-  }
-
-  .footer-about a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.15s ease;
-  }
-
-  .footer-about a:hover {
-    color: var(--accent-hover);
-  }
-
-  .footer-section h4 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 16px;
-    color: var(--text);
-  }
-
-  .footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .footer-links li {
-    margin-bottom: 10px;
-  }
-
-  .footer-links a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.15s ease;
-  }
-
-  .footer-links a:hover {
-    color: var(--accent);
-  }
-
-  .social-links {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-  }
-
-  .social-links a {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    font-size: 18px;
-    transition: all 0.15s ease;
-  }
-
-  .social-links a:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  [data-theme="dark"] .social-links a:hover {
-    color: white;
-  }
-
-  .footer-bottom {
-    text-align: center;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    color: var(--text-secondary);
-    font-size: 14px;
-  }
-
-  @media (max-width: 850px) {
-    .footer-content {
-      grid-template-columns: 1fr;
-      gap: 32px;
-    }
-
-    .faq-section {
-      padding: 0 16px;
-    }
-
-    .faq-section h2 {
-      font-size: 24px;
-    }
-
-    .faq-question {
-      padding: 14px 16px;
-      font-size: 15px;
-    }
-
-    .faq-answer {
-      font-size: 14px;
-    }
-
-    footer {
-      padding: 32px 16px 16px;
-    }
-  }
-</style>
-</head>
-<body>
-<header>
-  <h1>Resume Builder Pro</h1>
-  <div id="menuActions">
-    <button onclick="generateResume()" style="background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;">🚀 Start Cheyi Bro</button>
-    <button id="toggleTheme">🌙 Dark</button>
-  </div>
-</header>
-
-<main>
-  <div id="tabContainer">
-    <nav id="sidebar">
-      <button class="tab-btn active" id="tabResumeBtn" type="button">View Resume</button>
-      <button class="tab-btn" id="tabEditJDBtn" type="button">Edit Resume</button>
-    </nav>
-
-    <section id="tabContentArea">
-      <div id="resumeFormContainer" class="active">
-        <p id="result" style="text-align: center; padding: 8px; margin: 0 0 16px 0; font-weight: 500; color: var(--text);"></p>
         <form id="resumeForm">
           <!-- Side Navigation & Content -->
           <div class="form-nav-container">
@@ -1996,13 +1298,8 @@
         <div class="spinner-small"></div>
       </div>
       <div class="item-text">
-        <div class="request-company">${companyName || 'Unknown Company'}</div>
-        <div class="request-progress">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progress_${requestId}" style="width: 0%"></div>
-          </div>
-          <div class="progress-text" id="progress_text_${requestId}">Starting...</div>
-        </div>
+        <div class="item-company">${companyName || 'Unknown Company'}</div>
+        <div class="item-progress" style="font-size: 0.85em; color: var(--text-secondary); margin-top: 2px;">Starting...</div>
       </div>
     `;
     requestsList.appendChild(requestItem);
@@ -2020,15 +1317,14 @@
     updateBannerCount();
   }
 
-  function updateRequestProgress(requestId, percentage, message) {
-    const progressFill = document.getElementById(`progress_${requestId}`);
-    const progressText = document.getElementById(`progress_text_${requestId}`);
-    
-    if (progressFill) {
-      progressFill.style.width = `${percentage}%`;
-    }
-    if (progressText) {
-      progressText.textContent = `${percentage}% - ${message}`;
+  function updateRequestProgress(requestId, progress, message) {
+    const request = activeRequests.get(requestId);
+    if (request && request.status === 'processing') {
+      const progressDiv = request.element.querySelector('.item-progress');
+      if (progressDiv) {
+        progressDiv.textContent = `${progress}% - ${message || 'Processing...'}`;
+        console.log('[BANNER UPDATE] Updated progress for', requestId, ':', progress, '%', message);
+      }
     }
   }
 
@@ -2040,10 +1336,8 @@
       request.element.innerHTML = `
         <div class="item-icon">✓</div>
         <div class="item-text">
-          <div class="request-company">${request.company}</div>
-          <div class="request-progress">
-            <div class="progress-text" style="color: var(--success);">✓ Complete - ${fileName}</div>
-          </div>
+          <div class="item-company">${request.company}</div>
+          <div class="item-progress" style="color: var(--success);">Completed - ${fileName}</div>
         </div>
       `;
       
@@ -2069,10 +1363,8 @@
       request.element.innerHTML = `
         <div class="item-icon" style="color: var(--danger);">✗</div>
         <div class="item-text">
-          <div class="request-company">${request.company}</div>
-          <div class="request-progress">
-            <div class="progress-text" style="color: var(--danger);">✗ Failed</div>
-          </div>
+          <div class="item-company" style="color: var(--danger);">${request.company}</div>
+          <div class="item-progress" style="color: var(--danger);">Failed</div>
         </div>
       `;
       
@@ -2348,54 +1640,100 @@
   function triggerUpload(){document.getElementById('uploadJSON').click();}
   document.getElementById('uploadJSON').addEventListener('change', e=>{
     const file=e.target.files[0];if(!file)return;
-    const r=new FileReader();r.onload=ev=>{
-      try{
-        const d=JSON.parse(ev.target.result);
-        console.log('JSON parsed successfully:', d);
-        
-        // Populate resume form
-        try {
-          if(d.resume_data) {
-            console.log('Populating from resume_data');
-            populateForm(d.resume_data);
-          }
-          else {
-            console.log('Populating directly from data');
-            populateForm(d);
-          }
-          console.log('Form populated successfully');
-        } catch (populateError) {
-          console.error('Error populating form:', populateError);
-          console.error('Stack trace:', populateError.stack);
-          showResult('⚠️ JSON loaded but some fields may not populate correctly');
-        }
-        
-        // Populate job description
-        try {
-          if(d.job_description_data) {
-            console.log('Populating job description');
-            if(d.job_description_data.job_description) {
-              const jobDescTab = document.getElementById('jobDescriptionTab');
-              const companyNameJD = document.getElementById('companyNameJD');
-              if (jobDescTab) jobDescTab.value = d.job_description_data.job_description;
-              if (companyNameJD && d.job_description_data.company_name) {
-                companyNameJD.value = d.job_description_data.company_name;
-              }
-            }
-          }
-        } catch (jdError) {
-          console.error('Error populating job description:', jdError);
-        }
-        
-        showResult('✅ JSON Uploaded Successfully');
+    const r=new FileReader();r.onload=ev=>{try{
+      const d=JSON.parse(ev.target.result);
+      // Only populate resume data, not job description data
+      if(d.resume_data) {
+        populateForm(d.resume_data);
+      } else {
+        populateForm(d);
       }
-      catch(jsonError){
-        console.error('JSON Parse Error:', jsonError);
-        console.error('File content:', ev.target.result);
-        alert("Invalid JSON file. Please check the file format.\n\nError: " + jsonError.message);
+      // Do NOT populate job description fields from upload
+      showResult('✅ Resume JSON Uploaded');
+    }catch{alert("Invalid JSON");}};r.readAsText(file);});
+
+  // Trigger resume document upload (PDF/DOCX)
+  function triggerResumeUpload() {
+    document.getElementById('uploadResume').click();
+  }
+
+  // Handle resume document upload with loading screen
+  document.getElementById('uploadResume').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['.pdf', '.docx'];
+    const fileName = file.name.toLowerCase();
+    const isValid = validTypes.some(type => fileName.endsWith(type));
+    
+    if (!isValid) {
+      alert('Please upload a PDF or DOCX file');
+      e.target.value = ''; // Clear the input
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File too large. Maximum size is 10MB');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      // Show loading overlay
+      showParseLoading();
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Simulate progress
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += 5;
+        if (progress <= 90) {
+          updateParseProgress(progress, 'Extracting text from document...');
+        }
+      }, 200);
+
+      // Upload and parse
+      const response = await fetch('/api/parse-resume', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword)
+        },
+        body: formData
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to parse resume' }));
+        throw new Error(errorData.detail || `Server error: ${response.status}`);
       }
-    };
-    r.readAsText(file);
+
+      const data = await response.json();
+      updateParseProgress(100, 'Parsing complete!');
+
+      if (data.success && data.resume_data) {
+        // Populate form with parsed data
+        setTimeout(() => {
+          populateForm(data.resume_data);
+          hideParseLoading();
+          showResult('✅ Resume uploaded and parsed successfully!');
+          e.target.value = ''; // Clear the input
+        }, 500);
+      } else {
+        throw new Error(data.message || 'Failed to parse resume');
+      }
+
+    } catch (error) {
+      hideParseLoading();
+      console.error('Resume upload error:', error);
+      alert(`Failed to parse resume: ${error.message || 'Unknown error'}`);
+      e.target.value = '';
+    }
   });
 
   // Loading overlay functions
@@ -2503,19 +1841,51 @@
     if (data.name) {
       html += `<h2 contenteditable="${isEditMode}" data-field="name" style="margin-top: 0; color: var(--accent); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '4px' : '0'};">${data.name}</h2>`;
     }
-    document.getElementById('projectsList').innerHTML = '';
-    if (d.projects && d.projects.length) {
-      // Filter out empty projects (no title and no bullets)
-      const validProjects = d.projects.filter(p => 
-        (p.title && p.title.trim()) || (p.bullets && p.bullets.length > 0 && p.bullets.some(b => b.trim()))
-      );
-      if (validProjects.length > 0) {
-        validProjects.forEach(p => addProject(p));
-      } else {
-        addProject(); // Add empty project if no valid projects
+    
+    if (data.contact) {
+      html += '<div id="contactItemsContainer" style="margin-bottom: 20px;">';
+      
+      if (data.contact.email) {
+        html += `<div class="contact-item-inline" data-contact-type="email" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.email" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.email}</span>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('email')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Email">🗑️</button>`;
+        html += `</div>`;
       }
-    } else {
-      addProject();
+      
+      if (data.contact.phone) {
+        html += `<div class="contact-item-inline" data-contact-type="phone" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.phone" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.phone}</span>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('phone')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Phone">🗑️</button>`;
+        html += `</div>`;
+      }
+      
+      if (data.contact.linkedin) {
+        html += `<div class="contact-item-inline" data-contact-type="linkedin" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">🔗 ${data.contact.linkedin}</span>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('linkedin')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete LinkedIn">🗑️</button>`;
+        html += `</div>`;
+      }
+      
+      if (data.contact.location) {
+        html += `<div class="contact-item-inline" data-contact-type="location" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.location" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">� ${data.contact.location}</span>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('location')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Location">🗑️</button>`;
+        html += `</div>`;
+      }
+      
+      // Loop through any additional/dynamic contact fields (like github, portfolio, etc.)
+      for (const [key, value] of Object.entries(data.contact)) {
+        if (!['email', 'phone', 'linkedin', 'location'].includes(key)) {
+          const displayLabel = key.charAt(0).toUpperCase() + key.slice(1);
+          html += `<div class="contact-item-inline" data-contact-type="${key}" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
+          html += `<strong style="color: var(--text-secondary); margin-right: 4px;">${displayLabel}:</strong>`;
+          html += `<span contenteditable="${isEditMode}" data-field="contact.${key}" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${value}</span>`;
+          if (isEditMode) html += `<button onclick="deleteContactItem('${key}')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete ${displayLabel}">🗑️</button>`;
+          html += `</div>`;
+        }
+      }
+      
+      html += '</div>';
     }
     
     if (data.summary) {
@@ -5732,30 +5102,9 @@
       return;
     }
     
-    const payload = {
-      resume_data: resumeObj,
-      job_description_data: jobObj,
-      mode: resumeMode,
-      request_id: requestId  // Add request ID to payload
-    };
+    // Show loading
+    showResult('⏳ Fetching full job description...', 'info');
     
-    // Start polling for progress updates
-    const progressInterval = setInterval(async () => {
-      try {
-        const progressRes = await fetch(`http://localhost:5001/api/progress/${requestId}`);
-        if (progressRes.ok) {
-          const progressData = await progressRes.json();
-          if (progressData.percentage !== undefined && progressData.message) {
-            updateRequestProgress(requestId, progressData.percentage, progressData.message);
-          }
-        }
-      } catch (e) {
-        console.error('Error fetching progress:', e);
-      }
-    }, 500); // Poll every 500ms
-    
-    // Call API to generate resume
-    const apiUrl = 'http://localhost:5001/api/generate_resume_json';
     try {
       const response = await fetch('/api/scrape-job-details', {
         method: 'POST',
@@ -5766,17 +5115,10 @@
         body: JSON.stringify({ url: job.link })
       });
       
-      // Stop polling
-      clearInterval(progressInterval);
+      const data = await response.json();
       
-      if(res.ok){
-        const json = await res.json();
-        // Show success message with file name
-        const fileName = json.file_name || 'resume.docx';
-        const result = json.result || 'Resume generated successfully';
-        
-        // Mark request as complete in UI
-        markRequestComplete(requestId, fileName);
+      if (response.ok && data.success) {
+        const jobDetails = data.job_details;
         
         // Switch to JD/Resume tab
         switchTab('jd');
@@ -5791,10 +5133,15 @@
         throw new Error(data.detail || 'Failed to fetch job details');
       }
     } catch (error) {
-      console.error('Request failed:', error);
-      clearInterval(progressInterval);
-      markRequestFailed(requestId, error.message);
-      showResult('❌ Error generating resume.');
+      console.error('Error fetching job details:', error);
+      
+      // Fallback: try to use what we have
+      switchTab('jd');
+      document.getElementById('companyNameJD').value = job.company;
+      document.getElementById('jobTitleJD').value = job.title;
+      document.getElementById('jdTextarea').value = job.snippet || 'Click "View Job" button to see full description and copy it here.';
+      
+      showResult('⚠️ Could not fetch full description. Please copy the job description manually.', 'warning');
     }
   }
 
