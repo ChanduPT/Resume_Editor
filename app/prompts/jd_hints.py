@@ -208,7 +208,7 @@ Validation Criteria:
 - **REMOVE possessive pronouns**: "our", "their", "your" → make generic
 - **REMOVE company-specific terms**: company names, internal team names, proprietary tech
 - **ADD CONTEXT to vague verbs**
-- **Length**: 3-8 words (concise but meaningful)
+- **Length**: 3-5 words (concise but meaningful)
 - Dont include company-specific terms, team names, or proprietary technologies.
 - Must contain at least one noun and one verb.
 - Must represent a distinct responsibility, domain concept, or measurable outcome.
