@@ -96,8 +96,8 @@ INPUTS USAGE RULES:
 
 SUMMARY STRUCTURE (MANDATORY 5 SENTENCES):
 Sentence 1: Introduce the candidate (years of experience + role title) and front-load 2–3 primary technical keywords from the JD, plus a brief domain context.
-Sentence 2: Expand on technical expertise using 4–5 additional JD skills, tools, or frameworks in a flowing, natural sentence. (avoid keword stuffing prioritize flow and clarity)
-Sentence 3: Highlight key deliverables or achievements using JD phrases that indicate impact, measurable outcomes, or value creation. (avoid just listing phrases, make it flow if needed you can modify JD phrases slightly to fit naturally)
+Sentence 2: Expand on technical expertise using 3–5 additional JD skills, tools, or frameworks, while keeping the flow natural. (avoid keword stuffing prioritize flow and clarity)
+Sentence 3: Highlight key deliverables or achievements using JD phrases that indicate impact, measurable outcomes, or value creation. (avoid just listing phrases, if needed modify JD phrases slightly to fit naturally)
 Sentence 4: Reference infrastructure, cloud, or AI technologies from the JD (AWS, GCP, CI/CD, Kubernetes, etc.), showing breadth of system or deployment experience.
 Sentence 5: Close with a confident ownership or quality statement emphasizing end-to-end delivery, collaboration, or impactful outcomes.
 
@@ -114,7 +114,7 @@ Linguistic and Flow Rules:
 - Keep total word count between 90 and 110 words
 
 ATS Optimization Rules:
-- Include 8–10 exact technical keywords from JD
+- Include 6–8 exact technical keywords from JD
 - Include 3–5 soft skill or behavioral keywords naturally
 - Use exact JD job title or close variant in the first sentence
 - Integrate 1–2 exact phrases from JD verbatim for ATS parsing
@@ -124,8 +124,10 @@ Content Quality and Naturalness:
 - Write as if describing a real professional to a hiring manager
 - Maintain professional tone with clear logical flow between sentences
 - Avoid filler, vague buzzwords, or unsupported claims
-- Ensure every sentence has a distinct role and purpose
 - End with an assertive final clause demonstrating value or reliability
+
+FINAL REVIEW BEFORE OUTPUT:
+Verify that the summary should read naturally and professionally without any grammatical errors.
 
 OUTPUT FORMAT:
 Output ONLY the final summary as a single cohesive paragraph (no headers, no bullet points, no markdown).
