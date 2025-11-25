@@ -314,7 +314,7 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
         
         # Configure generation with response schema if provided
         generation_config = {
-            "temperature": 0.4,
+            "temperature": 0.2,
         }
         
         if response_schema:
