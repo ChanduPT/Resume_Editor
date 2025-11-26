@@ -380,7 +380,7 @@ def create_resume_classic(data, file_name):
     for edu in data["education"]:
         edu_para = doc.add_paragraph()
         run = edu_para.add_run(f"{edu['degree']}, {edu['institution']} ({edu['year']})")
-        run.bold = True
+        #run.bold = True
         set_paragraph_format(edu_para, font_size=10, spacing=1.0)
 
     # --- Certifications ---
@@ -410,7 +410,7 @@ def create_resume_classic(data, file_name):
                 if cert.get("year"):
                     cert_text += f" ({cert['year']})"
                 run = cert_para.add_run(cert_text)
-                run.bold = True
+                #run.bold = True
                 set_paragraph_format(cert_para, font_size=10, spacing=1.0)
 
     # --- Margins ---
