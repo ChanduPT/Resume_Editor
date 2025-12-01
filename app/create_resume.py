@@ -144,7 +144,7 @@ def add_structured_contact(paragraph, contact_data):
     }
     """
     # Define the order of contact elements
-    ordered_keys = ["phone", "email", "linkedin", "github", "portfolio", "website"]
+    ordered_keys = ["phone", "email", "location", "linkedin", "github", "portfolio", "website"]
     
     # Collect all items in order
     items = []
@@ -167,8 +167,8 @@ def add_structured_contact(paragraph, contact_data):
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)
         
-        # Handle phone, location, and email as plain text (email gets mailto link)
-        if key == "phone" or key == "location":
+        # Handle phone and location as plain text, email gets mailto link
+        if key in ["phone", "location"]:
             run = paragraph.add_run(value)
             run.font.name = "Times New Roman"
             run.font.size = Pt(10)

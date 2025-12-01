@@ -11,7 +11,8 @@ EXTRACTION RULES:
 
 1. Inclusion Logic:
    - Include ALL technical keywords from JD (100% priority)
-   - Exclude outdated or irrelevant technologies not in JD
+   - Exclude outdated or irrelevant technologies not matching JD domain
+   - Retain relevant existing skills that align with JD requirements
 
 3. Categorization Strategy:
    - Group by logical categories matching industry standards
@@ -25,9 +26,10 @@ EXTRACTION RULES:
    - Use official names (PostgreSQL not "Postgres", Kubernetes not "K8s")
    - Group related items (Azure Synapse, Azure DevOps, Azure App Services → under Cloud)
    - Don't create categories with only 1-2 items (merge into "Other")
+   - avoid too many skills in one category (max 6-8 per category)
 
 6. Things to AVOID:
-   - Generic terms ("Databases", "Programming" without specifics)
+   - Generic terms ("Databases", "Programming" without specifics, which are not actual technical skills)
    - Outdated tech not in JD (Flash, Silverlight, IE6)
    - Skills from existing resume that conflict with JD domain
    - Over-categorization (10+ categories)
