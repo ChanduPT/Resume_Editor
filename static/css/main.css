@@ -3715,3 +3715,101 @@ select:focus {
   word-break: break-word;
 }
 
+/* ===== EMAIL WRITER STYLES ===== */
+.email-writer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.email-mode-selector select {
+  transition: all 0.2s ease;
+}
+
+.email-mode-selector select:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.email-mode-selector select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.email-form textarea:focus,
+.email-form input:focus,
+.email-form select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.generated-email .email-field input:focus,
+.generated-email .email-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.email-actions button {
+  transition: all 0.2s ease;
+}
+
+.email-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.history-item {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Email form help text */
+.help-text {
+  line-height: 1.5;
+}
+
+/* Responsive design for email writer */
+@media (max-width: 768px) {
+  .email-writer-container {
+    padding: 16px;
+  }
+  
+  .email-mode-selector {
+    flex-direction: column;
+  }
+  
+  .email-mode-selector select,
+  .email-mode-selector button {
+    width: 100%;
+  }
+  
+  .email-form > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .email-actions {
+    flex-direction: column;
+  }
+  
+  .email-actions button {
+    width: 100%;
+  }
+}
+
