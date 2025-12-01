@@ -2137,23 +2137,47 @@
   /* Skill entries styling */
   #skillsList .entry {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 200px 1fr 40px;
     gap: 12px;
+    align-items: center;
   }
 
   #skillsList .entry input {
     margin-bottom: 0;
+    margin-top: 0;
+  }
+  
+  #skillsList .entry .remove-btn {
+    margin: 0;
+    padding: 8px;
+    height: 36px;
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   /* Contact entries styling - same as skills */
   #contactList .entry {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 200px 1fr 40px;
     gap: 12px;
+    align-items: center;
   }
 
   #contactList .entry input {
     margin-bottom: 0;
+    margin-top: 0;
+  }
+  
+  #contactList .entry .remove-btn {
+    margin: 0;
+    padding: 8px;
+    height: 36px;
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   /* Readonly contact labels styling */
@@ -3587,7 +3611,7 @@ select:focus {
 .keyword-item {
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
+  padding: 8px 40px 8px 16px; /* Always reserve space for delete button */
   background: linear-gradient(135deg, var(--bg), var(--card));
   border: 2px solid var(--border);
   border-radius: 20px;
@@ -3605,7 +3629,6 @@ select:focus {
   border-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-  padding-right: 40px; /* Make room for delete button only */
 }
 
 .keyword-text {

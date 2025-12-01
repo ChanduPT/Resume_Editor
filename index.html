@@ -1454,12 +1454,14 @@
     else if (v) valuePlaceholder = 'URL or value';
 
     d.innerHTML=`<input placeholder="Label (Phone, Email, LinkedIn, Portfolio)" class="contact-key" value="${k}" ${k ? 'readonly' : ''}>
-    <input placeholder="${valuePlaceholder}" class="contact-value" value="${v}">`;
+    <input placeholder="${valuePlaceholder}" class="contact-value" value="${v}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
     document.getElementById('contactList').appendChild(d);
   }
   function addSkill(k='',v=''){const d=document.createElement('div');
     d.className='entry';d.innerHTML=`<input placeholder="Category" class="skill-key" value="${k}">
-    <input placeholder="Values (comma-separated)" class="skill-value" value="${v}">`;
+    <input placeholder="Values (comma-separated)" class="skill-value" value="${v}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
     document.getElementById('skillsList').appendChild(d);}
   function addExperience(exp=null){const d=document.createElement('div');
   d.className='entry';d.innerHTML=`<input placeholder="Company" class="exp-company" value="${exp?.company||''}">
