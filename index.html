@@ -1539,23 +1539,54 @@
       }
     });
     document.querySelectorAll('#experienceList .entry').forEach(x=>{
-      resume_data.experience.push({company:x.querySelector('.exp-company').value,
-        role:x.querySelector('.exp-role').value,period:x.querySelector('.exp-period').value,
-        points:Array.from(x.querySelectorAll('.exp-point')).map(i=>i.value.trim()).filter(Boolean)});});
+      const expEntry = {
+        company:x.querySelector('.exp-company').value.trim(),
+        role:x.querySelector('.exp-role').value.trim(),
+        period:x.querySelector('.exp-period').value.trim(),
+        points:Array.from(x.querySelectorAll('.exp-point')).map(i=>i.value.trim()).filter(Boolean)
+      };
+      // Only add experience entry if it has required fields
+      if(expEntry.company && expEntry.role && expEntry.points.length > 0) {
+        resume_data.experience.push(expEntry);
+      }
+    });
     document.querySelectorAll('#educationList .entry').forEach(x=>{
-      resume_data.education.push({degree:x.querySelector('.edu-degree').value,
-        institution:x.querySelector('.edu-inst').value,year:x.querySelector('.edu-year').value});});
+      const eduEntry = {
+        degree:x.querySelector('.edu-degree').value.trim(),
+        institution:x.querySelector('.edu-inst').value.trim(),
+        year:x.querySelector('.edu-year').value.trim()
+      };
+      // Only add education entry if it has required fields
+      if(eduEntry.degree && eduEntry.institution) {
+        resume_data.education.push(eduEntry);
+      }
+    });
     document.querySelectorAll('#projectsList .entry').forEach(x=>{
-      resume_data.projects.push({title:x.querySelector('.proj-title').value,
-        bullets:Array.from(x.querySelectorAll('.proj-point')).map(i=>i.value.trim()).filter(Boolean)});});
+      const projEntry = {
+        title:x.querySelector('.proj-title').value.trim(),
+        bullets:Array.from(x.querySelectorAll('.proj-point')).map(i=>i.value.trim()).filter(Boolean)
+      };
+      // Only add project entry if it has title and at least one bullet
+      if(projEntry.title && projEntry.bullets.length > 0) {
+        resume_data.projects.push(projEntry);
+      }
+    });
     document.querySelectorAll('#certificationsList .entry').forEach(x=>{
-      resume_data.certifications.push({name:x.querySelector('.cert-name').value,
-        organization:x.querySelector('.cert-org').value,year:x.querySelector('.cert-year').value});});
-    const companyNameJD = document.getElementById('companyNameJD') ? document.getElementById('companyNameJD').value : '';
-    const jobTitleJD = document.getElementById('jobTitleJD') ? document.getElementById('jobTitleJD').value : '';
+      const certEntry = {
+        name:x.querySelector('.cert-name').value.trim(),
+        organization:x.querySelector('.cert-org').value.trim(),
+        year:x.querySelector('.cert-year').value.trim()
+      };
+      // Only add certification entry if it has a name
+      if(certEntry.name) {
+        resume_data.certifications.push(certEntry);
+      }
+    });
+    const companyNameJD = document.getElementById('companyNameJD') ? document.getElementById('companyNameJD').value.trim() : '';
+    const jobTitleJD = document.getElementById('jobTitleJD') ? document.getElementById('jobTitleJD').value.trim() : '';
     const jobDescriptionElem = document.getElementById('jobDescriptionTab');
     const job_description_data = {
-      job_description: jobDescriptionElem ? jobDescriptionElem.value : '',
+      job_description: jobDescriptionElem ? jobDescriptionElem.value.trim() : '',
       company_name: companyNameJD,
       job_title: jobTitleJD
     };

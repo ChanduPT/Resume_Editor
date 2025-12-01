@@ -273,8 +273,21 @@ async def extract_keywords_from_jd(
         
         # Store the full intermediate state (not just user-facing result)
         # Load the full state from memory which includes jd, preprocessed_jd, etc.
-        full_state = load_intermediate_state(request_id)
-        resume_job.intermediate_state = full_state if full_state else result
+        try:
+            full_state = load_intermediate_state(request_id)
+            resume_job.intermediate_state = full_state
+        except ValueError:
+            # Fallback: if loading from memory fails, reconstruct full state
+            logger.warning(f"[EXTRACT_KEYWORDS] Failed to load intermediate state, reconstructing from input data")
+            resume_job.intermediate_state = {
+                "request_id": request_id,
+                "resume_json": data.get("resume_data", {}),
+                "jd": jd_text,
+                "company_name": company_name,
+                "job_title": job_title,
+                "mode": data.get("mode", "complete_jd"),
+                **result  # Merge in the extracted keywords
+            }
         db.commit()
         
         return {
@@ -367,8 +380,22 @@ async def regenerate_keywords(
         # Re-run keyword extraction
         result = await extract_jd_keywords(original_data, request_id, db)
         
-        # Update job with new keywords
-        job.intermediate_state = result
+        # Update job with new keywords - preserve full state structure
+        full_state = load_intermediate_state(request_id)
+        if full_state:
+            # Update only the keyword portion of the full state
+            job.intermediate_state = full_state
+        else:
+            # Fallback: store the result but ensure resume_data is included
+            job.intermediate_state = {
+                "request_id": request_id,
+                "resume_json": intermediate_data.get("resume_json") or job.resume_input_json or {},
+                "jd": jd_text,
+                "company_name": intermediate_data.get("company_name") or job.company_name,
+                "job_title": intermediate_data.get("job_title") or job.job_title,
+                "mode": intermediate_data.get("mode") or job.mode or "complete_jd",
+                **result  # Merge in the new keywords
+            }
         job.progress = 25
         db.commit()
         
