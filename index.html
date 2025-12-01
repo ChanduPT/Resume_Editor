@@ -588,6 +588,7 @@
         <button class="tab-btn active" id="tabResumeBtn" type="button">View Resume</button>
         <button class="tab-btn" id="tabEditJDBtn" type="button">Generate Resume</button>
         <button class="tab-btn" id="tabJobSearchBtn" type="button">🔍 Job Search</button>
+        <button class="tab-btn" id="tabEmailWriterBtn" type="button">📧 Email Writer</button>
         <button class="tab-btn" id="tabDashboardBtn" type="button">My Dashboard</button>
       </nav>
 
@@ -982,6 +983,61 @@
               📊 View Cache Statistics
             </button>
             <div id="cacheStatsDisplay" style="display: none; margin-top: 20px; padding: 20px; background: var(--card); border-radius: var(--radius-lg);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Writer Tab Panel -->
+      <div id="emailWriterTabPanel" style="display: none;">
+        <div class="email-writer-container">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="margin-bottom: 8px;">📧 Professional Email Writer</h2>
+            <p style="color: var(--text-secondary); margin: 0;">Generate professional emails for any career situation</p>
+          </div>
+
+          <!-- Email Mode Selector -->
+          <div class="email-mode-selector" style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
+            <select id="emailTemplateSelector" onchange="handleEmailTemplateChange(this.value)" 
+              style="padding: 12px 20px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 15px; font-weight: 500; cursor: pointer; min-width: 200px;">
+              <option value="">⚡ Quick Templates</option>
+              <option value="job_application">💼 Job Application</option>
+              <option value="reply">↩️ Reply to Recruiter</option>
+              <option value="followup">📬 Follow-up</option>
+              <option value="thankyou">🙏 Thank You</option>
+              <option value="networking">🤝 Networking</option>
+              <option value="salary_negotiation">💰 Salary Negotiation</option>
+              <option value="resignation">👋 Resignation</option>
+              <option value="referral_request">🔗 Request Referral</option>
+              <option value="decline_offer">❌ Decline Offer</option>
+              <option value="feedback_request">📊 Request Feedback</option>
+              <option value="interview_scheduling">📅 Schedule Interview</option>
+            </select>
+            
+            <button class="primary-btn" onclick="showCustomEmailMode()" style="padding: 12px 24px; font-size: 15px; font-weight: 600; border-radius: 8px;">
+              ✨ Custom Email (Any Type)
+            </button>
+          </div>
+
+          <!-- Email Input Area -->
+          <div id="emailInputArea">
+            <!-- Form will be dynamically rendered here -->
+          </div>
+
+          <!-- Email Output Area -->
+          <div id="emailOutputArea">
+            <!-- Generated email will be displayed here -->
+          </div>
+
+          <!-- Email History -->
+          <div class="email-history" style="margin-top: 40px;">
+            <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <span>📜</span> 
+              <span>Recent Emails (This Session)</span>
+              <span style="font-size: 14px; color: var(--text-secondary); font-weight: normal;">(Cleared on logout)</span>
+            </h3>
+            <div id="emailHistoryList" style="display: grid; gap: 12px;">
+              <!-- History items will be added here -->
+            </div>
           </div>
         </div>
       </div>
@@ -3443,20 +3499,26 @@
   // --------- TAB SWITCHING LOGIC ---------
   const tabResumeBtn = document.getElementById('tabResumeBtn');
   const tabEditJDBtn = document.getElementById('tabEditJDBtn');
+  const tabEmailWriterBtn = document.getElementById('tabEmailWriterBtn');
   const tabDashboardBtn = document.getElementById('tabDashboardBtn');
   const resumeFormContainer = document.getElementById('resumeFormContainer');
   const jobDescTabPanel = document.getElementById('jobDescTabPanel');
+  const emailWriterTabPanel = document.getElementById('emailWriterTabPanel');
   const dashboardTabPanel = document.getElementById('dashboardTabPanel');
+  
+  let emailWriterInitialized = false;
 
   function switchTab(tab) {
     // Remove active from all tabs
     tabResumeBtn.classList.remove('active');
     tabEditJDBtn.classList.remove('active');
     tabJobSearchBtn.classList.remove('active');
+    tabEmailWriterBtn.classList.remove('active');
     tabDashboardBtn.classList.remove('active');
     resumeFormContainer.classList.remove('active');
     jobDescTabPanel.classList.remove('active');
     jobSearchTabPanel.style.display = 'none';
+    emailWriterTabPanel.style.display = 'none';
     dashboardTabPanel.classList.remove('active');
 
     // Get action bar
@@ -3488,6 +3550,19 @@
       // Hide JD elements
       if (jdTextarea) jdTextarea.style.display = 'none';
       if (jdContainer) jdContainer.style.display = 'none';
+    } else if (tab === 'emailwriter') {
+      tabEmailWriterBtn.classList.add('active');
+      emailWriterTabPanel.style.display = 'block';
+      actionBar.style.display = 'none'; // Hide in Email Writer
+      // Hide JD elements
+      if (jdTextarea) jdTextarea.style.display = 'none';
+      if (jdContainer) jdContainer.style.display = 'none';
+      // Initialize email writer on first load
+      if (!emailWriterInitialized) {
+        showCustomEmailMode();
+        loadEmailHistory();
+        emailWriterInitialized = true;
+      }
     } else if (tab === 'dashboard') {
       tabDashboardBtn.classList.add('active');
       dashboardTabPanel.classList.add('active');
@@ -3503,6 +3578,7 @@
   tabResumeBtn.addEventListener('click', () => switchTab('resume'));
   tabEditJDBtn.addEventListener('click', () => switchTab('jd'));
   tabJobSearchBtn.addEventListener('click', () => switchTab('jobsearch'));
+  tabEmailWriterBtn.addEventListener('click', () => switchTab('emailwriter'));
   tabDashboardBtn.addEventListener('click', () => switchTab('dashboard'));
 
   // --------- INIT ---------
@@ -4913,6 +4989,9 @@
     currentUsername = null;
     currentPassword = null;
     
+    // Clear session storage (email history)
+    sessionStorage.removeItem('emailHistory');
+    
     // Show auth screen, hide main app
     document.getElementById('authScreen').style.display = 'grid';
     document.getElementById('mainApp').style.display = 'none';
@@ -4943,7 +5022,502 @@
   // On page load, check if user is already logged in (from sessionStorage)
   window.addEventListener('DOMContentLoaded', () => {
     // Auth screen is shown by default (no auto-login)
+    
+    // Clear email history if not logged in (on page load/refresh)
+    if (!dashboardCredentials) {
+      sessionStorage.removeItem('emailHistory');
+    }
   });
+
+  // ===== EMAIL WRITER FUNCTIONALITY =====
+  
+  let currentEmailInputs = null;
+  
+  // Show custom email mode (default)
+  function showCustomEmailMode() {
+    const formHTML = `
+      <div class="email-form custom-mode" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+        <h3 style="margin-bottom: 8px;">✨ Describe the email you need</h3>
+        <p class="help-text" style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
+          Examples: "Email to my manager about taking time off for interview", 
+          "Message to alumni requesting coffee chat", "Follow-up after networking event"
+        </p>
+        
+        <textarea id="customEmailRequest" 
+                  placeholder="What email do you need? Be specific about your situation..." 
+                  rows="4" 
+                  required
+                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
+        
+        <textarea id="additionalContext" 
+                  placeholder="Additional context (optional): names, dates, specific details..." 
+                  rows="3"
+                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-group">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
+            <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+              <option value="professional">Professional</option>
+              <option value="enthusiastic">Enthusiastic</option>
+              <option value="formal">Formal</option>
+              <option value="conversational">Conversational</option>
+              <option value="friendly">Friendly</option>
+              <option value="assertive">Assertive</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
+            <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+              <option value="short">Short (100-150 words)</option>
+              <option value="medium" selected>Medium (200-300 words)</option>
+              <option value="long">Long (400-500 words)</option>
+            </select>
+          </div>
+        </div>
+        
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; cursor: pointer;">
+          <input type="checkbox" id="includeResume" style="width: 18px; height: 18px; cursor: pointer;"> 
+          <span style="font-size: 14px; user-select: none;">Include my resume context (if relevant)</span>
+        </label>
+        
+        <button onclick="generateEmail('custom')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+          ✨ Generate Email
+        </button>
+      </div>
+    `;
+    
+    document.getElementById('emailInputArea').innerHTML = formHTML;
+    // Reset template selector
+    document.getElementById('emailTemplateSelector').value = '';
+  }
+  
+  // Handle template change
+  function handleEmailTemplateChange(templateType) {
+    if (!templateType) return;
+    renderTemplateForm(templateType);
+  }
+  
+  // Render template-specific form
+  function renderTemplateForm(type) {
+    let formHTML = '';
+    
+    if (type === 'job_application') {
+      formHTML = `
+        <div class="email-form" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px;">💼 Job Application Email</h3>
+          <input type="text" id="emailCompany" placeholder="Company Name *" required
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
+          <input type="text" id="emailJobTitle" placeholder="Job Title *" required
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
+          <textarea id="emailJD" placeholder="Paste Job Description *" rows="8" required
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
+              <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <option value="professional">Professional</option>
+                <option value="enthusiastic">Enthusiastic</option>
+                <option value="formal">Formal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
+              <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <option value="short">Short</option>
+                <option value="medium" selected>Medium</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
+          </div>
+          
+          <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; cursor: pointer;">
+            <input type="checkbox" id="includeResume" checked style="width: 18px; height: 18px; cursor: pointer;"> 
+            <span style="font-size: 14px; user-select: none;">Include Resume Summary</span>
+          </label>
+          
+          <button onclick="generateEmail('job_application')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+            ✨ Generate Application Email
+          </button>
+        </div>
+      `;
+    } else if (type === 'reply') {
+      formHTML = `
+        <div class="email-form" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px;">↩️ Reply to Recruiter</h3>
+          <textarea id="recruiterEmail" placeholder="Paste Recruiter's Email *" rows="10" required
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+          <textarea id="additionalContext" placeholder="Additional Context (optional)" rows="4"
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
+              <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <option value="professional">Professional</option>
+                <option value="enthusiastic">Enthusiastic</option>
+                <option value="conversational">Conversational</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
+              <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <option value="short" selected>Short</option>
+                <option value="medium">Medium</option>
+              </select>
+            </div>
+          </div>
+          
+          <button onclick="generateEmail('reply')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+            ✨ Generate Reply
+          </button>
+        </div>
+      `;
+    } else {
+      // Generic template for other types
+      formHTML = `
+        <div class="email-form" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px;">${getTemplateTitle(type)}</h3>
+          <input type="text" id="emailCompany" placeholder="Company Name" 
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
+          <input type="text" id="emailJobTitle" placeholder="Job Title"
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
+          <textarea id="additionalContext" placeholder="Additional Context" rows="6"
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
+              <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <option value="professional">Professional</option>
+                <option value="enthusiastic">Enthusiastic</option>
+                <option value="formal">Formal</option>
+                <option value="conversational">Conversational</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
+              <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                <option value="short">Short</option>
+                <option value="medium" selected>Medium</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
+          </div>
+          
+          <button onclick="generateEmail('${type}')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
+            ✨ Generate Email
+          </button>
+        </div>
+      `;
+    }
+    
+    document.getElementById('emailInputArea').innerHTML = formHTML;
+  }
+  
+  function getTemplateTitle(type) {
+    const titles = {
+      'followup': '📬 Follow-up Email',
+      'thankyou': '🙏 Thank You Email',
+      'networking': '🤝 Networking Email',
+      'salary_negotiation': '💰 Salary Negotiation',
+      'resignation': '👋 Resignation Email',
+      'referral_request': '🔗 Request Referral',
+      'decline_offer': '❌ Decline Offer',
+      'feedback_request': '📊 Request Feedback',
+      'interview_scheduling': '📅 Schedule Interview'
+    };
+    return titles[type] || 'Email';
+  }
+  
+  // Generate email function
+  async function generateEmail(type) {
+    const outputArea = document.getElementById('emailOutputArea');
+    outputArea.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="display: inline-block; width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 16px; color: var(--text-secondary);">Generating your email...</p></div>';
+    
+    let payload = { 
+      email_type: type,
+      tone: document.getElementById('emailTone')?.value || 'professional',
+      length: document.getElementById('emailLength')?.value || 'medium'
+    };
+    
+    if (type === 'custom') {
+      payload.custom_request = document.getElementById('customEmailRequest')?.value || '';
+      payload.context = document.getElementById('additionalContext')?.value || '';
+      payload.include_resume = document.getElementById('includeResume')?.checked || false;
+      
+      if (!payload.custom_request || payload.custom_request.trim().length < 10) {
+        outputArea.innerHTML = '';
+        alert('Please describe the email you need (at least 10 characters)');
+        return;
+      }
+    } else if (type === 'job_application') {
+      payload.company = document.getElementById('emailCompany')?.value || '';
+      payload.job_title = document.getElementById('emailJobTitle')?.value || '';
+      payload.jd = document.getElementById('emailJD')?.value || '';
+      payload.include_resume = document.getElementById('includeResume')?.checked || false;
+      
+      if (!payload.company || !payload.job_title || !payload.jd) {
+        outputArea.innerHTML = '';
+        alert('Please fill in all required fields (Company, Job Title, Job Description)');
+        return;
+      }
+    } else if (type === 'reply') {
+      payload.recruiter_email = document.getElementById('recruiterEmail')?.value || '';
+      payload.context = document.getElementById('additionalContext')?.value || '';
+      
+      if (!payload.recruiter_email) {
+        outputArea.innerHTML = '';
+        alert('Please paste the recruiter\'s email');
+        return;
+      }
+    } else {
+      payload.company = document.getElementById('emailCompany')?.value || '';
+      payload.job_title = document.getElementById('emailJobTitle')?.value || '';
+      payload.context = document.getElementById('additionalContext')?.value || '';
+    }
+    
+    try {
+      const headers = { 
+        'Content-Type': 'application/json'
+      };
+      
+      // Add Basic Auth if user is logged in
+      if (dashboardCredentials) {
+        headers['Authorization'] = 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`);
+      }
+      
+      const response = await fetch('/api/email/generate', {
+        method: 'POST',
+        headers: headers,
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to generate email');
+      }
+      
+      const result = await response.json();
+      currentEmailInputs = payload;
+      displayGeneratedEmail(result);
+      saveToEmailHistory(result, payload);
+      
+    } catch (error) {
+      console.error('Error generating email:', error);
+      outputArea.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--danger);"><p>❌ Error: ${error.message}</p></div>`;
+    }
+  }
+  
+  // Display generated email
+  function displayGeneratedEmail(result) {
+    const outputHTML = `
+      <div class="generated-email" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
+        <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+          <span>📧</span> Generated Email
+        </h3>
+        
+        <div class="email-field" style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-secondary);">Subject:</label>
+          <input type="text" id="emailSubject" value="${result.subject.replace(/"/g, '&quot;')}"
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; font-weight: 600;">
+        </div>
+        
+        <div class="email-field" style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-secondary);">Body:</label>
+          <textarea id="emailBody" rows="15"
+            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; font-family: inherit; resize: vertical;">${result.body}</textarea>
+        </div>
+        
+        <div class="email-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button onclick="copyEmail()" class="primary-btn" style="flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 120px;">
+            📋 Copy Email
+          </button>
+          <button onclick="regenerateEmailWithFeedback()" class="secondary-btn" style="flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 120px;">
+            🔄 Regenerate
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('emailOutputArea').innerHTML = outputHTML;
+  }
+  
+  // Copy email to clipboard
+  function copyEmail() {
+    const subject = document.getElementById('emailSubject')?.value || '';
+    const body = document.getElementById('emailBody')?.value || '';
+    const fullEmail = `Subject: ${subject}\n\n${body}`;
+    
+    navigator.clipboard.writeText(fullEmail).then(() => {
+      showToast('✅ Email copied to clipboard!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      showToast('❌ Failed to copy email', 'error');
+    });
+  }
+  
+  // Regenerate email
+  function regenerateEmailWithFeedback() {
+    if (!currentEmailInputs) {
+      showToast('❌ No previous inputs found', 'error');
+      return;
+    }
+    
+    // Get current edited values
+    const editedSubject = document.getElementById('emailSubject')?.value;
+    const editedBody = document.getElementById('emailBody')?.value;
+    
+    // Add feedback context
+    if (editedSubject || editedBody) {
+      const feedback = 'Please improve the email based on these user edits:\n';
+      currentEmailInputs.context = (currentEmailInputs.context || '') + '\n' + feedback;
+    }
+    
+    // Regenerate
+    generateEmail(currentEmailInputs.email_type);
+  }
+  
+  // Save to session storage
+  function saveToEmailHistory(result, inputs) {
+    let history = JSON.parse(sessionStorage.getItem('emailHistory') || '[]');
+    
+    history.unshift({
+      id: Date.now(),
+      type: inputs.email_type,
+      inputs: inputs,
+      result: result,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Keep only last 20
+    if (history.length > 20) history = history.slice(0, 20);
+    
+    sessionStorage.setItem('emailHistory', JSON.stringify(history));
+    loadEmailHistory();
+  }
+  
+  // Load email history
+  function loadEmailHistory() {
+    const history = JSON.parse(sessionStorage.getItem('emailHistory') || '[]');
+    const historyList = document.getElementById('emailHistoryList');
+    
+    if (!historyList) return;
+    
+    if (history.length === 0) {
+      historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">No emails generated yet. Generate your first email above!</p>';
+      return;
+    }
+    
+    const historyHTML = history.map(item => {
+      const icon = getEmailTypeIcon(item.type);
+      
+      // Generate better title based on email type
+      let title;
+      if (item.inputs.custom_request) {
+        title = item.inputs.custom_request.substring(0, 50) + (item.inputs.custom_request.length > 50 ? '...' : '');
+      } else if (item.inputs.company && item.inputs.job_title) {
+        title = `${item.inputs.company} - ${item.inputs.job_title}`;
+      } else if (item.inputs.company) {
+        title = `${item.inputs.company} (${getEmailTypeName(item.type)})`;
+      } else if (item.type === 'reply' && item.inputs.recruiter_email) {
+        // For reply emails, extract subject or company from recruiter email
+        const emailPreview = item.inputs.recruiter_email.substring(0, 60).trim();
+        title = `Reply: ${emailPreview}${emailPreview.length < item.inputs.recruiter_email.length ? '...' : ''}`;
+      } else {
+        title = getEmailTypeName(item.type);
+      }
+      
+      const timeAgo = formatTimeAgo(item.timestamp);
+      
+      return `
+        <div class="history-item" onclick="loadEmailFromHistory(${item.id})" 
+          style="background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s;"
+          onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+          <div style="display: flex; align-items: start; gap: 12px;">
+            <div style="font-size: 24px;">${icon}</div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${title}</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">${timeAgo}</div>
+              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                <span style="background: var(--bg); padding: 2px 8px; border-radius: 4px; display: inline-block;">
+                  ${item.inputs.tone} • ${item.inputs.length}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    historyList.innerHTML = historyHTML;
+  }
+  
+  // Load email from history
+  function loadEmailFromHistory(id) {
+    const history = JSON.parse(sessionStorage.getItem('emailHistory') || '[]');
+    const item = history.find(h => h.id === id);
+    
+    if (!item) return;
+    
+    currentEmailInputs = item.inputs;
+    displayGeneratedEmail(item.result);
+    
+    // Scroll to output
+    document.getElementById('emailOutputArea').scrollIntoView({ behavior: 'smooth' });
+  }
+  
+  // Helper functions
+  function getEmailTypeIcon(type) {
+    const icons = {
+      'custom': '✨',
+      'job_application': '💼',
+      'reply': '↩️',
+      'followup': '📬',
+      'thankyou': '🙏',
+      'networking': '🤝',
+      'salary_negotiation': '💰',
+      'resignation': '👋',
+      'referral_request': '🔗',
+      'decline_offer': '❌',
+      'feedback_request': '📊',
+      'interview_scheduling': '📅'
+    };
+    return icons[type] || '📧';
+  }
+  
+  function getEmailTypeName(type) {
+    const names = {
+      'job_application': 'Job Application',
+      'reply': 'Reply to Recruiter',
+      'followup': 'Follow-up',
+      'thankyou': 'Thank You',
+      'networking': 'Networking',
+      'salary_negotiation': 'Salary Negotiation',
+      'resignation': 'Resignation',
+      'referral_request': 'Referral Request',
+      'decline_offer': 'Decline Offer',
+      'feedback_request': 'Feedback Request',
+      'interview_scheduling': 'Interview Scheduling',
+      'custom': 'Custom Email'
+    };
+    return names[type] || 'Email';
+  }
+  
+  function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const then = new Date(timestamp);
+    const seconds = Math.floor((now - then) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  }
 
   // ===== JOB SEARCH FUNCTIONALITY =====
   

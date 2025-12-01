@@ -197,6 +197,11 @@ app.get("/api/cache/stats")(get_cache_stats_endpoint)
 app.post("/api/cache/clear")(clear_cache_endpoint)
 app.post("/api/cache/refresh")(refresh_cache_endpoint)
 
+# --------------------- Email Generation Endpoints ---------------------
+
+from app.endpoints import email_generate
+app.post("/api/email/generate")(email_generate)
+
 # --------------------- Cleanup Endpoints ---------------------
 
 app.post("/api/admin/cleanup-expired-states")(cleanup_expired_states_endpoint)

@@ -1457,3 +1457,143 @@ async def refresh_cache_endpoint(
     except Exception as e:
         logger.error(f"[API_REFRESH_CACHE] Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to refresh cache: {str(e)}")
+
+
+# ===== EMAIL GENERATION ENDPOINTS =====
+
+async def email_generate(request: Request, current_user: User = Depends(get_current_user_optional)):
+    """
+    Generate professional emails based on user request.
+    Supports both template-based and custom (freeform) email generation.
+    
+    Request Body:
+    {
+        "email_type": "custom" | "job_application" | "reply" | "followup" | "thankyou" | 
+                      "networking" | "salary_negotiation" | "resignation" | "referral_request" |
+                      "decline_offer" | "feedback_request" | "interview_scheduling",
+        "tone": "professional" | "enthusiastic" | "formal" | "conversational" | "friendly" | "assertive",
+        "length": "short" | "medium" | "long",
+        
+        // For custom emails
+        "custom_request": "Natural language description of email needed",
+        "context": "Additional context or details",
+        
+        // For template-based emails
+        "company": "Company name",
+        "job_title": "Job title",
+        "jd": "Job description text",
+        "recruiter_email": "Recruiter's email content (for replies)",
+        
+        // Optional
+        "include_resume": true/false
+    }
+    
+    Returns:
+    {
+        "subject": "Email subject line",
+        "body": "Email body content",
+        "timestamp": "2024-01-01T12:00:00"
+    }
+    """
+    from app.email_generator import (
+        generate_custom_email, 
+        generate_template_email, 
+        get_user_resume_summary
+    )
+    
+    try:
+        data = await request.json()
+        
+        email_type = data.get("email_type", "custom")
+        tone = data.get("tone", "professional")
+        length = data.get("length", "medium")
+        include_resume = data.get("include_resume", False)
+        
+        # Validate inputs
+        if email_type not in ["custom", "job_application", "reply", "followup", "thankyou", 
+                               "networking", "salary_negotiation", "resignation", "referral_request",
+                               "decline_offer", "feedback_request", "interview_scheduling"]:
+            raise HTTPException(status_code=400, detail=f"Invalid email_type: {email_type}")
+        
+        if tone not in ["professional", "enthusiastic", "formal", "conversational", "friendly", "assertive"]:
+            raise HTTPException(status_code=400, detail=f"Invalid tone: {tone}")
+        
+        if length not in ["short", "medium", "long"]:
+            raise HTTPException(status_code=400, detail=f"Invalid length: {length}")
+        
+        # Get resume data if user is logged in (for both summary and signature)
+        resume_summary = None
+        resume_data = None
+        if current_user:
+            try:
+                # Try to get from session/latest template
+                db = next(get_db())
+                template = db.query(UserResumeTemplate).filter(
+                    UserResumeTemplate.user_id == current_user.user_id
+                ).order_by(UserResumeTemplate.updated_at.desc()).first()
+                
+                if template and template.resume_data:
+                    resume_data = template.resume_data
+                    # Only include resume summary in email if requested
+                    if include_resume:
+                        resume_summary = get_user_resume_summary(template.resume_data)
+                db.close()
+            except Exception as e:
+                logger.warning(f"Could not load resume for user {current_user.user_id}: {e}")
+        
+        # Generate email based on type
+        if email_type == "custom":
+            # Custom/freeform email
+            custom_request = data.get("custom_request", "").strip()
+            context = data.get("context", "")
+            
+            if not custom_request or len(custom_request) < 10:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="custom_request is required and must be at least 10 characters"
+                )
+            
+            logger.info(f"Generating custom email - User: {current_user.user_id if current_user else 'anonymous'}, Length: {len(custom_request)} chars")
+            
+            result = await generate_custom_email(
+                request=custom_request,
+                context=context,
+                resume_summary=resume_summary,
+                tone=tone,
+                length=length,
+                resume_data=resume_data
+            )
+        else:
+            # Template-based email
+            company = data.get("company", "")
+            job_title = data.get("job_title", "")
+            jd = data.get("jd", "")
+            recruiter_email = data.get("recruiter_email", "")
+            context = data.get("context", "")
+            
+            logger.info(f"Generating {email_type} email - User: {current_user.user_id if current_user else 'anonymous'}")
+            
+            result = await generate_template_email(
+                email_type=email_type,
+                company=company,
+                job_title=job_title,
+                jd=jd,
+                resume_summary=resume_summary,
+                tone=tone,
+                length=length,
+                recruiter_email=recruiter_email,
+                context=context,
+                resume_data=resume_data
+            )
+        
+        return {
+            "subject": result["subject"],
+            "body": result["body"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating email: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate email: {str(e)}")
