@@ -1044,10 +1044,6 @@
 
       <!-- Dashboard Tab Panel -->
       <div id="dashboardTabPanel">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-          <h2>📊 My Dashboard</h2>
-        </div>
         
         <div id="dashboardMessage" style="margin-bottom: 20px; padding: 12px; border-radius: var(--radius-md); display: none;"></div>
 
@@ -1121,6 +1117,7 @@
           </div>
         </div>
       </div>
+
     </section>
   </div>
   </div> <!-- Close mainApp -->
@@ -1309,6 +1306,19 @@
   // Queue for keyword review requests
   const keywordReviewQueue = [];
   let isModalOpen = false;
+
+  // Ensure tab panels live under #tabContentArea even if the browser reparses invalid markup
+  window.addEventListener('DOMContentLoaded', () => {
+    const tabContentArea = document.getElementById('tabContentArea');
+    if (!tabContentArea) return;
+    ['resumeFormContainer','jobDescTabPanel','jobSearchTabPanel','emailWriterTabPanel','dashboardTabPanel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !tabContentArea.contains(el)) {
+        tabContentArea.appendChild(el);
+        try { console.log(`[DOM FIX] Moved ${id} under #tabContentArea`); } catch {}
+      }
+    });
+  });
 
   function generateRequestId() {
     return `req_${Date.now()}_${++requestIdCounter}`;
