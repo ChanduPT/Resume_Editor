@@ -595,7 +595,10 @@ class JobScraper:
         job_title: str,
         location: str = "",
         max_results: int = 20,
-        company_tokens: List[str] = None
+        company_tokens: List[str] = None,
+        employment_types: List[str] = None,
+        remote_jobs_only: bool = False,
+        date_posted: str = "all"
     ) -> List[Dict]:
         """
         Search jobs from Greenhouse API across multiple company boards
@@ -605,6 +608,9 @@ class JobScraper:
             location: Location filter (optional)
             max_results: Maximum number of results to return
             company_tokens: List of company tokens to search (defaults to popular tech companies)
+            employment_types: List of employment types to filter (e.g., ['FULLTIME', 'PARTTIME'])
+            remote_jobs_only: If True, only return remote jobs
+            date_posted: Date filter ('all', 'today', '3days', 'week', 'month')
         """
         if not company_tokens:
             # Popular tech companies using Greenhouse
@@ -630,7 +636,10 @@ class JobScraper:
                 # Create tasks for each company
                 tasks = []
                 for company_token in company_tokens[:10]:  # Limit to 10 companies to avoid rate limits
-                    task = self._fetch_greenhouse_company_jobs(session, company_token, job_title, location)
+                    task = self._fetch_greenhouse_company_jobs(
+                        session, company_token, job_title, location, 
+                        employment_types, remote_jobs_only, date_posted
+                    )
                     tasks.append(task)
                 
                 # Execute requests concurrently
@@ -659,7 +668,10 @@ class JobScraper:
         session: aiohttp.ClientSession,
         company_token: str,
         job_title: str,
-        location: str = ""
+        location: str = "",
+        employment_types: List[str] = None,
+        remote_jobs_only: bool = False,
+        date_posted: str = "all"
     ) -> List[Dict]:
         """
         Fetch jobs from a specific Greenhouse company board
@@ -694,7 +706,43 @@ class JobScraper:
                                 "anywhere" in job_location
                             )
                         
-                        if title_match and location_match:
+                        # Check remote filter
+                        remote_match = True
+                        if remote_jobs_only:
+                            remote_match = "remote" in job_location.lower() or "anywhere" in job_location.lower()
+                        
+                        # Employment type filter (Greenhouse doesn't always provide this, so we'll be lenient)
+                        # If no employment_types specified, match all
+                        employment_match = True
+                        if employment_types and len(employment_types) > 0:
+                            # Most Greenhouse jobs are full-time, but we'll accept if filters include FULLTIME
+                            employment_match = "FULLTIME" in employment_types
+                        
+                        # Date filter - check if job was posted within the specified timeframe
+                        date_match = True
+                        if date_posted and date_posted != "all":
+                            try:
+                                from datetime import datetime, timedelta
+                                updated_at_str = job.get("updated_at", "")
+                                if updated_at_str:
+                                    # Parse ISO format datetime
+                                    job_date = datetime.fromisoformat(updated_at_str.replace('Z', '+00:00'))
+                                    now = datetime.now(job_date.tzinfo)
+                                    
+                                    if date_posted == "today":
+                                        date_match = (now - job_date).days < 1
+                                    elif date_posted == "3days":
+                                        date_match = (now - job_date).days <= 3
+                                    elif date_posted == "week":
+                                        date_match = (now - job_date).days <= 7
+                                    elif date_posted == "month":
+                                        date_match = (now - job_date).days <= 30
+                            except Exception as e:
+                                logger.debug(f"[GREENHOUSE] Error parsing date for {company_token}: {e}")
+                                # If we can't parse the date, include the job
+                                date_match = True
+                        
+                        if title_match and location_match and remote_match and employment_match and date_match:
                             # Normalize job data
                             normalized_job = {
                                 "title": job.get("title", ""),

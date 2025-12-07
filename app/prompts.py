@@ -429,11 +429,12 @@ REQUIRED JSON SCHEMA:
   "name": "Full Name",
   "summary": "Professional summary or objective statement",
   "contact": {{
-    "Email": "email@example.com",
-    "Phone": "+1-234-567-8900",
-    "LinkedIn": "linkedin.com/in/username",
-    "GitHub": "github.com/username",
-    "Location": "City, State/Country"
+    "email": "email@example.com",
+    "phone": "+1-234-567-8900",
+    "linkedin": "https://linkedin.com/in/username",
+    "github": "https://github.com/username",
+    "portfolio": "https://portfolio.com",
+    "location": "City, State/Country"
   }},
   "technical_skills": {{
     "Programming Languages": ["Python", "Java"],
@@ -487,12 +488,20 @@ REQUIRED JSON SCHEMA:
 EXTRACTION RULES:
 1. **Name**: Extract from header, usually the largest/first text
 2. **Summary**: Look for "Summary", "Objective", "Profile", or introductory paragraph
-3. **Contact**: Extract all contact information (email, phone, LinkedIn, GitHub, location, etc.)
-4. **Technical Skills**: Group skills into logical categories (max 6-8 categories)
-5. **Experience**: Extract company, role, duration, location, and bullet points for each job
-6. **Education**: Extract degree, institution, graduation year, location, and any honors/GPA
-7. **Certifications**: Extract certification name, issuer, year, and ID if present
+3. **Contact**: Extract all contact information (email, phone, LinkedIn, GitHub, location, portfolio URLs, etc.). Preserve full URLs when present.
+4. **Technical Skills**: Extract extact categories and respective skills listed under each category present in the resume
+5. **Experience**: Extract company, role, duration (ALWAYS include dates/years), location, and bullet points. Pay special attention to date ranges (e.g., "Jan 2020 - Dec 2023", "2020-2023", "2020-Present")
+6. **Education**: Extract degree, institution, graduation year (MUST include year like "2020", "2019-2023", etc.), location, and any honors/GPA
+7. **Certifications**: Extract certification name, issuer, year (MUST include year obtained like "2023", "Dec 2023", etc.), and ID if present
 8. **Projects**: Extract project name, description, technologies used, and accomplishments
+
+CRITICAL DATE EXTRACTION:
+- For Experience: ALWAYS extract duration/dates (e.g., "Jan 2020 - Present", "2019-2023", "June 2021 - Dec 2023")
+- For Education: ALWAYS extract graduation year (e.g., "2020", "2019-2023", "Expected 2025")
+- For Certifications: ALWAYS extract year obtained (e.g., "2023", "Dec 2023", "Valid until 2025")
+- If only a year is present, use that year
+- If a date range is present, use the full range
+- Never leave dates/years as empty strings when dates are mentioned in the text
 
 FORMAT RULES:
 - All bullet points should be complete sentences

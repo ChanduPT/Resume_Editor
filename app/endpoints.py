@@ -130,6 +130,10 @@ def process_resume_background(data: dict, request_id: str, job_id: int):
             job.status = "completed"
             job.progress = 100
             job.completed_at = datetime.utcnow()
+            # Set application_status to resume_generated on successful completion
+            if not job.application_status:
+                job.application_status = "resume_generated"
+                job.last_status_update = datetime.utcnow()
             user = db.query(User).filter(User.user_id == job.user_id).first()
             if user:
                 user.total_resumes_generated = (user.total_resumes_generated or 0) + 1
@@ -142,6 +146,10 @@ def process_resume_background(data: dict, request_id: str, job_id: int):
         if job:
             job.status = "failed"
             job.error_message = str(e)
+            # Set application_status to resume_generated even on failure (user can still track it)
+            if not job.application_status:
+                job.application_status = "resume_generated"
+                job.last_status_update = datetime.utcnow()
             user = db.query(User).filter(User.user_id == job.user_id).first()
             if user:
                 user.active_jobs_count = max(0, (user.active_jobs_count or 1) - 1)
@@ -185,6 +193,9 @@ async def generate_resume_json(
         if resume_format not in ["classic", "modern"]:
             resume_format = "classic"
         
+        # Get job_link if provided
+        job_link = data.get("job_link", None)
+        
         resume_job = ResumeJob(
             user_id=current_user.user_id,
             request_id=request_id,
@@ -195,7 +206,8 @@ async def generate_resume_json(
             jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
             status="pending",
-            progress=0
+            progress=0,
+            job_link=job_link
         )
         db.add(resume_job)
         db.commit()
@@ -247,6 +259,9 @@ async def extract_keywords_from_jd(
         if resume_format not in ["classic", "modern"]:
             resume_format = "classic"
         
+        # Get job_link if provided
+        job_link = data.get("job_link", None)
+        
         # Create job record
         resume_job = ResumeJob(
             user_id=current_user.user_id,
@@ -258,7 +273,8 @@ async def extract_keywords_from_jd(
             jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
             status="processing",
-            progress=0
+            progress=0,
+            job_link=job_link
         )
         db.add(resume_job)
         db.commit()
@@ -778,7 +794,12 @@ async def get_user_jobs(
                 "progress": job.progress,
                 "error_message": job.error_message,
                 "created_at": job.created_at.isoformat(),
-                "completed_at": job.completed_at.isoformat() if job.completed_at else None
+                "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+                "job_link": job.job_link,
+                "application_status": job.application_status or "resume_generated",
+                "application_date": job.application_date.isoformat() if job.application_date else None,
+                "application_notes": job.application_notes,
+                "last_status_update": job.last_status_update.isoformat() if job.last_status_update else None
             } for job in jobs
         ]
     }
@@ -1127,19 +1148,26 @@ async def search_greenhouse_jobs_endpoint(
         location = data.get("location", "").strip()
         max_results = min(data.get("max_results", 20), 50)  # Cap at 50
         company_tokens = data.get("company_tokens", None)
+        employment_types = data.get("employment_types", [])
+        remote_jobs_only = data.get("remote_jobs_only", False)
+        date_posted = data.get("date_posted", "all")
         
         # Validate required fields
         if not job_title:
             raise HTTPException(status_code=400, detail="job_title is required")
         
         logger.info(f"[API_GREENHOUSE] Searching: '{job_title}' in '{location}' (max: {max_results})")
+        logger.info(f"[API_GREENHOUSE] Filters - Types: {employment_types}, Remote only: {remote_jobs_only}, Date: {date_posted}")
         
         # Search Greenhouse companies
         jobs = await job_scraper._search_greenhouse_companies(
             job_title=job_title,
             location=location,
             max_results=max_results,
-            company_tokens=company_tokens
+            company_tokens=company_tokens,
+            employment_types=employment_types,
+            remote_jobs_only=remote_jobs_only,
+            date_posted=date_posted
         )
         
         # Get list of companies that were searched
@@ -1597,3 +1625,132 @@ async def email_generate(request: Request, current_user: User = Depends(get_curr
     except Exception as e:
         logger.error(f"Error generating email: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate email: {str(e)}")
+
+
+# --------------------- Application Tracking Endpoints ---------------------
+
+async def update_application_status(
+    resume_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update the application status of a resume job.
+    Accepts: application_status, application_date (optional), application_notes (optional)
+    """
+    try:
+        data = await request.json()
+        
+        # Fetch the resume job
+        resume_job = db.query(ResumeJob).filter(
+            ResumeJob.id == resume_id,
+            ResumeJob.user_id == current_user.user_id
+        ).first()
+        
+        if not resume_job:
+            raise HTTPException(status_code=404, detail="Resume job not found")
+        
+        # Validate status
+        valid_statuses = ["resume_generated", "applied", "rejected", "screening", "interview", "offer"]
+        application_status = data.get("application_status")
+        if application_status and application_status not in valid_statuses:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+            )
+        
+        # Update fields
+        if application_status:
+            resume_job.application_status = application_status
+            resume_job.last_status_update = datetime.utcnow()
+        
+        if "application_date" in data:
+            app_date = data["application_date"]
+            if app_date:
+                try:
+                    resume_job.application_date = datetime.fromisoformat(app_date.replace('Z', '+00:00'))
+                except (ValueError, AttributeError):
+                    raise HTTPException(status_code=400, detail="Invalid application_date format")
+            else:
+                resume_job.application_date = None
+        
+        if "application_notes" in data:
+            resume_job.application_notes = data.get("application_notes")
+        
+        if "job_link" in data:
+            resume_job.job_link = data.get("job_link")
+        
+        db.commit()
+        db.refresh(resume_job)
+        
+        return {
+            "message": "Application status updated successfully",
+            "resume_id": resume_job.id,
+            "application_status": resume_job.application_status,
+            "application_date": resume_job.application_date.isoformat() if resume_job.application_date else None,
+            "last_status_update": resume_job.last_status_update.isoformat() if resume_job.last_status_update else None
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating application status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_application_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get application statistics for the current user.
+    Returns counts by status and recent applications.
+    """
+    try:
+        # Get all resume jobs for the user
+        all_jobs = db.query(ResumeJob).filter(
+            ResumeJob.user_id == current_user.user_id
+        ).all()
+        
+        # Count by status
+        stats = {
+            "total_applications": len(all_jobs),
+            "resume_generated": 0,
+            "applied": 0,
+            "rejected": 0,
+            "screening": 0,
+            "interview": 0,
+            "offer": 0
+        }
+        
+        for job in all_jobs:
+            status = job.application_status or "resume_generated"
+            if status in stats:
+                stats[status] += 1
+        
+        # Get recent applications (last 10)
+        recent_jobs = db.query(ResumeJob).filter(
+            ResumeJob.user_id == current_user.user_id
+        ).order_by(ResumeJob.created_at.desc()).limit(10).all()
+        
+        recent_applications = []
+        for job in recent_jobs:
+            recent_applications.append({
+                "id": job.id,
+                "company_name": job.company_name,
+                "job_title": job.job_title,
+                "application_status": job.application_status or "resume_generated",
+                "application_date": job.application_date.isoformat() if job.application_date else None,
+                "created_at": job.created_at.isoformat() if job.created_at else None,
+                "job_link": job.job_link
+            })
+        
+        return {
+            "stats": stats,
+            "recent_applications": recent_applications
+        }
+    
+    except Exception as e:
+        logger.error(f"Error getting application stats: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

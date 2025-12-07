@@ -242,7 +242,7 @@ PRIORITY:
 
 BULLET WRITING RULES:
 - Each role must contain 8-10 bullets.
-- Each bullet should contain 18-25 words.
+- Each bullet should contain 24-32 words.
 - Use only ONE connector per bullet (“using”, “to”, “for”, “with”, “enabling” etc , based on context)
 - Use Past tense throughout bullets generation.
 - Use realistic tools based on job period and industry context.

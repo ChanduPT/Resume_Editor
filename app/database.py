@@ -17,6 +17,10 @@ class User(Base):
     user_id = Column(String(100), unique=True, index=True)  # username/email
     password_hash = Column(String(255))  # hashed password
     
+    # User profile information
+    first_name = Column(String(100), nullable=True)
+    last_name = Column(String(100), nullable=True)
+    
     # Usage tracking
     total_resumes_generated = Column(Integer, default=0)
     active_jobs_count = Column(Integer, default=0)  # Current processing jobs
@@ -123,10 +127,17 @@ class ResumeJob(Base):
     # Output data
     final_resume_json = Column(JSON)
     
-    # Job status
+    # Job status (resume generation status)
     status = Column(String(50), default="pending")  # pending, processing, awaiting_feedback, completed, failed
     progress = Column(Integer, default=0)  # 0-100
     error_message = Column(Text, nullable=True)
+    
+    # Application tracking
+    job_link = Column(String(1024), nullable=True)  # URL to job posting
+    application_status = Column(String(50), default="resume_generated", index=True)  # resume_generated, applied, rejected, screening, interview, offer
+    application_date = Column(DateTime, nullable=True, index=True)  # Date when status changed to 'applied'
+    application_notes = Column(Text, nullable=True)  # User notes about the application
+    last_status_update = Column(DateTime, default=datetime.utcnow)  # Track when status was last changed
     
     # Human feedback support (optional DB persistence)
     intermediate_state = Column(JSON, nullable=True)  # Stores extracted JD keywords for review
@@ -139,6 +150,7 @@ class ResumeJob(Base):
     # Composite index for efficient cleanup queries
     __table_args__ = (
         Index('idx_status_created_at', 'status', 'created_at'),
+        Index('idx_user_application_status', 'user_id', 'application_status'),
     )
 
 # Database connection
@@ -183,10 +195,15 @@ def verify_password(password: str, password_hash: str) -> bool:
     """Verify password against hash"""
     return hash_password(password) == password_hash
 
-def create_user(db, user_id: str, password: str) -> User:
+def create_user(db, user_id: str, password: str, first_name: str = None, last_name: str = None) -> User:
     """Create new user"""
     password_hash = hash_password(password)
-    user = User(user_id=user_id, password_hash=password_hash)
+    user = User(
+        user_id=user_id, 
+        password_hash=password_hash,
+        first_name=first_name,
+        last_name=last_name
+    )
     db.add(user)
     db.commit()
     db.refresh(user)

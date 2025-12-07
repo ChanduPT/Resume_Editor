@@ -82,8 +82,68 @@
   #menuActions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     position: relative;
+  }
+  
+  #headerUserInfo {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Hamburger menu dropdown */
+  .header-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    padding: 8px;
+    z-index: 1001;
+  }
+
+  .header-dropdown-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-dropdown-menu button:last-child {
+    margin-bottom: 0;
+  }
+
+  .header-dropdown-menu button:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  #menuToggleBtn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  #menuToggleBtn:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
   }
 
   /* Buttons & Dropdown Triggers */
@@ -282,8 +342,9 @@
   
   .remove-btn {
     margin-left: 0;
-    color: white;
-    border: none;
+    background: #e9ecef;
+    color: #495057;
+    border: 1px solid #dee2e6;
     border-radius: var(--radius-sm);
     padding: 8px 10px;
     cursor: pointer;
@@ -297,8 +358,25 @@
   }
   
   .remove-btn:hover {
-    background: var(--danger-hover);
-    transform: scale(1.05);
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+  }
+
+  /* Entry-level remove button (for entire sections) */
+  .entry > .remove-btn {
+    background: #6c757d;
+    color: white;
+    margin-top: 12px;
+    width: 100%;
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  .entry > .remove-btn:hover {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
   }
 
   .sub-btn {
@@ -400,6 +478,27 @@
     animation: fadeIn 0.2s ease;
   }
   
+  .modal[style*="display: flex"],
+  .modal[style*="display:flex"] {
+    display: flex !important;
+  }
+  
+  #customConfirmModal {
+    z-index: 9999 !important;
+  }
+  
+  #customConfirmModal[style*="display: flex"],
+  #customConfirmModal[style*="display:flex"] {
+    opacity: 1 !important;
+    animation: fadeIn 0.2s ease !important;
+    visibility: visible !important;
+  }
+  
+  #customConfirmModal .modal-content {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
   .modal-content {
     background-color: var(--card);
     margin: 10% auto;
@@ -484,10 +583,48 @@
     position: absolute;
     top: 16px;
     right: 24px;
+    z-index: 100;
+  }
+
+  /* Action menu dropdown */
+  .action-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    padding: 8px;
+    z-index: 1001;
+  }
+
+  .action-dropdown-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
     display: flex;
     align-items: center;
-    gap: 10px;
-    z-index: 100;
+    gap: 8px;
+  }
+
+  .action-dropdown-menu button:last-child {
+    margin-bottom: 0;
+  }
+
+  .action-dropdown-menu button:hover {
+    background: var(--accent-light);
+    color: var(--accent);
   }
 
   .top-action-btn {
@@ -526,14 +663,17 @@
   }
 
   .top-action-btn.primary {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
   }
 
   .top-action-btn.primary:hover {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
 
   /* Download dropdown for top bar */
@@ -1286,9 +1426,12 @@
     transform: translate(-50%, -50%);
     font-size: 48px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text);
     line-height: 1;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .stat-label-modern {
@@ -1307,17 +1450,8 @@
     }
 
     .stat-ring-container {
-      width: 120px;
-      height: 120px;
-    }
-
-    .stat-ring {
-      width: 120px;
-      height: 120px;
-    }
-
-    .stat-value-inside {
-      font-size: 40px;
+      width: 100px;
+      height: 100px;
     }
 
     .stat-ring {
@@ -1325,8 +1459,16 @@
       height: 100px;
     }
 
-    .stat-value-modern {
+    .stat-value-inside {
       font-size: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .stat-value-modern {
+      font-size: 32px;
     }
 
     .stat-content {
@@ -1373,6 +1515,7 @@
     box-shadow: var(--shadow-md);
     overflow: visible;
     border: 1px solid var(--border);
+    margin: 20px;
   }
   
   .resume-table-container h3 {
@@ -1386,23 +1529,33 @@
   .resume-table-wrapper {
     overflow-x: auto;
     overflow-y: visible;
+    padding: 0 20px 20px 20px;
   }
   
   .resume-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
   }
   
   .resume-table thead th {
     text-align: left;
-    padding: 12px 16px;
+    padding: 14px 18px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-secondary);
     background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  
+  .resume-table thead th:last-child {
+    border-right: none;
   }
   
   .resume-table tbody tr {
@@ -1419,9 +1572,14 @@
   }
   
   .resume-table tbody td {
-    padding: 16px;
+    padding: 16px 18px;
     font-size: 14px;
     color: var(--text);
+    border-right: 1px solid var(--border);
+  }
+  
+  .resume-table tbody td:last-child {
+    border-right: none;
   }
   
   .resume-table tbody td:first-child {
@@ -2005,15 +2163,26 @@
     }
     
     #sidebar {
-      padding: 12px 12px;
+      padding: 12px;
       gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      justify-content: flex-start;
+      scrollbar-width: none;
+    }
+    
+    #sidebar::-webkit-scrollbar {
+      display: none;
     }
 
     .tab-btn {
-      flex: 1;
-      min-width: 0;
-      font-size: 14px;
-      padding: 12px 16px;
+      flex: none;
+      min-width: max-content;
+      font-size: 12px;
+      padding: 10px 16px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .floating-actions {
@@ -2155,6 +2324,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #e9ecef;
+    color: #495057;
+    border: 1px solid #dee2e6;
+  }
+  
+  #skillsList .entry .remove-btn:hover {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
   }
   
   /* Contact entries styling - same as skills */
@@ -2178,6 +2356,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #e9ecef;
+    color: #495057;
+    border: 1px solid #dee2e6;
+  }
+  
+  #contactList .entry .remove-btn:hover {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
   }
   
   /* Readonly contact labels styling */
@@ -3008,89 +3195,85 @@
   }
 
   .view-modal-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 9px 18px;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    color: var(--text);
   }
 
-  .view-modal-btn.primary {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  /* All modal buttons use indigo/accent color on hover */
+  .view-modal-btn.primary,
+  .view-modal-btn.success,
+  .view-modal-btn.secondary {
+    color: var(--text);
   }
 
-  .view-modal-btn.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  .view-modal-btn.primary:hover,
+  .view-modal-btn.success:hover,
+  .view-modal-btn.secondary:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
   }
 
-  .view-modal-btn.primary span {
-    color: white !important;
+  .view-modal-btn.primary:hover span,
+  .view-modal-btn.success:hover span,
+  .view-modal-btn.secondary:hover span {
+    color: var(--accent);
   }
 
-  /* Specific styling for Edit button */
+  /* Edit button uses orange */
   #viewModalEditBtn {
-    background: #f59e0b !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    color: var(--text);
   }
 
   #viewModalEditBtn:hover {
-    background: #d97706 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #d97706;
+    transform: translateY(-1px);
   }
 
-  #viewModalEditBtn span {
-    color: white !important;
+  #viewModalEditBtn:hover span {
+    color: #d97706;
   }
 
-  .view-modal-btn.secondary {
-    background: var(--success);
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+  /* Save Changes button uses indigo/accent */
+  #viewModalSaveBtn {
+    background: var(--bg-secondary) !important;
+    border: 1.5px solid var(--border) !important;
+    color: var(--text) !important;
   }
 
-  .view-modal-btn.secondary span {
-    color: white !important;
+  #viewModalSaveBtn:hover {
+    background: var(--accent-light) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
   }
 
-  .view-modal-btn.secondary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+  #viewModalSaveBtn:hover span {
+    color: var(--accent) !important;
   }
 
-  .view-modal-btn.success {
-    background: #10b981;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-
-  .view-modal-btn.success span {
-    color: white !important;
-  }
-
-  .view-modal-btn.success:hover {
-    background: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-  }
-
+  /* Cancel button stays neutral */
   .view-modal-btn.cancel {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
+    color: var(--text-secondary);
   }
 
   .view-modal-btn.cancel:hover {
-    background: var(--border);
+    background: var(--hover);
+    border-color: var(--border);
+    color: var(--text);
+    transform: translateY(-1px);
   }
 
   @media (max-width: 768px) {
@@ -3722,19 +3905,65 @@ select:focus {
   padding: 24px;
 }
 
-.email-mode-selector select {
+.email-mode-selector {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.email-template-select {
+  padding: 12px 20px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 240px;
   transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
 }
 
-.email-mode-selector select:hover {
-  border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+.email-template-select:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  background-color: var(--accent-light);
 }
 
-.email-mode-selector select:focus {
+.email-template-select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.email-custom-btn {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  border: 2px solid var(--accent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.email-custom-btn:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .email-form textarea:focus,
@@ -3768,11 +3997,22 @@ select:focus {
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateX(100px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px);
   }
 }
 
@@ -3810,6 +4050,446 @@ select:focus {
   
   .email-actions button {
     width: 100%;
+  }
+}
+
+/* ===== COMPREHENSIVE MOBILE RESPONSIVE STYLES ===== */
+
+/* Mobile Header Adjustments */
+@media (max-width: 768px) {
+  header {
+    padding: 12px 16px;
+    height: 56px;
+  }
+  
+  header h1 {
+    font-size: 16px;
+  }
+  
+  #menuActions {
+    gap: 8px;
+  }
+  
+  #headerUserInfo {
+    display: none !important;
+  }
+  
+  header button {
+    padding: 6px 10px;
+    font-size: 12px;
+    height: 32px;
+  }
+}
+
+/* Mobile Tab Navigation */
+@media (max-width: 768px) {
+  #sidebar {
+    position: sticky !important;
+    top: 56px !important;
+    padding: 12px 16px !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    display: flex !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  #sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .tab-btn {
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+    min-width: max-content !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    flex: none !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* Mobile Resume Content */
+@media (max-width: 768px) {
+  .resume-content {
+    padding: 16px;
+  }
+  
+  .section-card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .section-header h3 {
+    font-size: 16px;
+  }
+  
+  .top-action-buttons {
+    display: none !important;
+  }
+  
+  #actionMenuToggle {
+    display: none !important;
+  }
+  
+  .action-dropdown-menu {
+    display: none !important;
+  }
+  
+  /* Form Navigation - Horizontal Scroll */
+  .form-nav-container {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .form-nav {
+    position: static !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 8px !important;
+    padding-bottom: 8px;
+  }
+  
+  .form-nav::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .form-nav-btn {
+    white-space: nowrap !important;
+    min-width: 120px !important;
+    flex-shrink: 0;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    justify-content: center;
+  }
+}
+
+/* Mobile Form Inputs */
+@media (max-width: 768px) {
+  input, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .form-group input {
+    padding: 10px 12px;
+  }
+  
+  h3 {
+    font-size: 16px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  
+  label {
+    font-size: 13px;
+  }
+}
+
+/* Mobile Buttons */
+@media (max-width: 768px) {
+  .sub-btn, .add-btn, .remove-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    width: 100%;
+  }
+  
+  .primary-btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile Lists and Entries */
+@media (max-width: 768px) {
+  .entry {
+    padding: 12px;
+  }
+  
+  .list-item {
+    display: grid !important;
+    grid-template-columns: 1fr auto auto !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+  
+  .list-item input {
+    grid-column: 1 / -1;
+  }
+  
+  .list-item .remove-btn {
+    width: auto !important;
+    min-width: 40px;
+    padding: 8px 12px !important;
+  }
+  
+  /* Contact List Mobile Fix */
+  #contactList .entry {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  
+  #contactList .entry input {
+    width: 100% !important;
+  }
+  
+  #contactList .entry .remove-btn {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* Skills List Mobile Fix */
+  #skillsList .entry {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  
+  #skillsList .entry input {
+    width: 100% !important;
+  }
+  
+  #skillsList .entry .remove-btn {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+/* Mobile Modal */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 90% !important;
+    max-width: 90% !important;
+    padding: 16px !important;
+    margin: 0 16px;
+  }
+  
+  .modal-content h3 {
+    font-size: 16px !important;
+  }
+  
+  .modal-content p {
+    font-size: 13px !important;
+  }
+  
+  .modal-content button {
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+  }
+}
+
+/* Mobile Scroll to Top Button */
+@media (max-width: 768px) {
+  #scrollToTop {
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+  header {
+    padding: 10px 12px;
+    height: 52px;
+  }
+  
+  header h1 {
+    font-size: 14px;
+  }
+  
+  .tab-button {
+    padding: 8px 12px;
+    font-size: 11px;
+    min-width: 80px;
+  }
+  
+  .resume-content {
+    padding: 12px;
+  }
+  
+  .section-card {
+    padding: 12px;
+  }
+}
+
+/* ===== ADDITIONAL MOBILE TABLE & LAYOUT FIXES ===== */
+@media (max-width: 768px) {
+  /* Dashboard Table - Make Scrollable */
+  .dashboard-table-container,
+  table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    width: 100%;
+  }
+  
+  table {
+    min-width: 600px;
+  }
+  
+  /* Experience Section Mobile Fix */
+  #experienceList .entry,
+  #educationList .entry,
+  #projectsList .entry,
+  #certificationsList .entry {
+    padding: 12px !important;
+  }
+  
+  #experienceList .entry input,
+  #educationList .entry input,
+  #projectsList .entry input,
+  #certificationsList .entry input {
+    width: 100% !important;
+  }
+  
+  #experienceList .bullets,
+  #projectsList .bullets {
+    width: 100% !important;
+  }
+  
+  #experienceList .bullet,
+  #projectsList .bullet {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  
+  #experienceList .bullet input,
+  #projectsList .bullet input {
+    width: 100% !important;
+  }
+  
+  #experienceList .bullet .remove-btn,
+  #projectsList .bullet .remove-btn {
+    width: 100% !important;
+  }
+  
+  /* Skills Section - Make Categories Scrollable */
+  .skills-categories {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-wrap: nowrap !important;
+    gap: 8px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  
+  .skills-categories::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .skill-category-item {
+    flex-shrink: 0;
+    min-width: 120px;
+    white-space: nowrap;
+  }
+  
+  /* Certifications Section */
+  .certification-entry {
+    padding: 12px !important;
+  }
+  
+  /* Job Search Results */
+  .job-card {
+    padding: 12px !important;
+  }
+  
+  .job-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  
+  .job-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .job-actions button {
+    width: 100% !important;
+  }
+  
+  /* Email Writer Form */
+  .email-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Dashboard Stats Cards */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .stat-card {
+    padding: 16px !important;
+  }
+  
+  /* Resume Templates Grid */
+  .templates-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Action Buttons in Cards */
+  .card-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .card-actions button {
+    width: 100% !important;
+  }
+  
+  /* Date Pickers and Select Inputs */
+  input[type="date"],
+  input[type="month"],
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Achievement/Bullet Points Lists */
+  .achievements-list,
+  .responsibilities-list {
+    padding-left: 16px;
+  }
+  
+  /* Grid Layouts - Force Single Column */
+  .two-column-grid,
+  .three-column-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Horizontal Scrollable Containers */
+  .horizontal-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none;
   }
 }
 

@@ -21,7 +21,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.database import init_db
-from app.auth import register_user, login_user, reset_password
+from app.auth import register_user, login_user, reset_password, update_profile
 from app.endpoints import (
     generate_resume_json, get_job_status, get_job_keywords, get_job_result, update_job_resume,
     download_resume, download_job_description,
@@ -30,7 +30,8 @@ from app.endpoints import (
     delete_job, cleanup_stale_jobs, parse_resume_document,
     search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
     get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint,
-    extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint
+    extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint,
+    update_application_status, get_application_stats
 )
 
 # --------------------- App Setup ---------------------
@@ -141,6 +142,7 @@ async def health_check():
 app.post("/api/auth/register")(register_user)
 app.post("/api/auth/login")(login_user)
 app.post("/api/auth/reset-password")(reset_password)
+app.put("/api/auth/update-profile")(update_profile)
 
 # --------------------- Resume Generation Endpoints ---------------------
 
@@ -205,3 +207,8 @@ app.post("/api/email/generate")(email_generate)
 # --------------------- Cleanup Endpoints ---------------------
 
 app.post("/api/admin/cleanup-expired-states")(cleanup_expired_states_endpoint)
+
+# --------------------- Application Tracking Endpoints ---------------------
+
+app.patch("/api/resumes/{resume_id}/application-status")(update_application_status)
+app.get("/api/resumes/application-stats")(get_application_stats)
