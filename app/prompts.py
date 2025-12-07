@@ -429,12 +429,9 @@ REQUIRED JSON SCHEMA:
   "name": "Full Name",
   "summary": "Professional summary or objective statement",
   "contact": {{
-    "email": "email@example.com",
-    "phone": "+1-234-567-8900",
-    "linkedin": "https://linkedin.com/in/username",
-    "github": "https://github.com/username",
-    "portfolio": "https://portfolio.com",
-    "location": "City, State/Country"
+    // ONLY include fields that are actually present in the resume
+    // Do NOT include fields like github, portfolio, linkedin if they are not in the resume
+    // Example: if only email and phone are present, output: {{"email": "...", "phone": "..."}}
   }},
   "technical_skills": {{
     "Programming Languages": ["Python", "Java"],
@@ -446,7 +443,7 @@ REQUIRED JSON SCHEMA:
     {{
       "company": "Company Name",
       "role": "Job Title",
-      "duration": "Jan 2020 - Present",
+      "duration": "MUST EXTRACT - Copy exact dates like 'Jan 2020 - Present' or '2019-2023'",
       "location": "City, State",
       "points": [
         "Achievement or responsibility 1",
@@ -488,25 +485,27 @@ REQUIRED JSON SCHEMA:
 EXTRACTION RULES:
 1. **Name**: Extract from header, usually the largest/first text
 2. **Summary**: Look for "Summary", "Objective", "Profile", or introductory paragraph
-3. **Contact**: Extract all contact information (email, phone, LinkedIn, GitHub, location, portfolio URLs, etc.). Preserve full URLs when present.
-4. **Technical Skills**: Extract extact categories and respective skills listed under each category present in the resume
-5. **Experience**: Extract company, role, duration (ALWAYS include dates/years), location, and bullet points. Pay special attention to date ranges (e.g., "Jan 2020 - Dec 2023", "2020-2023", "2020-Present")
-6. **Education**: Extract degree, institution, graduation year (MUST include year like "2020", "2019-2023", etc.), location, and any honors/GPA
-7. **Certifications**: Extract certification name, issuer, year (MUST include year obtained like "2023", "Dec 2023", etc.), and ID if present
+3. **Contact**: CRITICAL - Extract ONLY the contact fields that actually exist in the resume text. DO NOT include "github", "portfolio", or "linkedin" fields if they are not present in the resume. If the resume only shows email and phone, your contact object should ONLY have email and phone keys. Do not add placeholder or empty fields.
+4. **Technical Skills**: Extract the EXACT skill categories and skills as they appear in the resume. DO NOT reorganize, merge, or rename categories. Copy the exact structure from the resume. If the resume has "Languages", "Frameworks", "Databases" as separate sections, keep them separate exactly as written.
+5. **Experience**: Extract company, role, duration (ALWAYS include dates/years EXACTLY as written), location, and bullet points. Copy dates EXACTLY as they appear (e.g., "Jan 2020 - Dec 2023", "2020-2023", "June 2021 - Present", "Summer 2020")
+6. **Education**: Extract degree, institution, graduation year (MUST include year EXACTLY as written like "2020", "2019-2023", "Expected May 2025"), location, and any honors/GPA
+7. **Certifications**: Extract certification name, issuer, year (MUST include year obtained EXACTLY as written like "2023", "Dec 2023", "Valid until 2025"), and ID if present
 8. **Projects**: Extract project name, description, technologies used, and accomplishments
 
-CRITICAL DATE EXTRACTION:
-- For Experience: ALWAYS extract duration/dates (e.g., "Jan 2020 - Present", "2019-2023", "June 2021 - Dec 2023")
-- For Education: ALWAYS extract graduation year (e.g., "2020", "2019-2023", "Expected 2025")
-- For Certifications: ALWAYS extract year obtained (e.g., "2023", "Dec 2023", "Valid until 2025")
-- If only a year is present, use that year
-- If a date range is present, use the full range
-- Never leave dates/years as empty strings when dates are mentioned in the text
+CRITICAL DATE EXTRACTION - COPY EXACTLY AS WRITTEN:
+- For Experience duration: Copy the EXACT date format from the resume (e.g., "Jan 2020 - Present", "2019-2023", "June 2021 - Dec 2023", "Summer 2020")
+- For Education year: Copy the EXACT year format from the resume (e.g., "2020", "2019-2023", "Expected 2025", "May 2020")
+- For Certifications year: Copy the EXACT year format from the resume (e.g., "2023", "Dec 2023", "Valid until 2025")
+- NEVER leave dates/years empty when they are visible in the text
+- NEVER convert or reformat dates - copy them character-by-character as they appear
+- If you see a date/year in the resume, you MUST include it in the exact same format
 
 FORMAT RULES:
 - All bullet points should be complete sentences
 - Preserve original wording as much as possible
-- Group skills logically (Programming Languages, Frameworks, Cloud, Databases, Tools, etc.)
+- For skills: DO NOT reorganize or merge categories. Keep the EXACT category names and structure from the resume
+- For contact: ONLY include fields that exist in the resume. If GitHub is not present, don't include a "github" field
+- For dates: Copy EXACTLY as they appear, character-by-character
 - Maintain chronological order for experience and education (newest first)
 - If a section doesn't exist, use empty array [] or empty object {{}}
 

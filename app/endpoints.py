@@ -1258,8 +1258,20 @@ async def scrape_job_details_endpoint(
         logger.info(f"[API_SCRAPE_JOB] Cache MISS - scraping fresh description")
         job_details = await job_scraper.scrape_job_details(url)
         
-        if not job_details:
-            raise HTTPException(status_code=404, detail="Failed to scrape job details. URL may be invalid or blocked.")
+        if not job_details or not job_details.get('description'):
+            # Return partial success with warning
+            logger.warning(f"[API_SCRAPE_JOB] Scraping failed for {url}")
+            return {
+                "success": True,
+                "job_details": {
+                    "title": "",
+                    "company": "",
+                    "description": "",
+                    "url": url
+                },
+                "cached": False,
+                "warning": "Could not scrape job description. Please paste manually."
+            }
         
         # Store in database for future use
         try:

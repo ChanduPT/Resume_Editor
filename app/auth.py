@@ -163,6 +163,28 @@ async def register_user(request: Request, db: Session = Depends(get_db)):
         # Create user
         user = create_user(db, user_id, password, first_name, last_name)
         
+        # Create empty resume template for new user
+        from app.database import UserResumeTemplate
+        empty_template = {
+            "name": "",
+            "contact": {},
+            "summary": "",
+            "skills": [],
+            "experience": [],
+            "education": [],
+            "projects": [],
+            "certifications": []
+        }
+        
+        new_template = UserResumeTemplate(
+            user_id=user.user_id,
+            resume_data=empty_template
+        )
+        db.add(new_template)
+        db.commit()
+        
+        logger.info(f"[REGISTER] Created empty template for user: {user_id}")
+        
         return {
             "message": "User registered successfully",
             "user_id": user.user_id,
