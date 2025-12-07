@@ -116,9 +116,14 @@ async def register_user(request: Request, db: Session = Depends(get_db)):
         body = await request.json()
         user_id = body.get("user_id")
         password = body.get("password")
+        first_name = body.get("first_name", "").strip()
+        last_name = body.get("last_name", "").strip()
         
         if not user_id or not password:
             raise HTTPException(status_code=400, detail="Email and password are required")
+        
+        if not first_name or not last_name:
+            raise HTTPException(status_code=400, detail="First name and last name are required")
         
         # Validate email format
         email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -156,11 +161,13 @@ async def register_user(request: Request, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Email already registered. Please login or use a different email.")
         
         # Create user
-        user = create_user(db, user_id, password)
+        user = create_user(db, user_id, password, first_name, last_name)
         
         return {
             "message": "User registered successfully",
-            "user_id": user.user_id
+            "user_id": user.user_id,
+            "first_name": user.first_name,
+            "last_name": user.last_name
         }
         
     except HTTPException:
@@ -227,6 +234,8 @@ async def login_user(
         "message": "Login successful",
         "username": user.user_id,
         "user_id": user.user_id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "token": token
     }
 
@@ -283,3 +292,39 @@ async def reset_password(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Password reset error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Password reset failed: {str(e)}")
+
+
+async def update_profile(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user profile (first_name and last_name)"""
+    try:
+        body = await request.json()
+        first_name = body.get("first_name", "").strip()
+        last_name = body.get("last_name", "").strip()
+        
+        if not first_name or not last_name:
+            raise HTTPException(status_code=400, detail="First name and last name are required")
+        
+        # Update user profile
+        user.first_name = first_name
+        user.last_name = last_name
+        db.commit()
+        db.refresh(user)
+        
+        logger.info(f"[PROFILE UPDATE] User: {user.user_id} - Name: {first_name} {last_name}")
+        
+        return {
+            "message": "Profile updated successfully",
+            "user_id": user.user_id,
+            "first_name": user.first_name,
+            "last_name": user.last_name
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Profile update error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Profile update failed: {str(e)}")

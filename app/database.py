@@ -17,6 +17,10 @@ class User(Base):
     user_id = Column(String(100), unique=True, index=True)  # username/email
     password_hash = Column(String(255))  # hashed password
     
+    # User profile information
+    first_name = Column(String(100), nullable=True)
+    last_name = Column(String(100), nullable=True)
+    
     # Usage tracking
     total_resumes_generated = Column(Integer, default=0)
     active_jobs_count = Column(Integer, default=0)  # Current processing jobs
@@ -191,10 +195,15 @@ def verify_password(password: str, password_hash: str) -> bool:
     """Verify password against hash"""
     return hash_password(password) == password_hash
 
-def create_user(db, user_id: str, password: str) -> User:
+def create_user(db, user_id: str, password: str, first_name: str = None, last_name: str = None) -> User:
     """Create new user"""
     password_hash = hash_password(password)
-    user = User(user_id=user_id, password_hash=password_hash)
+    user = User(
+        user_id=user_id, 
+        password_hash=password_hash,
+        first_name=first_name,
+        last_name=last_name
+    )
     db.add(user)
     db.commit()
     db.refresh(user)

@@ -96,9 +96,47 @@
     </div>
     <div class="view-modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);">
       <button class="view-modal-btn cancel" onclick="closeFormatModal()" style="padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">Cancel</button>
-      <button class="view-modal-btn primary" onclick="confirmFormatDownload()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: var(--primary); color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      <button class="view-modal-btn primary" onclick="confirmFormatDownload()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: #4F46E5; color: #ffffff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#4338CA'" onmouseout="this.style.background='#4F46E5'">
         <span>⬇️</span>
         <span>Download Resume</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Edit Modal -->
+<div id="profileModal" class="view-modal" style="display: none;">
+  <div class="view-modal-content" style="max-width: 480px;">
+    <div class="view-modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border); position: relative;">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text);">
+        <span>👤</span>
+        <span>Edit Profile</span>
+      </h2>
+      <button class="view-modal-close" onclick="closeProfileModal()" style="position: absolute; top: 18px; right: 20px; background: transparent; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'; this.style.color='var(--text)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">✕</button>
+    </div>
+    <div class="view-modal-body" style="padding: 20px 24px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 6px; color: var(--text); font-size: 13px; font-weight: 500;">First Name</label>
+          <input type="text" id="profileFirstName" placeholder="Enter first name" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
+        </div>
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 6px; color: var(--text); font-size: 13px; font-weight: 500;">Last Name</label>
+          <input type="text" id="profileLastName" placeholder="Enter last name" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; color: var(--text); font-size: 13px; font-weight: 500;">Email</label>
+        <input type="email" id="profileEmail" disabled style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--hover); color: var(--text-secondary); font-size: 14px; cursor: not-allowed;">
+        <small style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 12px;">Email cannot be changed</small>
+      </div>
+      <div id="profileMessage" style="margin-top: 12px; padding: 10px; border-radius: 6px; display: none; font-size: 13px;"></div>
+    </div>
+    <div class="view-modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);">
+      <button class="view-modal-btn cancel" onclick="closeProfileModal()" style="padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">Cancel</button>
+      <button class="view-modal-btn primary" onclick="saveProfile()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: #4F46E5; color: #ffffff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#4338CA'" onmouseout="this.style.background='#4F46E5'">
+        <span>💾</span>
+        <span>Save Changes</span>
       </button>
     </div>
   </div>
@@ -428,7 +466,6 @@
 <header id="mainHeader" style="display: none; justify-content: space-between; align-items: center;">
   <h1>Resume Builder Pro</h1>
   <div id="menuActions">
-    <span id="headerUserInfo" style="color: var(--text-secondary); display: none;"></span>
     <button id="menuToggleBtn" onclick="toggleHeaderMenu()" style="font-size: 20px; padding: 8px 12px;">☰</button>
     <div id="headerDropdownMenu" class="header-dropdown-menu" style="display: none;">
       <div id="mobileUserInfo" style="display: none; padding: 12px 16px; border-bottom: 1px solid var(--border); margin-bottom: 4px;">
@@ -445,6 +482,7 @@
         <button onclick="clearAll(); toggleHeaderMenu()" style="color: #e74c3c;">🗑️ Clear All</button>
         <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
       </div>
+      <button id="headerProfileBtn" onclick="openProfileModal(); toggleHeaderMenu()" style="display: none;">👤 Profile</button>
       <button onclick="showHelpModal(); toggleHeaderMenu()">❓ Help</button>
       <button id="headerToggleTheme" onclick="toggleThemeManual(); toggleHeaderMenu()">🌙 Toggle Theme</button>
       <button id="headerLogoutBtn" onclick="handleMainLogout()" style="display: none;">🚪 Logout</button>
@@ -560,6 +598,16 @@
 
         <!-- Register Form -->
         <div id="mainRegisterForm" class="auth-form">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="mainRegisterFirstName" placeholder="Enter your first name">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="mainRegisterLastName" placeholder="Enter your last name">
+            </div>
+          </div>
           <div class="form-group">
             <label>Email</label>
             <input type="email" id="mainRegisterUsername" placeholder="Enter your email address">
@@ -914,9 +962,10 @@
 
             <!-- Hidden elements for JavaScript compatibility -->
             <div style="display: none;">
-              <select id="jobSearchDate">
-                <option value="week" selected>This Week</option>
-              </select>
+              <input type="checkbox" id="typeFullTime" value="FULLTIME" checked>
+              <input type="checkbox" id="typePartTime" value="PARTTIME">
+              <input type="checkbox" id="typeContract" value="CONTRACTOR">
+              <input type="checkbox" id="typeIntern" value="INTERN">
               <select id="jobExperienceLevel">
                 <option value="" selected>Any Experience</option>
               </select>
@@ -929,70 +978,125 @@
             </div>
             
             <!-- Quick Filters -->
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 16px 0; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;">
-              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
-                <input type="checkbox" id="typeFullTime" value="FULLTIME" checked style="margin-right: 8px;"> <span>💼 Full-time</span>
-              </label>
-              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
-                <input type="checkbox" id="typePartTime" value="PARTTIME" style="margin-right: 8px;"> <span>⏰ Part-time</span>
-              </label>
-              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
-                <input type="checkbox" id="typeRemote" value="remote" style="margin-right: 8px;"> <span>🏠 Remote</span>
-              </label>
-              <label style="display: flex; align-items: center; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 15px; cursor: pointer; min-width: 150px; justify-content: center; transition: all 0.2s; white-space: nowrap;">
-                <input type="checkbox" id="typeContract" value="CONTRACTOR" style="margin-right: 8px;"> <span>📝 Contract</span>
-              </label>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; padding: 24px; background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg) 100%); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              
+              <!-- Job Type Dropdown -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">💼 Job Type</label>
+                <select id="jobTypeDisplay" style="padding: 12px 16px; width: 100%; border: 2px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 14px; cursor: pointer; outline: none; box-sizing: border-box; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%277%27 viewBox=%270 0 12 7%27%3e%3cpath fill=%27%23666%27 d=%27M1 1l5 5 5-5%27/%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 12px center;">
+                  <option value="FULLTIME,PARTTIME,CONTRACTOR,remote">All Types + Remote</option>
+                  <option value="FULLTIME">Full-time</option>
+                  <option value="PARTTIME">Part-time</option>
+                  <option value="CONTRACTOR">Contract</option>
+                  <option value="remote">Remote Only</option>
+                  <option value="FULLTIME,remote">Full-time + Remote</option>
+                  <option value="PARTTIME,remote">Part-time + Remote</option>
+                  <option value="CONTRACTOR,remote">Contract + Remote</option>
+                </select>
+              </div>
+              
+              <!-- Time Range Filter -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">📅 Date Posted</label>
+                <select id="jobSearchDate" style="padding: 12px 16px; width: 100%; border: 2px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 14px; cursor: pointer; outline: none; box-sizing: border-box;">
+                  <option value="all">Any Time</option>
+                  <option value="today">Today</option>
+                  <option value="3days">Last 3 Days</option>
+                  <option value="week" selected>This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+              
             </div>
 
-            <!-- Search Buttons -->
-            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-              <button id="searchJobsBtn" class="primary-btn" style="padding: 12px 24px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 160px;">
-                🔍 Search All Jobs
+            <!-- Search Controls in One Row -->
+            <div style="display: flex; align-items: center; gap: 16px; justify-content: center; margin: 24px 0; flex-wrap: wrap;">
+              <select id="jobSearchSource" style="padding: 12px 20px; font-size: 15px; border-radius: 8px; border: 2px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; min-width: 280px; font-weight: 500; box-sizing: border-box;">
+                <option value="jsearch">🌐 All Jobs (JSearch API)</option>
+                <option value="greenhouse">🏢 Greenhouse (20 Tech Companies)</option>
+              </select>
+              
+              <button id="showCompanySelectionBtn" style="display: none; padding: 12px 24px; background: var(--card-bg); border: 2px solid var(--primary); color: var(--primary); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='var(--card-bg)'; this.style.color='var(--primary)'">
+                <span id="selectedCompanyCount">20</span> Companies
               </button>
-              <button id="searchGreenhouseBtn" class="secondary-btn" style="padding: 12px 20px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 140px;">
-                🏢 Tech Companies
+              
+              <button id="searchJobsBtn" class="primary-btn" style="padding: 14px 32px; font-size: 16px; font-weight: 600; border-radius: 8px; min-width: 180px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
+                🔍 Search Jobs
               </button>
             </div>
           </div>
           
 
-          
-          <!-- Greenhouse Company Selection (hidden by default) -->
-          <div id="greenhouseCompanySection" style="display: none; background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 2px solid var(--primary); background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%);">
-            <h3 style="margin-bottom: 8px; color: var(--primary);">🏢 Top Tech Companies</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">Search high-quality positions at leading technology companies</p>
+          <!-- Greenhouse Company Selection (shows when greenhouse source is selected) -->
+          <div id="greenhouseCompanySection" style="display: none; background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 2px solid var(--primary); box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h3 style="margin-bottom: 8px; color: var(--primary); font-size: 20px;">🏢 Select Greenhouse Companies</h3>
+              <p style="color: var(--text-secondary); font-size: 14px;">Choose which companies to search - All job type filters above will apply to these searches</p>
+            </div>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 16px;">
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="databricks" checked style="margin-right: 8px;"> Databricks
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px;">
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="databricks" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Databricks
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="stripe" checked style="margin-right: 8px;"> Stripe
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="stripe" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Stripe
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="snowflake" checked style="margin-right: 8px;"> Snowflake
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="snowflake" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Snowflake
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="nvidia" checked style="margin-right: 8px;"> NVIDIA
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="nvidia" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> NVIDIA
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="discord" style="margin-right: 8px;"> Discord
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="discord" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Discord
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="figma" style="margin-right: 8px;"> Figma
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="figma" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Figma
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="notion" style="margin-right: 8px;"> Notion
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="notion" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Notion
               </label>
-              <label style="display: flex; align-items: center; padding: 8px 12px; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover-bg, #f5f5f5)'" onmouseout="this.style.background='var(--bg)'">
-                <input type="checkbox" value="coinbase" style="margin-right: 8px;"> Coinbase
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="coinbase" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Coinbase
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="airbnb" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Airbnb
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="uber" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Uber
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="lyft" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Lyft
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="dropbox" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Dropbox
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="reddit" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Reddit
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="robinhood" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Robinhood
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="twilio" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Twilio
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="atlassian" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Atlassian
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="gitlab" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> GitLab
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="cloudflare" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Cloudflare
+              </label>
+              <label style="display: flex; align-items: center; padding: 12px 16px; background: var(--card-bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--card-bg)'; this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
+                <input type="checkbox" value="vercel" checked style="margin-right: 12px; width: 18px; height: 18px; cursor: pointer;"> Vercel
               </label>
             </div>
             
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-              <button onclick="selectAllGreenhouse()" class="secondary-btn" style="padding: 8px 16px; font-size: 14px;">Select All</button>
-              <button onclick="clearAllGreenhouse()" class="secondary-btn" style="padding: 8px 16px; font-size: 14px;">Clear All</button>
-              <button id="executeGreenhouseSearch" class="primary-btn" style="padding: 8px 20px; font-size: 14px; font-weight: 600;">🔍 Search Selected</button>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+              <button onclick="selectAllGreenhouse()" class="secondary-btn" style="padding: 10px 20px; font-size: 14px; border-radius: 8px;">✅ Select All</button>
+              <button onclick="clearAllGreenhouse()" class="secondary-btn" style="padding: 10px 20px; font-size: 14px; border-radius: 8px;">❌ Clear All</button>
             </div>
           </div>
           
@@ -1021,7 +1125,6 @@
       <div id="emailWriterTabPanel" style="display: none;">
         <div class="email-writer-container">
           <div style="text-align: center; margin-bottom: 24px;">
-            <h2 style="margin-bottom: 8px;">📧 Professional Email Writer</h2>
             <p style="color: var(--text-secondary); margin: 0;">Generate professional emails for any career situation</p>
           </div>
 
@@ -1327,7 +1430,8 @@
 
 <script>
   /* ---------- REQUEST TRACKING ---------- */
-  // activeRequests is defined in main.js
+  // Track active resume generation requests
+  const activeRequests = new Map();
   
   /* ---------- THEME TOGGLE ---------- */
   function toggleThemeManual() {
@@ -1500,6 +1604,62 @@
     const banner = document.getElementById('processingBanner');
     banner.classList.remove('active');
   }
+
+  // Make processing banner draggable
+  (function initDraggableBanner() {
+    const banner = document.getElementById('processingBanner');
+    const header = banner.querySelector('.banner-header');
+    
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    header.style.cursor = 'move';
+    header.style.userSelect = 'none';
+
+    header.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+      if (e.target.classList.contains('close-banner')) return;
+      
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+
+      if (e.target === header || header.contains(e.target)) {
+        isDragging = true;
+      }
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        setTranslate(currentX, currentY, banner);
+      }
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+    }
+
+    function setTranslate(xPos, yPos, el) {
+      el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    }
+  })();
 
   // Alias for backwards compatibility
   function addRequestToBanner(requestId, companyName) {
@@ -4867,7 +5027,9 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${companyName}_${jobTitle}_Resume_${format}.docx`.replace(/[^a-z0-9_\-\.]/gi, '_');
+        const firstName = dashboardCredentials.firstName || '';
+        const filePrefix = firstName ? `${firstName}_` : '';
+        a.download = `${filePrefix}${companyName}_${jobTitle}.docx`.replace(/[^a-z0-9_\-\.]/gi, '_');
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -4903,7 +5065,9 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `resume_${pendingDownloadRequestId}_${format}.docx`;
+        const firstName = dashboardCredentials.firstName || '';
+        const filePrefix = firstName ? `${firstName}_` : '';
+        a.download = `${filePrefix}resume_${pendingDownloadRequestId}.docx`;
         a.click();
         window.URL.revokeObjectURL(url);
         showDashMessage(`Resume downloaded in ${format} format!`, 'success');
@@ -4920,6 +5084,86 @@
     document.getElementById('formatModal').style.display = 'none';
     pendingDownloadRequestId = null;
     pendingViewModalDownload = null;
+  }
+
+  // Profile Modal Functions
+  function openProfileModal() {
+    const modal = document.getElementById('profileModal');
+    
+    // Load current user data
+    document.getElementById('profileFirstName').value = dashboardCredentials.firstName || '';
+    document.getElementById('profileLastName').value = dashboardCredentials.lastName || '';
+    document.getElementById('profileEmail').value = dashboardCredentials.username || '';
+    
+    modal.style.display = 'flex';
+  }
+
+  function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
+    document.getElementById('profileMessage').style.display = 'none';
+  }
+
+  function showProfileMessage(message, type) {
+    const messageDiv = document.getElementById('profileMessage');
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    messageDiv.style.background = type === 'success' ? 'var(--success-bg, #d1fae5)' : 'var(--error-bg, #fee2e2)';
+    messageDiv.style.color = type === 'success' ? 'var(--success-text, #065f46)' : 'var(--error-text, #991b1b)';
+    messageDiv.style.border = type === 'success' ? '1px solid var(--success-border, #6ee7b7)' : '1px solid var(--error-border, #fca5a5)';
+  }
+
+  async function saveProfile() {
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+
+    if (!firstName || !lastName) {
+      showProfileMessage('Please fill in both first and last name', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/update-profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
+        },
+        body: JSON.stringify({ first_name: firstName, last_name: lastName })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to update profile');
+      }
+
+      // Update local credentials
+      dashboardCredentials.firstName = firstName;
+      dashboardCredentials.lastName = lastName;
+      
+      // Update display name
+      updateHeaderUserDisplay();
+      
+      showProfileMessage('Profile updated successfully!', 'success');
+      
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        closeProfileModal();
+      }, 1500);
+    } catch (error) {
+      console.error('Profile update failed:', error);
+      showProfileMessage(error.message, 'error');
+    }
+  }
+
+  function updateHeaderUserDisplay() {
+    const firstName = dashboardCredentials.firstName || '';
+    const lastName = dashboardCredentials.lastName || '';
+    const displayName = firstName && lastName ? `${firstName} ${lastName}` : dashboardCredentials.username;
+    
+    const mobileUserName = document.getElementById('mobileUserName');
+    if (mobileUserName) {
+      mobileUserName.textContent = displayName;
+    }
   }
 
   // Download Job Description
@@ -5124,11 +5368,13 @@
 
   // Handle Main Register
   async function handleMainRegister() {
+    const firstName = document.getElementById('mainRegisterFirstName').value.trim();
+    const lastName = document.getElementById('mainRegisterLastName').value.trim();
     const username = document.getElementById('mainRegisterUsername').value.trim().toLowerCase();
     const password = document.getElementById('mainRegisterPassword').value;
     const confirm = document.getElementById('mainRegisterPasswordConfirm').value;
 
-    if (!username || !password) {
+    if (!firstName || !lastName || !username || !password) {
       showMainAuthMessage('Please fill in all fields', 'error');
       return;
     }
@@ -5176,7 +5422,7 @@
     try {
       await dashApiCall('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ user_id: username, password })
+        body: JSON.stringify({ user_id: username, password, first_name: firstName, last_name: lastName })
       });
 
       showMainAuthMessage('Account created! Please login.', 'success');
@@ -5260,14 +5506,20 @@
       const result = await dashApiCall('/api/auth/login', { method: 'POST' });
       console.log('Login successful:', result);
       
+      // Store user profile data
+      dashboardCredentials.firstName = result.first_name || '';
+      dashboardCredentials.lastName = result.last_name || '';
+      
       // Hide auth screen, show main app
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
       
-      // Show logout button and username in header
-      document.getElementById('headerUserInfo').textContent = `👤 ${username}`;
-      document.getElementById('headerUserInfo').style.display = 'inline';
+      // Show buttons in header
       document.getElementById('headerLogoutBtn').style.display = 'block';
+      document.getElementById('headerProfileBtn').style.display = 'block';
+      
+      // Update mobile user info display
+      updateHeaderUserDisplay();
       
       // Show header and footer
       document.getElementById('mainHeader').style.display = 'flex';
@@ -5313,12 +5565,9 @@
     const mobileResumeActions = document.getElementById('mobileResumeActions');
     
     if (isMobile && mobileUserInfo && mobileUserName) {
-      const username = localStorage.getItem('username');
-      if (username) {
-        mobileUserName.textContent = username;
-        mobileUserInfo.style.display = 'block';
-        if (headerUserInfo) headerUserInfo.style.display = 'none';
-      }
+      // Update mobile menu with user name
+      updateHeaderUserDisplay();
+      mobileUserInfo.style.display = 'block';
       
       // Show resume actions only on View Resume tab
       if (mobileResumeActions) {
@@ -5329,12 +5578,7 @@
           mobileResumeActions.style.display = 'none';
         }
       }
-    } else if (!isMobile && headerUserInfo) {
-      const username = localStorage.getItem('username');
-      if (username) {
-        headerUserInfo.textContent = `👤 ${username}`;
-        headerUserInfo.style.display = 'inline-block';
-      }
+    } else {
       if (mobileUserInfo) mobileUserInfo.style.display = 'none';
       if (mobileResumeActions) mobileResumeActions.style.display = 'none';
     }
@@ -5371,9 +5615,9 @@
     document.getElementById('authScreen').style.display = 'grid';
     document.getElementById('mainApp').style.display = 'none';
     
-    // Hide logout button and username in header
-    document.getElementById('headerUserInfo').style.display = 'none';
+    // Hide buttons in header
     document.getElementById('headerLogoutBtn').style.display = 'none';
+    document.getElementById('headerProfileBtn').style.display = 'none';
     
     // Hide header and footer
     document.getElementById('mainHeader').style.display = 'none';
@@ -5422,17 +5666,17 @@
                   placeholder="What email do you need? Be specific about your situation..." 
                   rows="4" 
                   required
-                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
+                  style="width: 100%; box-sizing: border-box; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
         
         <textarea id="additionalContext" 
                   placeholder="Additional context (optional): names, dates, specific details..." 
                   rows="3"
-                  style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
+                  style="width: 100%; box-sizing: border-box; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-          <div class="form-group">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
+          <div>
             <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
-            <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+            <select id="emailTone" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
               <option value="professional">Professional</option>
               <option value="enthusiastic">Enthusiastic</option>
               <option value="formal">Formal</option>
@@ -5442,9 +5686,9 @@
             </select>
           </div>
           
-          <div class="form-group">
+          <div>
             <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
-            <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+            <select id="emailLength" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
               <option value="short">Short (100-150 words)</option>
               <option value="medium" selected>Medium (200-300 words)</option>
               <option value="long">Long (400-500 words)</option>
@@ -6080,7 +6324,7 @@
 
   async function useJobForResume(job) {
     if (!job || !job.link) {
-      alert('Invalid job data');
+      showNotification('Invalid job data', 'error');
       return;
     }
     
@@ -6324,33 +6568,81 @@
 
   // ===== DYNAMIC JOB SEARCH FUNCTIONS =====
   
-  // ===== GREENHOUSE SEARCH FUNCTIONALITY =====
+  // ===== UNIFIED SEARCH FUNCTIONALITY =====
   
-  // Show/hide Greenhouse company selection
-  document.getElementById('searchGreenhouseBtn').addEventListener('click', function() {
+  // Handle job type dropdown
+  const jobTypeDisplay = document.getElementById('jobTypeDisplay');
+  jobTypeDisplay.addEventListener('change', function() {
+    const selectedValue = this.value;
+    const selectedTypes = selectedValue.split(',');
+    
+    // Sync with hidden checkboxes
+    document.getElementById('typeFullTime').checked = selectedTypes.includes('FULLTIME');
+    document.getElementById('typePartTime').checked = selectedTypes.includes('PARTTIME');
+    document.getElementById('typeContract').checked = selectedTypes.includes('CONTRACTOR');
+    document.getElementById('typeRemote').checked = selectedTypes.includes('remote');
+  });
+  
+  // Show/hide Greenhouse company selection based on source dropdown
+  document.getElementById('jobSearchSource').addEventListener('change', function() {
+    const button = document.getElementById('showCompanySelectionBtn');
     const section = document.getElementById('greenhouseCompanySection');
-    if (section.style.display === 'none') {
-      section.style.display = 'block';
-      this.textContent = '🏢 Hide Company Selection';
+    
+    if (this.value === 'greenhouse') {
+      button.style.display = 'block';
+      updateSelectedCompanyCount();
     } else {
+      button.style.display = 'none';
       section.style.display = 'none';
-      this.textContent = '🏢 Search Top Tech Companies (Greenhouse)';
     }
   });
+  
+  // Toggle company selection when button is clicked
+  document.getElementById('showCompanySelectionBtn').addEventListener('click', function() {
+    const section = document.getElementById('greenhouseCompanySection');
+    if (section.style.display === 'none' || section.style.display === '') {
+      section.style.display = 'block';
+    } else {
+      section.style.display = 'none';
+    }
+  });
+  
+  // Update selected company count
+  function updateSelectedCompanyCount() {
+    const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]:checked');
+    document.getElementById('selectedCompanyCount').textContent = checkboxes.length;
+  }
   
   // Select/clear all Greenhouse companies
   function selectAllGreenhouse() {
     const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]');
     checkboxes.forEach(cb => cb.checked = true);
+    updateSelectedCompanyCount();
   }
   
   function clearAllGreenhouse() {
     const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]');
     checkboxes.forEach(cb => cb.checked = false);
+    updateSelectedCompanyCount();
   }
   
-  // Execute Greenhouse search
-  document.getElementById('executeGreenhouseSearch').addEventListener('click', searchGreenhouseJobs);
+  // Add listeners to all company checkboxes to update count
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', updateSelectedCompanyCount);
+    });
+  });
+  
+  // Unified search button handler
+  document.getElementById('searchJobsBtn').addEventListener('click', function() {
+    const source = document.getElementById('jobSearchSource').value;
+    if (source === 'greenhouse') {
+      searchGreenhouseJobs();
+    } else {
+      searchJobs();
+    }
+  });
   
   async function searchGreenhouseJobs() {
     const jobTitle = document.getElementById('jobSearchTitle').value.trim();
@@ -6363,29 +6655,66 @@
     const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]:checked');
     checkboxes.forEach(cb => selectedCompanies.push(cb.value));
     
+    // Get job type filters (same as JSearch)
+    const employmentTypes = [];
+    if (document.getElementById('typeFullTime').checked) employmentTypes.push('FULLTIME');
+    if (document.getElementById('typePartTime').checked) employmentTypes.push('PARTTIME');
+    if (document.getElementById('typeContract').checked) employmentTypes.push('CONTRACTOR');
+    
+    const remoteOnly = document.getElementById('typeRemote').checked;
+    
+    // Get date posted filter
+    const datePosted = document.getElementById('jobSearchDate').value;
+    
     if (!jobTitle) {
-      alert('Please enter a job title');
+      showNotification('Please enter a job title', 'error');
       return;
     }
     
     if (selectedCompanies.length === 0) {
-      alert('Please select at least one company');
+      showNotification('Please select at least one company', 'error');
       return;
+    }
+    
+    // Show filter info
+    const filterInfo = [];
+    if (employmentTypes.length > 0) filterInfo.push(`Types: ${employmentTypes.join(', ')}`);
+    if (remoteOnly) filterInfo.push('Remote Only');
+    if (datePosted && datePosted !== 'all') {
+      const dateLabels = {
+        'today': 'Posted Today',
+        '3days': 'Last 3 Days',
+        'week': 'This Week',
+        'month': 'This Month'
+      };
+      filterInfo.push(dateLabels[datePosted] || datePosted);
+    }
+    if (filterInfo.length > 0) {
+      showNotification(`🔍 Searching ${selectedCompanies.length} companies with filters: ${filterInfo.join(' | ')}`, 'info');
     }
     
     // Show loading
     document.getElementById('jobSearchLoading').style.display = 'block';
     document.getElementById('jobSearchResults').innerHTML = '';
-    document.getElementById('executeGreenhouseSearch').disabled = true;
-    document.getElementById('executeGreenhouseSearch').textContent = 'Searching...';
+    const searchBtn = document.getElementById('searchJobsBtn');
+    searchBtn.disabled = true;
+    searchBtn.textContent = '⏳ Searching...';
     
     try {
       const searchParams = {
         job_title: jobTitle,
         location: location,
         max_results: maxResults,
-        company_tokens: selectedCompanies
+        company_tokens: selectedCompanies,
+        employment_types: employmentTypes,
+        remote_jobs_only: remoteOnly,
+        date_posted: datePosted
       };
+      
+      console.log('[GREENHOUSE_SEARCH] Search params:', searchParams);
+      console.log('[GREENHOUSE_SEARCH] Employment types:', employmentTypes);
+      console.log('[GREENHOUSE_SEARCH] Remote only:', remoteOnly);
+      console.log('[GREENHOUSE_SEARCH] Date posted:', datePosted);
       
       const data = await dashApiCall('/api/search-greenhouse-jobs', {
         method: 'POST',
@@ -6399,7 +6728,7 @@
       }
     } catch (error) {
       console.error('Error searching Greenhouse jobs:', error);
-      alert('Error searching Greenhouse jobs. Please try again.');
+      showNotification('Error searching Greenhouse jobs. Please try again.', 'error');
       document.getElementById('jobSearchResults').innerHTML = `
         <div class="no-results">
           <h3>Error occurred</h3>
@@ -6408,8 +6737,8 @@
       `;
     } finally {
       document.getElementById('jobSearchLoading').style.display = 'none';
-      document.getElementById('executeGreenhouseSearch').disabled = false;
-      document.getElementById('executeGreenhouseSearch').textContent = '🔍 Search Selected Companies';
+      searchBtn.disabled = false;
+      searchBtn.textContent = '🔍 Search Jobs';
     }
   }
   

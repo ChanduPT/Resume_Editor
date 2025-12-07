@@ -21,7 +21,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.database import init_db
-from app.auth import register_user, login_user, reset_password
+from app.auth import register_user, login_user, reset_password, update_profile
 from app.endpoints import (
     generate_resume_json, get_job_status, get_job_keywords, get_job_result, update_job_resume,
     download_resume, download_job_description,
@@ -142,6 +142,7 @@ async def health_check():
 app.post("/api/auth/register")(register_user)
 app.post("/api/auth/login")(login_user)
 app.post("/api/auth/reset-password")(reset_password)
+app.put("/api/auth/update-profile")(update_profile)
 
 # --------------------- Resume Generation Endpoints ---------------------
 

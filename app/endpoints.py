@@ -1148,19 +1148,26 @@ async def search_greenhouse_jobs_endpoint(
         location = data.get("location", "").strip()
         max_results = min(data.get("max_results", 20), 50)  # Cap at 50
         company_tokens = data.get("company_tokens", None)
+        employment_types = data.get("employment_types", [])
+        remote_jobs_only = data.get("remote_jobs_only", False)
+        date_posted = data.get("date_posted", "all")
         
         # Validate required fields
         if not job_title:
             raise HTTPException(status_code=400, detail="job_title is required")
         
         logger.info(f"[API_GREENHOUSE] Searching: '{job_title}' in '{location}' (max: {max_results})")
+        logger.info(f"[API_GREENHOUSE] Filters - Types: {employment_types}, Remote only: {remote_jobs_only}, Date: {date_posted}")
         
         # Search Greenhouse companies
         jobs = await job_scraper._search_greenhouse_companies(
             job_title=job_title,
             location=location,
             max_results=max_results,
-            company_tokens=company_tokens
+            company_tokens=company_tokens,
+            employment_types=employment_types,
+            remote_jobs_only=remote_jobs_only,
+            date_posted=date_posted
         )
         
         # Get list of companies that were searched
