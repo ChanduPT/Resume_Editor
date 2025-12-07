@@ -180,15 +180,23 @@
 
   /* ---------- THEME ---------- */
   const themeBtn = document.getElementById('toggleTheme');
+  const headerToggleTheme = document.getElementById('headerToggleTheme');
   const savedTheme = localStorage.getItem('theme');
+  
   if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
-  themeBtn.textContent = savedTheme === 'dark' ? '☀️ Day' : '🌙 Night';
-  themeBtn.addEventListener('click', ()=>{
-    const dark = document.body.getAttribute('data-theme') === 'dark';
-    document.body.setAttribute('data-theme', dark ? 'light' : 'dark');
-    localStorage.setItem('theme', dark ? 'light' : 'dark');
-    themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
-  });
+  
+  if (themeBtn) {
+    themeBtn.textContent = savedTheme === 'dark' ? '☀️ Day' : '🌙 Night';
+    themeBtn.addEventListener('click', ()=>{
+      const dark = document.body.getAttribute('data-theme') === 'dark';
+      document.body.setAttribute('data-theme', dark ? 'light' : 'dark');
+      localStorage.setItem('theme', dark ? 'light' : 'dark');
+      themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
+      if (headerToggleTheme) {
+        headerToggleTheme.textContent = dark ? '🌙 Toggle Theme' : '☀️ Toggle Theme';
+      }
+    });
+  }
 
   /* ---------- FORM BUILDERS ---------- */
   function addContact(k='',v=''){

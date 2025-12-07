@@ -30,7 +30,8 @@ from app.endpoints import (
     delete_job, cleanup_stale_jobs, parse_resume_document,
     search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
     get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint,
-    extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint
+    extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint,
+    update_application_status, get_application_stats
 )
 
 # --------------------- App Setup ---------------------
@@ -205,3 +206,8 @@ app.post("/api/email/generate")(email_generate)
 # --------------------- Cleanup Endpoints ---------------------
 
 app.post("/api/admin/cleanup-expired-states")(cleanup_expired_states_endpoint)
+
+# --------------------- Application Tracking Endpoints ---------------------
+
+app.patch("/api/resumes/{resume_id}/application-status")(update_application_status)
+app.get("/api/resumes/application-stats")(get_application_stats)

@@ -425,13 +425,32 @@
   </div>
 </div>
 
-<header id="mainHeader" style="display: none;">
+<header id="mainHeader" style="display: none; justify-content: space-between; align-items: center;">
   <h1>Resume Builder Pro</h1>
   <div id="menuActions">
-    <span id="headerUserInfo" style="margin-right: 15px; color: var(--text-secondary); display: none;"></span>
-    <button id="helpBtn" onclick="showHelpModal()" style="background: var(--primary); margin-right: 10px;">❓ Help</button>
-    <button id="logoutBtn" onclick="handleMainLogout()" style="background: var(--danger); display: none;">🚪 Logout</button>
-    <button id="toggleTheme">🌙 Dark</button>
+    <span id="headerUserInfo" style="color: var(--text-secondary); display: none;"></span>
+    <button id="menuToggleBtn" onclick="toggleHeaderMenu()" style="font-size: 20px; padding: 8px 12px;">☰</button>
+    <div id="headerDropdownMenu" class="header-dropdown-menu" style="display: none;">
+      <div id="mobileUserInfo" style="display: none; padding: 12px 16px; border-bottom: 1px solid var(--border); margin-bottom: 4px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">👤</span>
+          <span id="mobileUserName" style="font-size: 14px; font-weight: 600; color: var(--text);"></span>
+        </div>
+      </div>
+      <div id="mobileResumeActions" style="display: none;">
+        <button onclick="saveResumeTemplate(); toggleHeaderMenu()">💾 Save Resume</button>
+        <button onclick="triggerResumeUpload(); toggleHeaderMenu()">📤 Upload Resume</button>
+        <button onclick="downloadJSON(); toggleHeaderMenu()">📥 Download JSON</button>
+        <button onclick="downloadWordDoc(); toggleHeaderMenu()">📄 Download Word</button>
+        <button onclick="clearAll(); toggleHeaderMenu()" style="color: #e74c3c;">🗑️ Clear All</button>
+        <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
+      </div>
+      <button onclick="showHelpModal(); toggleHeaderMenu()">❓ Help</button>
+      <button id="headerToggleTheme" onclick="toggleThemeManual(); toggleHeaderMenu()">🌙 Toggle Theme</button>
+      <button id="headerLogoutBtn" onclick="handleMainLogout()" style="display: none;">🚪 Logout</button>
+    </div>
+    <!-- Hidden original theme button to maintain functionality -->
+    <button id="toggleTheme" style="display: none;">🌙 Dark</button>
   </div>
 </header>
 
@@ -587,8 +606,8 @@
       <nav id="sidebar">
         <button class="tab-btn active" id="tabResumeBtn" type="button">View Resume</button>
         <button class="tab-btn" id="tabEditJDBtn" type="button">Generate Resume</button>
-        <button class="tab-btn" id="tabJobSearchBtn" type="button">🔍 Job Search</button>
-        <button class="tab-btn" id="tabEmailWriterBtn" type="button">📧 Email Writer</button>
+        <button class="tab-btn" id="tabJobSearchBtn" type="button">Job Search</button>
+        <button class="tab-btn" id="tabEmailWriterBtn" type="button">Email Writer</button>
         <button class="tab-btn" id="tabDashboardBtn" type="button">My Dashboard</button>
       </nav>
 
@@ -599,37 +618,14 @@
         
         <!-- Action Buttons - Top Right -->
         <div class="top-action-buttons">
-          <button class="top-action-btn primary" onclick="saveResumeTemplate()" title="Save current resume as template">
-            <span class="icon">💾</span>
-            <span>Save</span>
-          </button>
-          
-          <button class="top-action-btn" onclick="triggerResumeUpload()" title="Upload resume from PDF/DOCX file">
-            <span class="icon">📂</span>
-            <span>Upload</span>
-          </button>
-          
-          <div class="download-group-top">
-            <div class="download-options-top" id="downloadOptionsTop">
-              <button class="download-option-top" onclick="downloadJSON(); toggleDownloadMenuTop();">
-                <span class="icon">📄</span>
-                <span>Download JSON</span>
-              </button>
-              <button class="download-option-top" onclick="downloadWordDoc(); toggleDownloadMenuTop();">
-                <span class="icon">📝</span>
-                <span>Download Word</span>
-              </button>
-            </div>
-            <button class="top-action-btn" onclick="toggleDownloadMenuTop()" title="Download resume">
-              <span class="icon">⬇️</span>
-              <span>Download</span>
-            </button>
+          <button id="actionMenuToggle" onclick="toggleActionMenu()" title="Actions" style="font-size: 20px; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">☰</button>
+          <div id="actionDropdownMenu" class="action-dropdown-menu" style="display: none;">
+            <button onclick="saveResumeTemplate(); toggleActionMenu()">💾 Save Resume</button>
+            <button onclick="triggerResumeUpload(); toggleActionMenu()">📤 Upload Resume</button>
+            <button onclick="downloadJSON(); toggleActionMenu()">📥 Download JSON</button>
+            <button onclick="downloadWordDoc(); toggleActionMenu()">📄 Download Word</button>
+            <button onclick="clearAll(); toggleActionMenu()" style="color: #e74c3c;">🗑️ Clear All</button>
           </div>
-          
-          <button class="top-action-btn danger" onclick="clearAll()" title="Clear all form fields">
-            <span class="icon">🧹</span>
-            <span>Clear All</span>
-          </button>
         </div>
 
         <form id="resumeForm">
@@ -742,13 +738,13 @@
           <!-- Save Template Button -->
           <button class="action-btn primary" onclick="saveResumeTemplate()">
             <span class="icon">💾</span>
-            <span>Save</span>
+            <span>Save Resume</span>
           </button>
           
           <!-- Upload Button -->
           <button class="action-btn" onclick="triggerUpload()">
             <span class="icon">📂</span>
-            <span>Upload JSON</span>
+            <span>Upload Resume</span>
           </button>
           
           <!-- Download Group with Dropdown -->
@@ -782,6 +778,32 @@
             <span id="statusText" style="font-weight:600; color:var(--accent); font-size:15px;"></span>
           </div>
         </div>
+        
+        <!-- Unsaved Changes Confirmation Modal -->
+        <div id="unsavedChangesModal" class="modal" style="display:none;z-index:4000;align-items:center;justify-content:center;">
+          <div class="modal-content" style="width:400px;max-width:90%;padding:20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);background:white;">
+            <h3 style="margin:0 0 8px 0;color:#333;font-size:18px;font-weight:600;text-align:center;">Unsaved Changes</h3>
+            <p style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.4;text-align:center;">Would you like to save before switching tabs?</p>
+            <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
+              <button id="cancelTabSwitch" style="padding:8px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'">Cancel</button>
+              <button id="discardChanges" style="padding:8px 16px;border:1px solid #e74c3c;background:white;color:#e74c3c;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#e74c3c';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='#e74c3c'">Don't Save</button>
+              <button id="saveAndSwitch" style="padding:8px 16px;border:none;background:#5b7cfa;color:white;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Confirm Modal -->
+        <div id="customConfirmModal" class="modal" style="display:none;z-index:9999;align-items:center;justify-content:center;" onclick="console.log('[Modal] Backdrop clicked')">
+          <div class="modal-content" style="width:400px;max-width:90%;min-height:150px;padding:20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);background:#ffffff !important;position:relative;z-index:10000;" onclick="event.stopPropagation(); console.log('[Modal] Content clicked')">
+            <h3 id="confirmModalTitle" style="margin:0 0 8px 0;color:#333 !important;font-size:18px;font-weight:600;text-align:center;">Confirm Action</h3>
+            <p id="confirmModalMessage" style="margin:0 0 20px 0;color:#666 !important;font-size:14px;line-height:1.4;text-align:center;">Are you sure?</p>
+            <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
+              <button id="confirmModalCancel" style="padding:8px 20px;border:1px solid #ddd;background:#ffffff !important;color:#333 !important;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;position:relative;z-index:10001;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#ffffff'" onclick="console.log('[Modal] Cancel button inline click')">Cancel</button>
+              <button id="confirmModalOk" style="padding:8px 20px;border:none;background:#e74c3c !important;color:#ffffff !important;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;position:relative;z-index:10001;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" onclick="console.log('[Modal] OK button inline click')">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
 
       <div id="jobDescTabPanel">
@@ -796,6 +818,14 @@
               <div class="jd-input-col">
                 <label for="jobTitleJD"><b>Job Title *</b></label>
                 <input id="jobTitleJD" name="jobTitleJD" placeholder="e.g., Software Engineer" type="text" required>
+              </div>
+            </div>
+            
+            <!-- Job Link Input Row -->
+            <div class="jd-input-row">
+              <div class="jd-input-col" style="grid-column: 1 / -1;">
+                <label for="jobLinkJD"><b>Job Link</b> <span style="color: var(--text-secondary); font-weight: normal;">(optional)</span></label>
+                <input id="jobLinkJD" name="jobLinkJD" placeholder="https://company.com/careers/job-id or paste job posting URL" type="url">
               </div>
             </div>
             
@@ -996,10 +1026,9 @@
           </div>
 
           <!-- Email Mode Selector -->
-          <div class="email-mode-selector" style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
-            <select id="emailTemplateSelector" onchange="handleEmailTemplateChange(this.value)" 
-              style="padding: 12px 20px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 15px; font-weight: 500; cursor: pointer; min-width: 200px;">
-              <option value="">⚡ Quick Templates</option>
+          <div class="email-mode-selector">
+            <select id="emailTemplateSelector" onchange="handleEmailTemplateChange(this.value)" class="email-template-select">
+              <option value="">Quick Templates</option>
               <option value="job_application">💼 Job Application</option>
               <option value="reply">↩️ Reply to Recruiter</option>
               <option value="followup">📬 Follow-up</option>
@@ -1013,7 +1042,7 @@
               <option value="interview_scheduling">📅 Schedule Interview</option>
             </select>
             
-            <button class="primary-btn" onclick="showCustomEmailMode()" style="padding: 12px 24px; font-size: 15px; font-weight: 600; border-radius: 8px;">
+            <button class="email-custom-btn" onclick="showCustomEmailMode()">
               ✨ Custom Email (Any Type)
             </button>
           </div>
@@ -1102,8 +1131,7 @@
                   <th style="padding: 12px 16px;">Company</th>
                   <th style="padding: 12px 16px;">Job Title</th>
                   <th style="padding: 12px 16px;">Status</th>
-                  <th style="padding: 12px 16px; text-align: center;">Progress</th>
-                  <th style="padding: 12px 16px;">Created</th>
+                  <th style="padding: 12px 16px;">Date</th>
                   <th style="padding: 12px 16px; text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -1299,9 +1327,29 @@
 
 <script>
   /* ---------- REQUEST TRACKING ---------- */
-  // Track all active resume generation requests
-  const activeRequests = new Map(); // key: requestId, value: {company, status, element}
-  let requestIdCounter = 0;
+  // activeRequests is defined in main.js
+  
+  /* ---------- THEME TOGGLE ---------- */
+  function toggleThemeManual() {
+    const dark = document.body.getAttribute('data-theme') === 'dark';
+    const newTheme = dark ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Update button texts
+    const themeBtn = document.getElementById('toggleTheme');
+    const headerToggleTheme = document.getElementById('headerToggleTheme');
+    if (themeBtn) {
+      themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
+    }
+    if (headerToggleTheme) {
+      headerToggleTheme.textContent = dark ? '🌙 Toggle Theme' : '☀️ Toggle Theme';
+    }
+  }
+  
+  /* ---------- CHANGE TRACKING ---------- */
+  let formHasChanges = false;
+  let initialFormState = null;
   
   // Queue for keyword review requests
   const keywordReviewQueue = [];
@@ -1480,6 +1528,41 @@
     event.target.closest('.form-nav-btn').classList.add('active');
   }
 
+  /* ---------- CHANGE TRACKING SETUP ---------- */
+  let isInitialLoad = true;
+  
+  function setupChangeTracking() {
+    const form = document.getElementById('resumeForm');
+    if (!form) return;
+    
+    // Track changes on all form inputs (only after initial load)
+    form.addEventListener('input', function(e) {
+      if (e.target.matches('input, textarea, select') && !isInitialLoad) {
+        formHasChanges = true;
+      }
+    });
+    
+    // Track changes when adding/removing dynamic entries (only after initial load)
+    const observer = new MutationObserver(function(mutations) {
+      if (!isInitialLoad) {
+        formHasChanges = true;
+      }
+    });
+    
+    // Observe changes in dynamic lists
+    const listsToObserve = ['contactList', 'skillsList', 'experienceList', 'educationList', 'projectsList', 'certificationsList'];
+    listsToObserve.forEach(listId => {
+      const list = document.getElementById(listId);
+      if (list) {
+        observer.observe(list, { childList: true, subtree: true });
+      }
+    });
+  }
+  
+  function resetChangeTracking() {
+    formHasChanges = false;
+  }
+
   /* ---------- SCROLL TO TOP ---------- */
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1496,16 +1579,7 @@
   });
 
   /* ---------- THEME ---------- */
-  const themeBtn = document.getElementById('toggleTheme');
-  const savedTheme = localStorage.getItem('theme');
-  if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
-  themeBtn.textContent = savedTheme === 'dark' ? '☀️ Day' : '🌙 Night';
-  themeBtn.addEventListener('click', ()=>{
-    const dark = document.body.getAttribute('data-theme') === 'dark';
-    document.body.setAttribute('data-theme', dark ? 'light' : 'dark');
-    localStorage.setItem('theme', dark ? 'light' : 'dark');
-    themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
-  });
+  // Theme toggle is handled in main.js
 
   /* ---------- FORM BUILDERS ---------- */
   function addContact(k='',v=''){
@@ -1533,7 +1607,8 @@
   d.className='entry';d.innerHTML=`<input placeholder="Company" class="exp-company" value="${exp?.company||''}">
   <input placeholder="Role" class="exp-role" value="${exp?.role||''}">
   <input placeholder="Period" class="exp-period" value="${exp?.period||''}">
-  <div class="bullets"></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button>`;
+  <div class="bullets"></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button>
+  <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Experience</button>`;
   document.getElementById('experienceList').appendChild(d);
   const bulletsDiv = d.querySelector('.bullets');
   let pts = Array.isArray(exp?.points) ? exp.points : [''];
@@ -1555,7 +1630,8 @@
   function addEducation(e=null){const d=document.createElement('div');
     d.className='entry';d.innerHTML=`<input placeholder="Degree" class="edu-degree" value="${e?.degree||''}">
     <input placeholder="Institution" class="edu-inst" value="${e?.institution||''}">
-    <input placeholder="Year" class="edu-year" value="${e?.year||''}">`;
+    <input placeholder="Year" class="edu-year" value="${e?.year||''}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Education</button>`;
     document.getElementById('educationList').appendChild(d);}
 
   function addProject(proj=null){
@@ -1563,7 +1639,8 @@
     d.className='entry';
     d.innerHTML=`<input placeholder="Project Title" class="proj-title" value="${proj?.title||''}">
     <div class="bullets"></div>
-    <button type="button" class="sub-btn" onclick="addProjectBullet(this)">+ Add Bullet</button>`;
+    <button type="button" class="sub-btn" onclick="addProjectBullet(this)">+ Add Bullet</button>
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Project</button>`;
     document.getElementById('projectsList').appendChild(d);
     const bulletsDiv = d.querySelector('.bullets');
     let pts = Array.isArray(proj?.bullets) ? proj.bullets : [''];
@@ -1588,7 +1665,8 @@
     d.className='entry';
     d.innerHTML=`<input placeholder="Certification Name" class="cert-name" value="${cert?.name||''}">
     <input placeholder="Issuing Organization" class="cert-org" value="${cert?.organization||''}">
-    <input placeholder="Year" class="cert-year" value="${cert?.year||''}">`;
+    <input placeholder="Year" class="cert-year" value="${cert?.year||''}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Certification</button>`;
     document.getElementById('certificationsList').appendChild(d);
   }
 
@@ -1674,7 +1752,7 @@
       
       // Basic validation
       if (!resumeData.name || resumeData.name.trim() === '') {
-        alert('⚠️ Please enter your name before saving the template.');
+        showNotification('⚠️ Please enter your name before saving', 'warning');
         return;
       }
 
@@ -1693,12 +1771,15 @@
       }
 
       const result = await response.json();
-      alert('✅ Resume template saved successfully!\n\nIt will auto-load the next time you log in.');
+      showNotification('✅ Resume saved successfully! It will auto-load next time you log in.', 'success', 4000);
       console.log('Template saved:', result);
+      
+      // Reset change tracking after successful save
+      resetChangeTracking();
       
     } catch (error) {
       console.error('Save failed:', error);
-      alert(`❌ Error saving template: ${error.message}`);
+      showNotification(`❌ Error saving: ${error.message}`, 'error');
     }
   }
 
@@ -1725,8 +1806,12 @@
         populateForm(result.resume_data);
         showResult('✅ Resume template loaded!');
         console.log('Template last updated:', result.updated_at);
+        
+        // Reset change tracking after loading template
+        resetChangeTracking();
       } else {
         console.log('No template saved yet');
+        isInitialLoad = false;
       }
       
     } catch (error) {
@@ -1749,7 +1834,7 @@
       }
       // Do NOT populate job description fields from upload
       showResult('✅ Resume JSON Uploaded');
-    }catch{alert("Invalid JSON");}};r.readAsText(file);});
+    }catch{showNotification('Invalid JSON file', 'error');}};r.readAsText(file);});
 
   // Trigger resume document upload (PDF/DOCX)
   function triggerResumeUpload() {
@@ -1767,14 +1852,14 @@
     const isValid = validTypes.some(type => fileName.endsWith(type));
     
     if (!isValid) {
-      alert('Please upload a PDF or DOCX file');
+      showNotification('Please upload a PDF or DOCX file', 'warning');
       e.target.value = ''; // Clear the input
       return;
     }
 
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      alert('File too large. Maximum size is 10MB');
+      showNotification('File too large. Maximum size is 10MB', 'warning');
       e.target.value = '';
       return;
     }
@@ -1830,7 +1915,7 @@
     } catch (error) {
       hideParseLoading();
       console.error('Resume upload error:', error);
-      alert(`Failed to parse resume: ${error.message || 'Unknown error'}`);
+      showNotification(`Failed to parse resume: ${error.message || 'Unknown error'}`, 'error');
       e.target.value = '';
     }
   });
@@ -2227,7 +2312,7 @@
       
     } catch (error) {
       console.error('Error saving changes:', error);
-      alert(`Failed to save changes: ${error.message}`);
+      showNotification(`Failed to save changes: ${error.message}`, 'error');
     }
   }
 
@@ -2311,7 +2396,7 @@
     
     // Check if category already exists
     if (currentResumeData.technical_skills && currentResumeData.technical_skills[trimmedCategory]) {
-      alert('⚠️ This category already exists!');
+      showNotification('⚠️ This category already exists!', 'warning');
       return;
     }
     
@@ -2325,7 +2410,7 @@
     const skills = skillsInput.split(',').map(s => s.trim()).filter(s => s);
     
     if (skills.length === 0) {
-      alert('⚠️ Please enter at least one skill!');
+      showNotification('⚠️ Please enter at least one skill!', 'warning');
       return;
     }
     
@@ -2389,6 +2474,9 @@
   });
 
   function populateForm(d){
+    // Prevent change tracking during population
+    isInitialLoad = true;
+    
     const f = document.getElementById('resumeForm');
     f.name.value = d.name || '';
     f.summary.value = d.summary || '';
@@ -2442,6 +2530,11 @@
     } else {
       addCertification();
     }
+    
+    // Re-enable change tracking after population completes
+    setTimeout(() => {
+      isInitialLoad = false;
+    }, 100);
   }
 
   function downloadJSON(){
@@ -2459,7 +2552,7 @@
       
       // Validate resume data
       if (!resume_data.name || resume_data.name.trim() === '') {
-        alert('⚠️ Please enter your name before generating a Word document.');
+        showNotification('⚠️ Please enter your name before generating a Word document.', 'warning');
         return;
       }
       
@@ -2513,6 +2606,16 @@
     menu.classList.toggle('show');
   }
 
+  // Toggle action menu dropdown
+  function toggleActionMenu() {
+    const menu = document.getElementById('actionDropdownMenu');
+    if (menu.style.display === 'none' || menu.style.display === '') {
+      menu.style.display = 'block';
+    } else {
+      menu.style.display = 'none';
+    }
+  }
+
   // Close download menu when clicking outside
   document.addEventListener('click', function(event) {
     const downloadGroup = document.querySelector('.download-group');
@@ -2528,6 +2631,14 @@
     
     if (menuTop && downloadGroupTop && !downloadGroupTop.contains(event.target)) {
       menuTop.classList.remove('show');
+    }
+
+    // Close action menu when clicking outside
+    const actionMenu = document.getElementById('actionDropdownMenu');
+    const actionMenuBtn = document.getElementById('actionMenuToggle');
+    
+    if (actionMenu && actionMenuBtn && !actionMenuBtn.contains(event.target) && !actionMenu.contains(event.target)) {
+      actionMenu.style.display = 'none';
     }
   });
 
@@ -2641,7 +2752,7 @@
     if (validationErrors.length > 0) {
       const errorList = validationErrors.map((err, idx) => `${idx + 1}. ${err}`).join('\n');
       const errorMessage = '❌ Please fix the following issues:\n\n' + errorList;
-      alert(errorMessage);
+      showNotification(errorMessage, 'error');
       showResult('❌ Validation failed - check required fields');
       
       if (validationErrors[0].includes('Summary')) {
@@ -2962,7 +3073,7 @@
     } catch (error) {
       console.error('[FEEDBACK] Error in Phase 2:', error);
       markRequestFailed(uiRequestId, error.message);
-      alert('❌ Failed to generate resume: ' + error.message);
+      showNotification('❌ Failed to generate resume: ' + error.message, 'error');
     }
   }
   
@@ -3079,7 +3190,7 @@
       
     } catch (error) {
       console.error('[RESUME REVIEW] Error:', error);
-      alert('❌ Failed to load keywords: ' + error.message);
+      showNotification('❌ Failed to load keywords: ' + error.message, 'error');
     }
   }
   
@@ -3453,7 +3564,8 @@
   }
   
 
-  function clearAll(){if(!confirm("Clear all fields?"))return;
+  function clearAll(){
+    // Reset form without confirmation since it's reversible
     document.getElementById('resumeForm').reset();
     document.getElementById('contactList').innerHTML='';
     document.getElementById('skillsList').innerHTML='';
@@ -3466,15 +3578,91 @@
     if (jobDescTab) jobDescTab.value = '';
     if (companyNameJD) companyNameJD.value = '';
     addContact('Phone', '');addContact('Email', '');addContact('LinkedIn', '');
-    addSkill();addExperience();addEducation();addProject();addCertification();showResult('🧹 Cleared all fields');}
+    addSkill();addExperience();addEducation();addProject();addCertification();showNotification('🧹 Cleared all fields');}
 
-  function showResult(msg){const r=document.getElementById('result');r.textContent=msg;setTimeout(()=>r.textContent='',4000);}
+  function showResult(msg){showNotification(msg);}
+  
+  function showNotification(message, type = 'success', duration = 3000) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : 'var(--accent)'};
+      color: white;
+      padding: 14px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      font-size: 14px;
+      font-weight: 500;
+      max-width: 400px;
+      animation: slideIn 0.3s ease-out;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => notification.remove(), 300);
+    }, duration);
+  }
+
+  // Custom confirm dialog to replace browser confirm()
+  let customConfirmActive = false;
+  
+  function customConfirm(message, title = 'Confirm Action') {
+    
+    // Prevent multiple simultaneous confirms
+    if (customConfirmActive) {
+      console.log('[customConfirm] Already active, ignoring duplicate call');
+      return new Promise((resolve) => resolve(false));
+    }
+    
+    customConfirmActive = true;
+    
+    return new Promise((resolve) => {
+      const modal = document.getElementById('customConfirmModalBodyLevel');
+      const modalTitle = document.getElementById('confirmModalTitleBodyLevel');
+      const modalMessage = document.getElementById('confirmModalMessageBodyLevel');
+      const cancelBtn = document.getElementById('confirmModalCancelBodyLevel');
+      const okBtn = document.getElementById('confirmModalOkBodyLevel');
+      
+      if (!modal || !modalTitle || !modalMessage || !cancelBtn || !okBtn) {
+        customConfirmActive = false;
+        resolve(false);
+        return;
+      }
+      
+      // Clone buttons to remove all existing event listeners
+      const newCancelBtn = cancelBtn.cloneNode(true);
+      const newOkBtn = okBtn.cloneNode(true);
+      cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+      okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+      
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modal.style.display = 'flex';
+      
+      const handleCancel = () => {
+        modal.style.display = 'none';
+        customConfirmActive = false;
+        resolve(false);
+      };
+      
+      const handleOk = () => {
+        modal.style.display = 'none';
+        customConfirmActive = false;
+        resolve(true);
+      };
+      
+      newCancelBtn.addEventListener('click', handleCancel, { once: true });
+      newOkBtn.addEventListener('click', handleOk, { once: true });
+    });
+  }
 
   /* ---------- ABOUT MODAL ---------- */
-  const modal=document.getElementById("aboutModal");
-  function openAbout(){modal.style.display="block";}
-  function closeAbout(){modal.style.display="none";}
-  window.onclick=function(e){if(e.target==modal)modal.style.display="none";}
+  // About modal is handled in main.js
 
   /* ---------- FAQ ACCORDION ---------- */
   function toggleFAQ(button) {
@@ -3517,8 +3705,22 @@
   const dashboardTabPanel = document.getElementById('dashboardTabPanel');
   
   let emailWriterInitialized = false;
+  let pendingTabSwitch = null;
 
   function switchTab(tab) {
+    // Check for unsaved changes when leaving resume tab
+    if (resumeFormContainer.classList.contains('active') && tab !== 'resume' && formHasChanges) {
+      // Store the pending tab to switch to
+      pendingTabSwitch = tab;
+      
+      // Show custom confirmation modal
+      const modal = document.getElementById('unsavedChangesModal');
+      modal.style.display = 'flex';
+      
+      // Stop here - don't switch tabs yet
+      return;
+    }
+    
     // Remove active from all tabs
     tabResumeBtn.classList.remove('active');
     tabEditJDBtn.classList.remove('active');
@@ -3616,29 +3818,30 @@
       const jdText = jobDescriptionTab.value.trim();
       const companyName = document.getElementById('companyNameJD').value.trim();
       const jobTitle = document.getElementById('jobTitleJD').value.trim();
+      const jobLink = document.getElementById('jobLinkJD')?.value.trim() || '';
       
-      console.log('Form values:', { companyName, jobTitle, jdTextLength: jdText.length });
+      console.log('Form values:', { companyName, jobTitle, jdTextLength: jdText.length, jobLink });
       
       if (!companyName) {
-        alert('Please enter the company name!');
+        showNotification('Please enter the company name!', 'warning');
         document.getElementById('companyNameJD').focus();
         return;
       }
       
       if (!jobTitle) {
-        alert('Please enter the job title!');
+        showNotification('Please enter the job title!', 'warning');
         document.getElementById('jobTitleJD').focus();
         return;
       }
       
       if (!jdText) {
-        alert('Please paste a job description first!');
+        showNotification('Please paste a job description first!', 'warning');
         return;
       }
 
       // Check if user is logged in
       if (!dashboardCredentials) {
-        alert('Please login first to generate resumes!');
+        showNotification('Please login first to generate resumes!', 'warning');
         switchTab('dashboard');
         return;
       }
@@ -3680,6 +3883,11 @@
             job_description: jdText
           }
         };
+        
+        // Add job_link if provided
+        if (jobLink) {
+          requestData.job_link = jobLink;
+        }
 
         console.log('[FEEDBACK] Phase 1: Calling extract-keywords endpoint...');
 
@@ -3718,7 +3926,7 @@
       } catch (error) {
         console.error('[FEEDBACK] Phase 1 failed:', error);
         markRequestFailed(uiRequestId, error.message);
-        alert(`Error extracting keywords: ${error.message}`);
+        showNotification(`Error extracting keywords: ${error.message}`, 'error');
       }
     });
   } else {
@@ -3768,6 +3976,56 @@
     if (basicBtn) {
       basicBtn.classList.add('active');
     }
+    
+    // Initialize change tracking for the form
+    setupChangeTracking();
+    
+    // Setup unsaved changes modal handlers
+    const modal = document.getElementById('unsavedChangesModal');
+    const cancelBtn = document.getElementById('cancelTabSwitch');
+    const discardBtn = document.getElementById('discardChanges');
+    const saveBtn = document.getElementById('saveAndSwitch');
+    
+    // Cancel - stay on current tab
+    cancelBtn.addEventListener('click', function() {
+      modal.style.display = 'none';
+      pendingTabSwitch = null;
+    });
+    
+    // Discard changes - reload original data and switch
+    discardBtn.addEventListener('click', async function() {
+      modal.style.display = 'none';
+      formHasChanges = false;
+      
+      // Reload the original template to discard changes
+      await loadResumeTemplate();
+      
+      if (pendingTabSwitch) {
+        const tab = pendingTabSwitch;
+        pendingTabSwitch = null;
+        switchTab(tab);
+      }
+    });
+    
+    // Save - save then switch
+    saveBtn.addEventListener('click', async function() {
+      modal.style.display = 'none';
+      await saveResumeTemplate();
+      formHasChanges = false;
+      if (pendingTabSwitch) {
+        const tab = pendingTabSwitch;
+        pendingTabSwitch = null;
+        switchTab(tab);
+      }
+    });
+    
+    // Close modal on background click
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        pendingTabSwitch = null;
+      }
+    });
   });
 
   /* ---------- DASHBOARD FUNCTIONALITY ---------- */
@@ -3983,6 +4241,31 @@
   }
 
   // API Call Helper
+  // Update application status
+  async function updateApplicationStatus(jobId, newStatus) {
+    try {
+      const now = new Date().toISOString();
+      await dashApiCall(`/api/resumes/${jobId}/application-status`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          application_status: newStatus,
+          application_date: (newStatus === 'applied') ? now : null
+        })
+      });
+      
+      showNotification(`Application status updated to: ${newStatus.replace('_', ' ')}`, 'success');
+      
+      // Reload dashboard to show updated date
+      await loadDashboardHistory();
+      await loadDashboardStats();
+    } catch (error) {
+      console.error('Failed to update application status:', error);
+      showNotification('Failed to update status: ' + error.message, 'error');
+      // Reload to reset dropdown
+      await refreshDashboard();
+    }
+  }
+
   async function dashApiCall(endpoint, options = {}) {
     const headers = {
       'Content-Type': 'application/json',
@@ -4452,38 +4735,48 @@
         return;
       }
 
-      tbody.innerHTML = data.jobs.map(job => `
-        <tr data-request-id="${job.request_id}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseenter="this.style.background='var(--card)'" onmouseleave="this.style.background=''">
-          <td style="padding: 12px 16px; color: var(--text-primary); font-weight: 500;">${job.company_name}</td>
+      tbody.innerHTML = data.jobs.map(job => {
+        const applicationStatus = job.application_status || 'resume_generated';
+        const jobLinkHtml = job.job_link ? `<a href="${job.job_link}" target="_blank" title="View Job Posting" style="color: var(--accent); text-decoration: none;">🔗</a>` : '';
+        
+        // Determine status display: show resume generation status or application status
+        let statusHtml = '';
+        if (job.status === 'processing' || job.status === 'pending') {
+          statusHtml = `<span class="status-badge status-${job.status}" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">${job.status}</span>`;
+        } else if (job.status === 'awaiting_feedback') {
+          statusHtml = `<span class="status-badge status-awaiting_feedback" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">⏸ Awaiting Review</span>`;
+        } else if (job.status === 'failed') {
+          statusHtml = `<span class="status-badge status-failed" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">❌ Failed</span>`;
+        } else if (job.status === 'completed') {
+          // Show application status dropdown for completed resumes
+          statusHtml = `<select class="application-status-dropdown" data-job-id="${job.job_id}" onchange="updateApplicationStatus(${job.job_id}, this.value)" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--background); color: var(--text-primary); font-size: 0.85em; cursor: pointer;">
+              <option value="resume_generated" ${applicationStatus === 'resume_generated' ? 'selected' : ''}>📝 Resume Generated</option>
+              <option value="applied" ${applicationStatus === 'applied' ? 'selected' : ''}>✅ Applied</option>
+              <option value="screening" ${applicationStatus === 'screening' ? 'selected' : ''}>🔍 Screening</option>
+              <option value="interview" ${applicationStatus === 'interview' ? 'selected' : ''}>💼 Interview</option>
+              <option value="offer" ${applicationStatus === 'offer' ? 'selected' : ''}>🎉 Offer</option>
+              <option value="rejected" ${applicationStatus === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
+            </select>`;
+        }
+        
+        return `
+        <tr data-request-id="${job.request_id}" data-job-id="${job.job_id}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseenter="this.style.background='var(--card)'" onmouseleave="this.style.background=''">
+          <td style="padding: 12px 16px; color: var(--text-primary); font-weight: 500;">
+            ${job.company_name} ${jobLinkHtml}
+          </td>
           <td style="padding: 12px 16px; color: var(--text-primary);">${job.job_title}</td>
           <td style="padding: 12px 16px;">
-            <span class="status-badge status-${job.status}" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">${job.status}</span>
-          </td>
-          <td style="padding: 12px 16px; text-align: center;">
-            ${job.status === 'processing' || job.status === 'pending' ? `
-              <div style="width: 100%; max-width: 150px; margin: 0 auto;">
-                <div class="progress-bar" style="height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
-                  <div class="progress-fill" style="width: ${job.progress}%; height: 100%; background: var(--accent); transition: width 0.3s;"></div>
-                </div>
-                <div class="progress-text" style="font-size: 0.75em; color: var(--text-secondary); margin-top: 4px;">${job.progress}%</div>
-              </div>
-            ` : job.status === 'awaiting_feedback' ? `
-              <span style="color: var(--accent); font-weight: 600;">⏸ Awaiting Review</span>
-            ` : job.status === 'completed' ? `
-              <span style="color: var(--success); font-weight: 600;">✓ 100%</span>
-            ` : `
-              <span style="color: var(--danger);">✗ Failed</span>
-            `}
+            ${statusHtml}
           </td>
           <td style="padding: 12px 16px; font-size: 0.85em; color: var(--text-secondary); white-space: nowrap;">
-            ${formatLocalDateTime(job.created_at)}
+            ${job.application_date ? formatLocalDateTime(job.application_date) : (job.last_status_update ? formatLocalDateTime(job.last_status_update) : formatLocalDateTime(job.created_at))}
           </td>
           <td style="padding: 12px 16px; text-align: right; position: relative;">
             ${job.status === 'completed' ? `
               <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${job.request_id}')">⋮</button>
               <div class="kebab-dropdown" id="kebab-${job.request_id}">
                 <button class="primary" onclick="viewResumeContent('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">�️</span>
+                  <span class="menu-icon">👁️</span>
                   <span>View Resume</span>
                 </button>
                 <button class="secondary" onclick="viewJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
@@ -4494,7 +4787,7 @@
                   <span class="menu-icon">📥</span>
                   <span>Download Resume</span>
                 </button>
-                <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${job.request_id}'); closeKebabMenu('${job.request_id}'); }">
+                <button class="danger" onclick="customConfirm(&quot;Delete this resume?&quot;, &quot;Confirm Delete&quot;).then(confirmed => { if(confirmed) { deleteResume(&quot;${job.request_id}&quot;); closeKebabMenu(&quot;${job.request_id}&quot;); } })">
                   <span class="menu-icon">🗑️</span>
                   <span>Delete</span>
                 </button>
@@ -4503,7 +4796,7 @@
               <button class="sub-btn" style="padding: 6px 12px; font-size: 0.9em; margin-right: 4px;" onclick="checkDashboardStatus('${job.request_id}')">
                 🔄 Refresh
               </button>
-              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="if(confirm('Cancel this job?')) { deleteResume('${job.request_id}'); }">
+              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="customConfirm(&quot;Cancel this job?&quot;, &quot;Confirm Cancel&quot;).then(confirmed => { if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
                 ✕ Cancel
               </button>
             ` : job.status === 'awaiting_feedback' ? `
@@ -4513,17 +4806,18 @@
                       onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.2)'">
                 📝 Review Keywords
               </button>
-              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="if(confirm('Cancel this job?')) { deleteResume('${job.request_id}'); }">
+              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="customConfirm(&quot;Cancel this job?&quot;, &quot;Confirm Cancel&quot;).then(confirmed => { if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
                 ✕ Cancel
               </button>
             ` : `
-              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="if(confirm('Delete this failed job?')) { deleteResume('${job.request_id}'); }">
+              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="console.log('[DELETE BTN] Clicked for:', '${job.request_id}'); customConfirm(&quot;Delete this failed job?&quot;, &quot;Confirm Delete&quot;).then(confirmed => { console.log('[DELETE BTN] Confirmed:', confirmed); if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
                 🗑️ Delete
               </button>
             `}
           </td>
         </tr>
-      `).join('');
+        `;
+      }).join('');
 
       // Start polling for active jobs
       data.jobs.forEach(job => {
@@ -4675,14 +4969,18 @@
       }
 
       // Remove from processing banner if it exists
-      const request = activeRequests.get(requestId);
-      if (request) {
-        request.element.style.opacity = '0';
-        setTimeout(() => {
-          request.element.remove();
-          activeRequests.delete(requestId);
-          updateBannerCount();
-        }, 300);
+      if (typeof activeRequests !== 'undefined') {
+        const request = activeRequests.get(requestId);
+        if (request) {
+          request.element.style.opacity = '0';
+          setTimeout(() => {
+            request.element.remove();
+            activeRequests.delete(requestId);
+            if (typeof updateBannerCount === 'function') {
+              updateBannerCount();
+            }
+          }, 300);
+        }
       }
 
       // Stop polling if active
@@ -4969,11 +5267,14 @@
       // Show logout button and username in header
       document.getElementById('headerUserInfo').textContent = `👤 ${username}`;
       document.getElementById('headerUserInfo').style.display = 'inline';
-      document.getElementById('logoutBtn').style.display = 'inline-block';
+      document.getElementById('headerLogoutBtn').style.display = 'block';
       
       // Show header and footer
       document.getElementById('mainHeader').style.display = 'flex';
       document.getElementById('mainFooter').style.display = 'block';
+      
+      // Initialize mobile user info
+      updateMobileUserInfo();
       
       // Load stats (for dashboard tab)
       loadDashboardStats();
@@ -4991,9 +5292,73 @@
     }
   }
 
+  // Toggle header menu dropdown
+  function toggleHeaderMenu() {
+    const menu = document.getElementById('headerDropdownMenu');
+    if (menu.style.display === 'none' || menu.style.display === '') {
+      menu.style.display = 'block';
+      // Update mobile user info on open
+      updateMobileUserInfo();
+    } else {
+      menu.style.display = 'none';
+    }
+  }
+  
+  // Update mobile user info
+  function updateMobileUserInfo() {
+    const isMobile = window.innerWidth <= 768;
+    const mobileUserInfo = document.getElementById('mobileUserInfo');
+    const mobileUserName = document.getElementById('mobileUserName');
+    const headerUserInfo = document.getElementById('headerUserInfo');
+    const mobileResumeActions = document.getElementById('mobileResumeActions');
+    
+    if (isMobile && mobileUserInfo && mobileUserName) {
+      const username = localStorage.getItem('username');
+      if (username) {
+        mobileUserName.textContent = username;
+        mobileUserInfo.style.display = 'block';
+        if (headerUserInfo) headerUserInfo.style.display = 'none';
+      }
+      
+      // Show resume actions only on View Resume tab
+      if (mobileResumeActions) {
+        const resumeContainer = document.getElementById('resumeFormContainer');
+        if (resumeContainer && resumeContainer.classList.contains('active')) {
+          mobileResumeActions.style.display = 'block';
+        } else {
+          mobileResumeActions.style.display = 'none';
+        }
+      }
+    } else if (!isMobile && headerUserInfo) {
+      const username = localStorage.getItem('username');
+      if (username) {
+        headerUserInfo.textContent = `👤 ${username}`;
+        headerUserInfo.style.display = 'inline-block';
+      }
+      if (mobileUserInfo) mobileUserInfo.style.display = 'none';
+      if (mobileResumeActions) mobileResumeActions.style.display = 'none';
+    }
+  }
+  
+  // Update on resize
+  window.addEventListener('resize', updateMobileUserInfo);
+
+  // Close header menu when clicking outside
+  document.addEventListener('click', function(event) {
+    const menu = document.getElementById('headerDropdownMenu');
+    const menuBtn = document.getElementById('menuToggleBtn');
+    
+    if (menu && menuBtn && !menuBtn.contains(event.target) && !menu.contains(event.target)) {
+      menu.style.display = 'none';
+    }
+  });
+
   // Handle Main Logout
   function handleMainLogout() {
-    if (!confirm('Are you sure you want to logout?')) return;
+    if (formHasChanges) {
+      showNotification('⚠️ You have unsaved changes. Please save before logging out.', 'warning', 4000);
+      return;
+    }
     
     dashboardCredentials = null;
     currentUsername = null;
@@ -5008,7 +5373,7 @@
     
     // Hide logout button and username in header
     document.getElementById('headerUserInfo').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('headerLogoutBtn').style.display = 'none';
     
     // Hide header and footer
     document.getElementById('mainHeader').style.display = 'none';
@@ -5260,7 +5625,7 @@
       
       if (!payload.custom_request || payload.custom_request.trim().length < 10) {
         outputArea.innerHTML = '';
-        alert('Please describe the email you need (at least 10 characters)');
+        showNotification('Please describe the email you need (at least 10 characters)', 'warning');
         return;
       }
     } else if (type === 'job_application') {
@@ -5271,7 +5636,7 @@
       
       if (!payload.company || !payload.job_title || !payload.jd) {
         outputArea.innerHTML = '';
-        alert('Please fill in all required fields (Company, Job Title, Job Description)');
+        showNotification('Please fill in all required fields (Company, Job Title, Job Description)', 'warning');
         return;
       }
     } else if (type === 'reply') {
@@ -5280,7 +5645,7 @@
       
       if (!payload.recruiter_email) {
         outputArea.innerHTML = '';
-        alert('Please paste the recruiter\'s email');
+        showNotification('Please paste the recruiter\'s email', 'warning');
         return;
       }
     } else {
@@ -5587,7 +5952,7 @@
     const sources = ['jsearch'];
     
     if (!jobTitle) {
-      alert('Please enter a job title');
+      showNotification('Please enter a job title', 'warning');
       return;
     }
     
@@ -5636,7 +6001,7 @@
       }
     } catch (error) {
       console.error('Error searching jobs:', error);
-      alert('Error searching jobs. Please try again.');
+      showNotification('Error searching jobs. Please try again.', 'error');
       document.getElementById('jobSearchResults').innerHTML = `
         <div class="no-results">
           <h3>Error occurred</h3>
@@ -6130,5 +6495,18 @@
   });
 
 </script>
+
+<!-- Custom Confirm Modal - Positioned at body level -->
+<div id="customConfirmModalBodyLevel" class="modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;align-items:center;justify-content:center;background:rgba(15,23,42,0.7);">
+  <div style="width:400px;max-width:90%;min-height:150px;padding:20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);background:#ffffff;position:relative;">
+    <h3 id="confirmModalTitleBodyLevel" style="margin:0 0 8px 0;color:#333;font-size:18px;font-weight:600;text-align:center;">Confirm Action</h3>
+    <p id="confirmModalMessageBodyLevel" style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.4;text-align:center;">Are you sure?</p>
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
+      <button id="confirmModalCancelBodyLevel" style="padding:8px 20px;border:1px solid #ddd;background:#ffffff;color:#333;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">Cancel</button>
+      <button id="confirmModalOkBodyLevel" style="padding:8px 20px;border:none;background:#e74c3c;color:#ffffff;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">OK</button>
+    </div>
+  </div>
+</div>
+
 <script src="/static/js/main.js?v=23.0"></script>
 </html>

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def extract_text_from_pdf(file_content: bytes) -> str:
     """
-    Extract text from PDF file content.
+    Extract text from PDF file content, including attempting to find URLs.
     
     Args:
         file_content: PDF file as bytes
@@ -33,6 +33,37 @@ def extract_text_from_pdf(file_content: bytes) -> str:
         text = pdf_extract_text(io.BytesIO(file_content))
         if not text or not text.strip():
             raise ValueError("No text content found in PDF")
+        
+        # Try to extract URLs from PDF annotations (if available)
+        try:
+            from pdfminer.pdfpage import PDFPage
+            from pdfminer.pdfdocument import PDFDocument
+            from pdfminer.pdfparser import PDFParser
+            
+            pdf_file = io.BytesIO(file_content)
+            parser = PDFParser(pdf_file)
+            document = PDFDocument(parser)
+            
+            urls = []
+            for page in PDFPage.create_pages(document):
+                if 'Annots' in page.attrs:
+                    for annot in page.attrs['Annots']:
+                        try:
+                            annot_obj = annot.resolve()
+                            if 'A' in annot_obj and 'URI' in annot_obj['A']:
+                                url = annot_obj['A']['URI'].decode('utf-8') if isinstance(annot_obj['A']['URI'], bytes) else str(annot_obj['A']['URI'])
+                                urls.append(url)
+                        except:
+                            pass
+            
+            # Append found URLs to the text
+            if urls:
+                text += "\n\nExtracted URLs:\n" + "\n".join(urls)
+                logger.info(f"Extracted {len(urls)} URLs from PDF")
+        except Exception as url_error:
+            logger.debug(f"Could not extract URLs from PDF: {url_error}")
+            # Continue with text-only extraction
+        
         return text.strip()
     except PDFSyntaxError as e:
         logger.error(f"PDF syntax error: {e}")
@@ -44,13 +75,13 @@ def extract_text_from_pdf(file_content: bytes) -> str:
 
 def extract_text_from_docx(file_content: bytes) -> str:
     """
-    Extract text from DOCX file content.
+    Extract text from DOCX file content, including hyperlinks.
     
     Args:
         file_content: DOCX file as bytes
         
     Returns:
-        Extracted text from DOCX
+        Extracted text from DOCX with embedded URLs
         
     Raises:
         ValueError: If DOCX cannot be parsed
@@ -58,12 +89,36 @@ def extract_text_from_docx(file_content: bytes) -> str:
     try:
         doc = Document(io.BytesIO(file_content))
         
-        # Extract text from paragraphs
+        # Extract text from paragraphs with hyperlinks
         paragraphs = []
         for para in doc.paragraphs:
-            text = para.text.strip()
-            if text:
-                paragraphs.append(text)
+            para_text = []
+            
+            # Check for hyperlinks in the paragraph
+            for run in para.runs:
+                text = run.text.strip()
+                if text:
+                    # Try to find hyperlink
+                    if hasattr(run, '_element') and run._element.xml:
+                        # Check if this run contains a hyperlink
+                        import re
+                        hyperlink_match = re.search(r'<w:hyperlink[^>]*r:id=\"([^\"]*)\"', run._element.xml)
+                        if hyperlink_match:
+                            rel_id = hyperlink_match.group(1)
+                            try:
+                                # Get the actual URL from the relationship
+                                rel = doc.part.rels[rel_id]
+                                url = rel.target_ref
+                                # Append text with URL
+                                para_text.append(f"{text} ({url})")
+                                continue
+                            except:
+                                pass
+                    para_text.append(text)
+            
+            full_para = ' '.join(para_text).strip()
+            if full_para:
+                paragraphs.append(full_para)
         
         # Extract text from tables
         for table in doc.tables:
