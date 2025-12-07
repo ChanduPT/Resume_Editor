@@ -49,13 +49,11 @@ def run_migration():
                 if 'first_name' not in columns:
                     logger.info("Adding first_name column to users table...")
                     conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)"))
-                    conn.commit()
                     logger.info("✅ Added first_name column")
                 
                 if 'last_name' not in columns:
                     logger.info("Adding last_name column to users table...")
                     conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100)"))
-                    conn.commit()
                     logger.info("✅ Added last_name column")
                 
                 trans.commit()
