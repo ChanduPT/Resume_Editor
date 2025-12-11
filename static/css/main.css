@@ -1663,8 +1663,8 @@
   }
   
   .kebab-dropdown {
-    position: absolute;
-    right: 0;
+    position: fixed;
+    right: auto;
     top: auto;
     bottom: auto;
     margin-top: 8px;
@@ -1673,7 +1673,7 @@
     border-radius: var(--radius-md);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     min-width: 200px;
-    z-index: 1000;
+    z-index: 9999;
     display: none;
     animation: slideDown 0.2s ease;
     overflow: visible;

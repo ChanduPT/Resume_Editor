@@ -4669,6 +4669,7 @@
   // Kebab Menu Functions
   function toggleKebabMenu(event, requestId) {
     event.stopPropagation();
+    const button = event.currentTarget;
     const dropdown = document.getElementById(`kebab-${requestId}`);
     const allDropdowns = document.querySelectorAll('.kebab-dropdown');
     
@@ -4678,7 +4679,30 @@
     });
     
     // Toggle current dropdown
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    if (dropdown.style.display === 'block') {
+      dropdown.style.display = 'none';
+    } else {
+      // Position dropdown using fixed positioning
+      const rect = button.getBoundingClientRect();
+      const dropdownHeight = 220; // Approximate height of dropdown
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // Position dropdown to the left of the button
+      dropdown.style.right = 'auto';
+      dropdown.style.left = (rect.right - 200) + 'px'; // 200px is dropdown width
+      
+      // Open upward if not enough space below
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        dropdown.style.top = 'auto';
+        dropdown.style.bottom = (window.innerHeight - rect.top) + 'px';
+      } else {
+        dropdown.style.top = (rect.bottom + 8) + 'px';
+        dropdown.style.bottom = 'auto';
+      }
+      
+      dropdown.style.display = 'block';
+    }
   }
 
   function closeKebabMenu(requestId) {
