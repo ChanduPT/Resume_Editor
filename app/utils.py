@@ -244,7 +244,12 @@ def chat_completion(prompt: str, model: Optional[str] = None) -> str:
 
         genai.configure(api_key=api_key)
         model_name = "gemini-2.5-flash"
-        gmodel = genai.GenerativeModel(model_name)
+        # Set max_output_tokens to handle large resumes with multiple experiences
+        generation_config = {
+            "temperature": 0.2,
+            "max_output_tokens": 8192,
+        }
+        gmodel = genai.GenerativeModel(model_name, generation_config=generation_config)
         response = gmodel.generate_content(prompt)
 
         # Primary text
@@ -313,8 +318,13 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
         model_name = "gemini-2.5-flash"
         
         # Configure generation with response schema if provided
+        # Set max_output_tokens high enough to handle large resumes with 4+ experiences
+        # Each experience can have 8-10 bullets of ~30 words each = ~300 words per role
+        # 4 roles = ~1200 words = ~1600 tokens, plus JSON overhead
+        # Setting to 8192 tokens to be safe for complex resumes
         generation_config = {
             "temperature": 0.2,
+            "max_output_tokens": 8192,
         }
         
         if response_schema:
