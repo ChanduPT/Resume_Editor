@@ -585,6 +585,15 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
             experience_result = result.get("experience", [])
             print(f"[DEBUG EXPERIENCE] Parsed {len(experience_result)} experience entries")
             
+            # Validate: Check if we got all experience entries back
+            input_exp_count = len(experience_data)
+            output_exp_count = len(experience_result)
+            if output_exp_count < input_exp_count:
+                logger.warning(f"[EXPERIENCE] ⚠️ MISSING ENTRIES: Input had {input_exp_count} roles, but LLM returned only {output_exp_count} roles")
+                logger.warning(f"[EXPERIENCE] Input companies: {[exp.get('company', 'N/A') for exp in experience_data]}")
+                logger.warning(f"[EXPERIENCE] Output companies: {[exp.get('company', 'N/A') for exp in experience_result]}")
+                logger.warning(f"[EXPERIENCE] This may be due to LLM output token limits. Response length: {len(result_raw)} chars")
+            
             # Clean experience bullets to remove markdown and excessive quotes
             experience_result = clean_experience_bullets(experience_result)
             print(f"[DEBUG EXPERIENCE] After cleaning: {len(experience_result)} entries")
@@ -987,6 +996,15 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             result = json.loads(result_raw)
             experience_result = result.get("experience", [])
             print(f"[DEBUG EXPERIENCE PARALLEL] Parsed {len(experience_result)} experience entries")
+            
+            # Validate: Check if we got all experience entries back
+            input_exp_count = len(experience_data)
+            output_exp_count = len(experience_result)
+            if output_exp_count < input_exp_count:
+                logger.warning(f"[EXPERIENCE PARALLEL] ⚠️ MISSING ENTRIES: Input had {input_exp_count} roles, but LLM returned only {output_exp_count} roles")
+                logger.warning(f"[EXPERIENCE PARALLEL] Input companies: {[exp.get('company', 'N/A') for exp in experience_data]}")
+                logger.warning(f"[EXPERIENCE PARALLEL] Output companies: {[exp.get('company', 'N/A') for exp in experience_result]}")
+                logger.warning(f"[EXPERIENCE PARALLEL] This may be due to LLM output token limits. Response length: {len(result_raw)} chars")
             
             # Clean experience bullets to remove markdown and excessive quotes
             experience_result = clean_experience_bullets(experience_result)
