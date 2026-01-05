@@ -86,6 +86,7 @@ def save_intermediate_state(request_id: str, jd_hints: dict, preprocessed_jd: di
     )
     
     logger.info(f"[FEEDBACK] Saved intermediate state for request {request_id}")
+    logger.info(f"[FEEDBACK] Mode saved in state: '{mode}'")
     
     # Return user-facing data (exclude internal fields)
     return {
@@ -99,11 +100,12 @@ def save_intermediate_state(request_id: str, jd_hints: dict, preprocessed_jd: di
     }
 
 
-def load_intermediate_state(request_id: str) -> dict:
+def load_intermediate_state(request_id: str, db: Session = None) -> dict:
     """Load intermediate state for resuming after human feedback
     
     Args:
         request_id: The job request ID
+        db: Optional database session to load from DB if not in memory
         
     Returns:
         dict: Complete state object with all data needed to continue
@@ -111,22 +113,49 @@ def load_intermediate_state(request_id: str) -> dict:
     Raises:
         ValueError: If state not found for request_id
     """
-    if request_id not in intermediate_state:
-        logger.error(f"[FEEDBACK] No intermediate state found for request {request_id}")
-        raise ValueError(f"No pending job found for request_id: {request_id}")
+    # First try memory (fastest)
+    if request_id in intermediate_state:
+        state = intermediate_state[request_id]
+        logger.info(f"[FEEDBACK] Loaded intermediate state from MEMORY for request {request_id}")
+        logger.info(f"[FEEDBACK] State mode: '{state.get('mode', 'NOT_SET')}'")
+        return state
     
-    state = intermediate_state[request_id]
-    logger.info(f"[FEEDBACK] Loaded intermediate state for request {request_id}")
+    # If not in memory but we have a DB session, try loading from database
+    # This is critical for Render deployments where server can restart
+    if db:
+        try:
+            job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id).first()
+            if job and job.intermediate_state:
+                state = job.intermediate_state
+                # Re-populate memory cache for subsequent calls in this session
+                intermediate_state[request_id] = state
+                logger.info(f"[FEEDBACK] Loaded intermediate state from DATABASE for request {request_id}")
+                logger.info(f"[FEEDBACK] State mode from DB: '{state.get('mode', 'NOT_SET')}'")
+                logger.info(f"[FEEDBACK] DB job.mode: '{job.mode}'")
+                
+                # Ensure mode is set in state (fallback to job.mode if missing)
+                if 'mode' not in state or not state.get('mode'):
+                    state['mode'] = job.mode or 'complete_jd'
+                    logger.warning(f"[FEEDBACK] Mode was missing in state, set from job.mode: '{state['mode']}'")
+                    intermediate_state[request_id] = state
+                
+                return state
+            elif job:
+                logger.warning(f"[FEEDBACK] Job found but intermediate_state is empty for {request_id}")
+        except Exception as e:
+            logger.error(f"[FEEDBACK] Error loading from database: {str(e)}")
     
-    return state
+    logger.error(f"[FEEDBACK] No intermediate state found for request {request_id} (checked memory and DB)")
+    raise ValueError(f"No pending job found for request_id: {request_id}")
 
 
-def update_jd_hints_from_feedback(request_id: str, feedback: dict) -> dict:
+def update_jd_hints_from_feedback(request_id: str, feedback: dict, db: Session = None) -> dict:
     """Update JD hints based on user feedback
     
     Args:
         request_id: The job request ID
         feedback: User's edited keywords/skills/phrases
+        db: Optional database session
         
     Returns:
         dict: Updated jd_hints object
@@ -134,7 +163,7 @@ def update_jd_hints_from_feedback(request_id: str, feedback: dict) -> dict:
     Raises:
         ValueError: If state not found or feedback invalid
     """
-    state = load_intermediate_state(request_id)
+    state = load_intermediate_state(request_id, db)
     
     # Update jd_hints with user feedback
     jd_hints = state["jd_hints"].copy()
@@ -399,9 +428,9 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     
     send_progress(request_id, 30, "Resuming with approved keywords...", db, status="processing")
     
-    # Load intermediate state
+    # Load intermediate state - NOW PASSES db to load from DB if memory is empty (critical for Render)
     try:
-        state = load_intermediate_state(request_id)
+        state = load_intermediate_state(request_id, db)
     except ValueError as e:
         logger.error(f"[GENERATION] {str(e)}")
         raise
@@ -409,15 +438,22 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     # Apply user feedback if provided
     if feedback:
         logger.info(f"[FEEDBACK] Applying user edits to keywords")
-        jd_hints = update_jd_hints_from_feedback(request_id, feedback)
+        jd_hints = update_jd_hints_from_feedback(request_id, feedback, db)
     else:
         logger.info(f"[FEEDBACK] No edits provided, using original extraction")
         jd_hints = state["jd_hints"]
     
-    # Extract state variables
-    resume_json = state["resume_json"]
-    mode = state["mode"]
-    preprocessed_jd = state["preprocessed_jd"]
+    # Extract state variables with safe defaults
+    resume_json = state.get("resume_json", {})
+    mode = state.get("mode", "complete_jd")
+    preprocessed_jd = state.get("preprocessed_jd", {})
+    
+    # DEBUG LOGGING: Critical for tracking mode issues
+    logger.info(f"[MODE DEBUG] ========================================")
+    logger.info(f"[MODE DEBUG] Request ID: {request_id}")
+    logger.info(f"[MODE DEBUG] Mode loaded from state: '{mode}'")
+    logger.info(f"[MODE DEBUG] State keys present: {list(state.keys())}")
+    logger.info(f"[MODE DEBUG] ========================================")
     
     # Log input resume data
     log_subsection(logger, "INPUT RESUME DATA")

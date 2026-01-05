@@ -263,12 +263,15 @@ async def extract_keywords_from_jd(
         job_link = data.get("job_link", None)
         
         # Create job record
+        mode_value = data.get("mode", "complete_jd")
+        logger.info(f"[EXTRACT_KEYWORDS] Creating job with mode: '{mode_value}'")
+        
         resume_job = ResumeJob(
             user_id=current_user.user_id,
             request_id=request_id,
             company_name=company_name,
             job_title=job_title,
-            mode=data.get("mode", "complete_jd"),
+            mode=mode_value,
             format=resume_format,
             jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
@@ -290,7 +293,8 @@ async def extract_keywords_from_jd(
         # Store the full intermediate state (not just user-facing result)
         # Load the full state from memory which includes jd, preprocessed_jd, etc.
         try:
-            full_state = load_intermediate_state(request_id)
+            full_state = load_intermediate_state(request_id, db)
+            logger.info(f"[EXTRACT_KEYWORDS] Loaded full state, mode in state: '{full_state.get('mode', 'NOT_SET')}'")
             resume_job.intermediate_state = full_state
         except ValueError:
             # Fallback: if loading from memory fails, reconstruct full state
@@ -301,7 +305,7 @@ async def extract_keywords_from_jd(
                 "jd": jd_text,
                 "company_name": company_name,
                 "job_title": job_title,
-                "mode": data.get("mode", "complete_jd"),
+                "mode": mode_value,
                 **result  # Merge in the extracted keywords
             }
         db.commit()
@@ -397,12 +401,15 @@ async def regenerate_keywords(
         result = await extract_jd_keywords(original_data, request_id, db)
         
         # Update job with new keywords - preserve full state structure
-        full_state = load_intermediate_state(request_id)
-        if full_state:
-            # Update only the keyword portion of the full state
-            job.intermediate_state = full_state
-        else:
+        try:
+            full_state = load_intermediate_state(request_id, db)
+            if full_state:
+                # Update only the keyword portion of the full state
+                logger.info(f"[REGENERATE] Loaded full state, mode: '{full_state.get('mode', 'NOT_SET')}'")
+                job.intermediate_state = full_state
+        except ValueError:
             # Fallback: store the result but ensure resume_data is included
+            logger.warning(f"[REGENERATE] Failed to load intermediate state, reconstructing")
             job.intermediate_state = {
                 "request_id": request_id,
                 "resume_json": intermediate_data.get("resume_json") or job.resume_input_json or {},
