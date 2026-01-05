@@ -115,11 +115,19 @@ async def startup_event():
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
-    """Serve the main index.html"""
+    """Serve the main index.html with no-cache headers to prevent stale content"""
     index_path = Path(__file__).parent.parent / "index.html"
     if index_path.exists():
         with open(index_path, 'r', encoding='utf-8') as f:
-            return HTMLResponse(content=f.read())
+            content = f.read()
+        return HTMLResponse(
+            content=content,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     else:
         return HTMLResponse(
             content="<h1>Resume Builder not found</h1><p>Please ensure index.html exists.</p>",
