@@ -91,6 +91,7 @@ def save_intermediate_state(request_id: str, jd_hints: dict, preprocessed_jd: di
     )
     
     logger.info(f"[FEEDBACK] Saved intermediate state for request {request_id}")
+    logger.info(f"[FEEDBACK] Mode saved in state: '{mode}'")
     
     # Return user-facing data (exclude internal fields)
     return {
@@ -471,10 +472,17 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
         logger.info(f"[FEEDBACK] No edits provided, using original extraction")
         jd_hints = state["jd_hints"]
     
-    # Extract state variables
-    resume_json = state["resume_json"]
-    mode = state["mode"]
-    preprocessed_jd = state["preprocessed_jd"]
+    # Extract state variables with safe defaults
+    resume_json = state.get("resume_json", {})
+    mode = state.get("mode", "complete_jd")
+    preprocessed_jd = state.get("preprocessed_jd", {})
+    
+    # DEBUG LOGGING: Critical for tracking mode issues
+    logger.info(f"[MODE DEBUG] ========================================")
+    logger.info(f"[MODE DEBUG] Request ID: {request_id}")
+    logger.info(f"[MODE DEBUG] Mode loaded from state: '{mode}'")
+    logger.info(f"[MODE DEBUG] State keys present: {list(state.keys())}")
+    logger.info(f"[MODE DEBUG] ========================================")
     
     # Log input resume data
     log_subsection(logger, "INPUT RESUME DATA")

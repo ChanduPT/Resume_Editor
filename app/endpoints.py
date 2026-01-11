@@ -270,6 +270,9 @@ async def extract_keywords_from_jd(
         logger.info(f"[MODE_TRACE] User: {current_user.username}")
         
         # Create job record
+        mode_value = data.get("mode", "complete_jd")
+        logger.info(f"[EXTRACT_KEYWORDS] Creating job with mode: '{mode_value}'")
+        
         resume_job = ResumeJob(
             user_id=current_user.user_id,
             request_id=request_id,
@@ -311,7 +314,7 @@ async def extract_keywords_from_jd(
                 "jd": jd_text,
                 "company_name": company_name,
                 "job_title": job_title,
-                "mode": data.get("mode", "complete_jd"),
+                "mode": mode_value,
                 **result  # Merge in the extracted keywords
             }
         db.commit()
@@ -416,6 +419,7 @@ async def regenerate_keywords(
             job.intermediate_state = full_state
         else:
             # Fallback: store the result but ensure resume_data is included
+            logger.warning(f"[REGENERATE] Failed to load intermediate state, reconstructing")
             job.intermediate_state = {
                 "request_id": request_id,
                 "resume_json": intermediate_data.get("resume_json") or job.resume_input_json or {},

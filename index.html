@@ -3002,7 +3002,8 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        cache: 'no-store'
       });
       
       if (!extractRes.ok) {
@@ -3252,7 +3253,8 @@
           'Content-Type': 'application/json',
           'Authorization': auth
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        cache: 'no-store'
       });
       
       console.log('[FEEDBACK] Generate response status:', generateRes.status);
@@ -3574,7 +3576,8 @@
         headers: {
           'Authorization': auth,
           'Content-Type': 'application/json'
-        }
+        },
+        cache: 'no-store'
       });
       
       if (!response.ok) {
@@ -3700,7 +3703,8 @@
             method: 'DELETE',
             headers: {
               'Authorization': auth
-            }
+            },
+            cache: 'no-store'
           });
           
           if (response.ok) {
@@ -4099,7 +4103,8 @@
             'Content-Type': 'application/json',
             'Authorization': 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
           },
-          body: JSON.stringify(requestData)
+          body: JSON.stringify(requestData),
+          cache: 'no-store'
         });
 
         console.log('[FEEDBACK] Extract response status:', extractResponse.status);
