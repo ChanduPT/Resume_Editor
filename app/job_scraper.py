@@ -9,7 +9,7 @@ import asyncio
 from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
 import re
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse, urlunparse
 import logging
 import ssl
 import os
@@ -41,10 +41,25 @@ class JobScraper:
         self.ssl_context.check_hostname = False
         self.ssl_context.verify_mode = ssl.CERT_NONE
         
-                # JSearch API configuration (OpenWebNinja for production-quality job data)
+        # JSearch API configuration (OpenWebNinja for production-quality job data)
         self.jsearch_api_key = os.getenv('JSEARCH_API_KEY')
         self.jsearch_base_url = "https://api.openwebninja.com/jsearch/search"
         self.use_jsearch = bool(self.jsearch_api_key)  # Use JSearch if API key is available
+        
+        # Google Custom Search Engine (CSE) for Workday jobs
+        self.google_cse_api_key = os.getenv('GOOGLE_CSE_API_KEY', 'AIzaSyDJuRl0r6rQDYzQ5GHzeMWazhHwMsgQlfY')
+        self.google_cse_cx = os.getenv('GOOGLE_CSE_CX', '5098f242ed69d4adb')
+        self.google_cse_base_url = "https://www.googleapis.com/customsearch/v1"
+        
+        # Bad URL patterns to filter out (apply pages, login, etc.)
+        self.bad_url_patterns = [
+            r"/apply/",
+            r"/autofillWithResume",
+            r"/useMyLastApplication", 
+            r"/login",
+            r"/signin",
+            r"/register",
+        ]
     
     async def search_jobs(
         self,
@@ -57,7 +72,8 @@ class JobScraper:
         experience_level: str = "",
         work_from_home: bool = False,
         salary_min: int = None,
-        salary_max: int = None
+        salary_max: int = None,
+        sort_by: str = "relevance"
     ) -> List[Dict]:
         """
         Main search function - orchestrates multi-source job search
@@ -65,17 +81,75 @@ class JobScraper:
         Args:
             job_title: Job title/role to search for
             location: Location filter query
-            date_posted: Date filter ("posted today", "posted this week", etc.)
+            date_posted: Date filter ("today", "3days", "week", "month", "all")
             sources: List of job board sources to search
             max_results: Max results per source
+            sort_by: Sort method - "relevance" or "date"
         
         Returns:
             Combined list of job dictionaries from all sources
         """
-        logger.info(f"[JOB_SEARCH] Starting search: '{job_title}' in '{location}'")
+        logger.info(f"[JOB_SEARCH] Starting search: '{job_title}' in '{location}', date={date_posted}, sort={sort_by}, sources={sources}")
         
-        # If JSearch API is available, use it as primary source
-        if self.use_jsearch:
+        # If user specifically selected Workday, use CSE API directly
+        if "workday" in sources and len(sources) == 1:
+            logger.info(f"[JOB_SEARCH] Using Workday CSE API (user selected)")
+            try:
+                workday_jobs = await self._search_workday_cse(job_title, location, date_posted, max_results, sort_by)
+                if workday_jobs:
+                    logger.info(f"[JOB_SEARCH] Workday CSE returned {len(workday_jobs)} jobs")
+                    return workday_jobs[:max_results]
+            except Exception as e:
+                logger.error(f"[JOB_SEARCH] Workday CSE failed: {e}")
+                return []
+        
+        # If user specifically selected Lever, use CSE API directly
+        if "lever" in sources and len(sources) == 1:
+            logger.info(f"[JOB_SEARCH] Using Lever CSE API (user selected)")
+            try:
+                lever_jobs = await self._search_lever_cse(job_title, location, date_posted, max_results, sort_by)
+                logger.info(f"[JOB_SEARCH] Lever CSE returned {len(lever_jobs)} jobs")
+                return lever_jobs[:max_results] if lever_jobs else []
+            except Exception as e:
+                logger.error(f"[JOB_SEARCH] Lever CSE failed: {e}")
+                return []
+        
+        # If user specifically selected iCIMS, use CSE API directly
+        if "icims" in sources and len(sources) == 1:
+            logger.info(f"[JOB_SEARCH] Using iCIMS CSE API (user selected)")
+            try:
+                icims_jobs = await self._search_icims_cse(job_title, location, date_posted, max_results, sort_by)
+                logger.info(f"[JOB_SEARCH] iCIMS CSE returned {len(icims_jobs)} jobs")
+                return icims_jobs[:max_results] if icims_jobs else []
+            except Exception as e:
+                logger.error(f"[JOB_SEARCH] iCIMS CSE failed: {e}")
+                return []
+        
+        # If user specifically selected BambooHR, use CSE API directly
+        if "bamboohr" in sources and len(sources) == 1:
+            logger.info(f"[JOB_SEARCH] Using BambooHR CSE API (user selected)")
+            try:
+                bamboohr_jobs = await self._search_bamboohr_cse(job_title, location, date_posted, max_results, sort_by)
+                logger.info(f"[JOB_SEARCH] BambooHR CSE returned {len(bamboohr_jobs)} jobs")
+                return bamboohr_jobs[:max_results] if bamboohr_jobs else []
+            except Exception as e:
+                logger.error(f"[JOB_SEARCH] BambooHR CSE failed: {e}")
+                return []
+        
+        # If user specifically selected Greenhouse, use Greenhouse API directly
+        if "greenhouse" in sources and len(sources) == 1:
+            logger.info(f"[JOB_SEARCH] Using Greenhouse API (user selected)")
+            try:
+                greenhouse_jobs = await self._search_greenhouse_companies(job_title, location, max_results)
+                if greenhouse_jobs:
+                    logger.info(f"[JOB_SEARCH] Greenhouse API returned {len(greenhouse_jobs)} jobs")
+                    return greenhouse_jobs[:max_results]
+            except Exception as e:
+                logger.error(f"[JOB_SEARCH] Greenhouse API failed: {e}")
+                return []
+        
+        # Default: If JSearch API is available and user selected 'jsearch' or multiple sources
+        if self.use_jsearch and ("jsearch" in sources or len(sources) > 1):
             try:
                 jsearch_jobs = await self._search_jsearch(job_title, location, date_posted, max_results, employment_types, experience_level, work_from_home)
                 if jsearch_jobs:
@@ -84,25 +158,30 @@ class JobScraper:
             except Exception as e:
                 logger.error(f"[JOB_SEARCH] JSearch API failed: {e}, falling back to other sources")
         
-        # Try Greenhouse API as secondary source (high-quality tech jobs)
-        try:
-            greenhouse_jobs = await self._search_greenhouse_companies(job_title, location, max_results)
-            if greenhouse_jobs:
-                logger.info(f"[JOB_SEARCH] Greenhouse API returned {len(greenhouse_jobs)} jobs")
-                return greenhouse_jobs[:max_results]
-        except Exception as e:
-            logger.error(f"[JOB_SEARCH] Greenhouse API failed: {e}, falling back to scraping")
+        # Fallback: Try Greenhouse API as secondary source
+        if "greenhouse" in sources:
+            try:
+                greenhouse_jobs = await self._search_greenhouse_companies(job_title, location, max_results)
+                if greenhouse_jobs:
+                    logger.info(f"[JOB_SEARCH] Greenhouse API returned {len(greenhouse_jobs)} jobs")
+                    return greenhouse_jobs[:max_results]
+            except Exception as e:
+                logger.error(f"[JOB_SEARCH] Greenhouse API failed: {e}, falling back to scraping")
         
         all_jobs = []
         
         # Search each source concurrently (fallback method)
         tasks = []
         if "workday" in sources:
-            tasks.append(self._search_workday(job_title, location, date_posted, max_results))
+            tasks.append(self._search_workday_cse(job_title, location, date_posted, max_results, sort_by))
+        if "lever" in sources:
+            tasks.append(self._search_lever_cse(job_title, location, date_posted, max_results, sort_by))
+        if "icims" in sources:
+            tasks.append(self._search_icims_cse(job_title, location, date_posted, max_results, sort_by))
+        if "bamboohr" in sources:
+            tasks.append(self._search_bamboohr_cse(job_title, location, date_posted, max_results, sort_by))
         if "greenhouse" in sources:
             tasks.append(self._search_greenhouse(job_title, location, date_posted, max_results))
-        if "lever" in sources:
-            tasks.append(self._search_lever(job_title, location, date_posted, max_results))
         if "linkedin" in sources:
             tasks.append(self._search_linkedin(job_title, location, date_posted, max_results))
         
@@ -205,13 +284,18 @@ class JobScraper:
                     
                     for job_data in jobs_data[:max_results]:
                         try:
+                            # Get full job description
+                            full_description = job_data.get('job_description', '')
+                            
                             # Format job data to match our schema
                             job = {
                                 'title': job_data.get('job_title', 'Unknown Title'),
                                 'company': job_data.get('employer_name', 'Unknown Company'),
                                 'location': job_data.get('job_city', '') + ', ' + job_data.get('job_state', '') if job_data.get('job_city') else job_data.get('job_country', 'Unknown Location'),
                                 'link': job_data.get('job_apply_link') or job_data.get('job_url', ''),
-                                'snippet': job_data.get('job_description', '')[:200] + '...' if job_data.get('job_description') else 'No description available',
+                                'snippet': full_description[:200] + '...' if len(full_description) > 200 else (full_description or 'No description available'),
+                                'job_description': full_description,  # Include full description for resume generation
+                                'description': full_description,  # Alias for compatibility
                                 'source': 'JSearch API',
                                 # Additional JSearch-specific data
                                 'salary_min': job_data.get('job_min_salary'),
@@ -233,6 +317,572 @@ class JobScraper:
             logger.error(f"[JSEARCH] Search failed: {e}")
             return []
     
+    def _clean_url(self, url: str) -> str:
+        """
+        Clean URL by:
+        1. Removing query params/fragments for deduplication
+        2. Stripping bad patterns from the end (apply/, login, etc.)
+        """
+        try:
+            p = urlparse(url)
+            # Keep scheme + netloc + path only (remove query params and fragments)
+            clean = urlunparse((p.scheme, p.netloc, p.path, "", "", ""))
+            
+            # Strip bad patterns from the end of the path
+            for pattern in self.bad_url_patterns:
+                # Remove pattern if it appears at the end (with or without trailing slash)
+                clean = re.sub(pattern.rstrip('/') + r'/?$', '', clean, flags=re.IGNORECASE)
+            
+            # Remove trailing slash if present
+            clean = clean.rstrip('/')
+            
+            return clean
+        except Exception:
+            return url
+    
+    def _is_valid_job_url(self, url: str) -> bool:
+        """
+        Basic validation - check if it's a valid job board URL.
+        Bad patterns are now stripped in _clean_url() instead of rejected.
+        """
+        # Check if it's from supported job boards
+        valid_domains = [
+            'myworkdayjobs.com',  # Workday
+            'jobs.lever.co',       # Lever
+            'icims.com',           # iCIMS direct
+            'bamboohr.com/careers' # BambooHR
+        ]
+        
+        # Special case for iCIMS: also accept URLs with /careers/jobs/ pattern
+        # (most iCIMS boards are on company domains like careers.company.com/jobs/)
+        if '/careers/jobs/' in url or '/jobs/' in url:
+            # Additional check: URL should look like a job posting (has job ID or detailed path)
+            if url.count('/') >= 4:
+                return True
+        
+        if not any(domain in url for domain in valid_domains):
+            return False
+        
+        # Should have some path (not just homepage)
+        if url.count('/') < 3:
+            return False
+        
+        return True
+    
+    async def _search_workday_cse(
+        self,
+        job_title: str,
+        location: str,
+        date_posted: str,
+        max_results: int,
+        sort_by: str = "relevance"
+    ) -> List[Dict]:
+        """
+        Search Workday jobs using Google Custom Search Engine API.
+        More reliable than scraping, supports date filtering and sorting.
+        
+        Args:
+            job_title: Job title to search for
+            location: Location filter (remote, city, state)
+            date_posted: Date filter (today, 3days, week, month, all)
+            max_results: Maximum number of results to return
+            sort_by: Sort method - "relevance" or "date"
+        
+        Returns:
+            List of job dictionaries
+        """
+        try:
+            # Build the search query for Workday
+            location_terms = location.lower()
+            if "remote" in location_terms:
+                location_query = '("remote" OR "United States" OR "USA" OR "US")'
+            else:
+                location_query = f'("{location}")'
+            
+            query = f'site:myworkdayjobs.com "{job_title}" {location_query}'
+            
+            # Map date_posted to Google CSE dateRestrict parameter
+            # d[number] = past N days, w[number] = past N weeks, m[number] = past N months
+            date_restrict_mapping = {
+                "today": "d1",
+                "3days": "d3",
+                "week": "w1",
+                "month": "m1",
+                "all": None
+            }
+            date_restrict = date_restrict_mapping.get(date_posted.lower(), "w1")
+            
+            # Calculate pages needed (10 results per page)
+            # Fetch 2-3x more pages to account for filtering (~50-60% get filtered out)
+            raw_results_needed = max_results * 2.5  # Fetch extra to compensate for filtering
+            max_pages = min(int((raw_results_needed + 9) // 10), 10)  # CSE allows max 100 results
+            
+            all_jobs = []
+            seen_urls = set()
+            
+            async with aiohttp.ClientSession(
+                timeout=self.timeout,
+                connector=aiohttp.TCPConnector(ssl=self.ssl_context)
+            ) as session:
+                for page in range(max_pages):
+                    start_index = 1 + page * 10
+                    
+                    params = {
+                        "key": self.google_cse_api_key,
+                        "cx": self.google_cse_cx,
+                        "q": query,
+                        "start": start_index,
+                        "num": 10,
+                        "gl": "us",
+                        "cr": "countryUS",
+                    }
+                    
+                    # Add date restriction if not "all"
+                    if date_restrict:
+                        params["dateRestrict"] = date_restrict
+                    
+                    # Add sort by date if requested
+                    if sort_by == "date":
+                        params["sort"] = "date"
+                    
+                    logger.info(f"[WORKDAY_CSE] Page {page + 1}: query='{query}', dateRestrict={date_restrict}")
+                    
+                    async with session.get(self.google_cse_base_url, params=params) as response:
+                        if response.status != 200:
+                            error_text = await response.text()
+                            logger.error(f"[WORKDAY_CSE] API error {response.status}: {error_text}")
+                            break
+                        
+                        data = await response.json()
+                        items = data.get("items", [])
+                        
+                        if not items:
+                            logger.info(f"[WORKDAY_CSE] No more results on page {page + 1}")
+                            break
+                        
+                        for item in items:
+                            raw_url = item.get("link", "")
+                            if not raw_url:
+                                continue
+                            
+                            # Clean and dedupe URL
+                            clean_link = self._clean_url(raw_url)
+                            if clean_link in seen_urls:
+                                continue
+                            
+                            # Validate URL (filter out apply/login pages)
+                            if not self._is_valid_job_url(clean_link):
+                                continue
+                            
+                            seen_urls.add(clean_link)
+                            
+                            # Extract company from Workday subdomain
+                            company = "Unknown"
+                            match = re.search(r'https?://([^.]+)\.wd\d+\.myworkdayjobs\.com', clean_link)
+                            if match:
+                                company = match.group(1).replace('-', ' ').title()
+                            
+                            # Extract location from snippet
+                            snippet = item.get("snippet", "")
+                            location_match = re.search(
+                                r'\b(Remote|Hybrid|On-site|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\b',
+                                snippet
+                            )
+                            job_location = location_match.group(1) if location_match else location
+                            
+                            job = {
+                                'title': item.get("title", "").replace(" | Workday", "").strip(),
+                                'company': company,
+                                'location': job_location,
+                                'link': clean_link,
+                                'snippet': snippet[:300],
+                                'source': 'Workday',
+                                'display_link': item.get("displayLink", "")
+                            }
+                            all_jobs.append(job)
+                        
+                        # Small delay between pages to be respectful
+                        if page < max_pages - 1:
+                            await asyncio.sleep(0.2)
+            
+            logger.info(f"[WORKDAY_CSE] Found {len(all_jobs)} unique Workday jobs")
+            return all_jobs[:max_results]
+        
+        except Exception as e:
+            logger.error(f"[WORKDAY_CSE] Search failed: {e}")
+            return []
+    
+    async def _search_lever_cse(
+        self,
+        job_title: str,
+        location: str,
+        date_posted: str,
+        max_results: int,
+        sort_by: str = "relevance"
+    ) -> List[Dict]:
+        """
+        Search Lever jobs using Google Custom Search Engine API.
+        Lever uses jobs.lever.co for their job boards.
+        """
+        try:
+            # Build the search query for Lever
+            location_terms = location.lower()
+            if "remote" in location_terms:
+                location_query = '("remote" OR "United States" OR "USA" OR "US")'
+            else:
+                location_query = f'("{location}")'
+            
+            query = f'site:jobs.lever.co "{job_title}" {location_query}'
+            
+            # Map date_posted to Google CSE dateRestrict parameter
+            date_restrict_mapping = {
+                "today": "d1",
+                "3days": "d3",
+                "week": "w1",
+                "month": "m1",
+                "all": None
+            }
+            date_restrict = date_restrict_mapping.get(date_posted.lower(), "w1")
+            
+            # Calculate pages needed (10 results per page)
+            raw_results_needed = max_results * 2.5  # Fetch extra to compensate for filtering
+            max_pages = min(int((raw_results_needed + 9) // 10), 10)  # CSE allows max 100 results
+            
+            all_jobs = []
+            seen_urls = set()
+            
+            async with aiohttp.ClientSession(
+                timeout=self.timeout,
+                connector=aiohttp.TCPConnector(ssl=self.ssl_context)
+            ) as session:
+                for page in range(max_pages):
+                    start_index = 1 + page * 10
+                    
+                    params = {
+                        "key": self.google_cse_api_key,
+                        "cx": self.google_cse_cx,
+                        "q": query,
+                        "start": start_index,
+                        "num": 10,
+                        "gl": "us",
+                        "cr": "countryUS",
+                    }
+                    
+                    if date_restrict:
+                        params["dateRestrict"] = date_restrict
+                    
+                    if sort_by == "date":
+                        params["sort"] = "date"
+                    
+                    logger.info(f"[LEVER_CSE] Page {page + 1}: query='{query}', dateRestrict={date_restrict}")
+                    
+                    async with session.get(self.google_cse_base_url, params=params) as response:
+                        if response.status != 200:
+                            error_text = await response.text()
+                            logger.error(f"[LEVER_CSE] API error {response.status}: {error_text}")
+                            break
+                        
+                        data = await response.json()
+                        items = data.get("items", [])
+                        
+                        if not items:
+                            logger.info(f"[LEVER_CSE] No more results on page {page + 1}")
+                            break
+                        
+                        for item in items:
+                            raw_url = item.get("link", "")
+                            if not raw_url:
+                                continue
+                            
+                            clean_link = self._clean_url(raw_url)
+                            if clean_link in seen_urls:
+                                continue
+                            
+                            if not self._is_valid_job_url(clean_link):
+                                continue
+                            
+                            seen_urls.add(clean_link)
+                            
+                            # Extract company from Lever URL: jobs.lever.co/company-name
+                            company = "Unknown"
+                            match = re.search(r'jobs\.lever\.co/([^/]+)', clean_link)
+                            if match:
+                                company = match.group(1).replace('-', ' ').title()
+                            
+                            snippet = item.get("snippet", "")
+                            location_match = re.search(
+                                r'\b(Remote|Hybrid|On-site|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\b',
+                                snippet
+                            )
+                            job_location = location_match.group(1) if location_match else location
+                            
+                            job = {
+                                'title': item.get("title", "").replace(" - Lever", "").strip(),
+                                'company': company,
+                                'location': job_location,
+                                'link': clean_link,
+                                'snippet': snippet[:300],
+                                'source': 'Lever',
+                                'display_link': item.get("displayLink", "")
+                            }
+                            all_jobs.append(job)
+                        
+                        if page < max_pages - 1:
+                            await asyncio.sleep(0.2)
+            
+            logger.info(f"[LEVER_CSE] Found {len(all_jobs)} unique Lever jobs")
+            return all_jobs[:max_results]
+        
+        except Exception as e:
+            logger.error(f"[LEVER_CSE] Search failed: {e}")
+            return []
+    
+    async def _search_icims_cse(
+        self,
+        job_title: str,
+        location: str,
+        date_posted: str,
+        max_results: int,
+        sort_by: str = "relevance"
+    ) -> List[Dict]:
+        """
+        Search iCIMS jobs using Google Custom Search Engine API.
+        iCIMS uses various domains like careers.company.com/jobs with iCIMS platform.
+        """
+        try:
+            location_terms = location.lower()
+            if "remote" in location_terms:
+                location_query = '("remote" OR "United States" OR "USA" OR "US")'
+            else:
+                location_query = f'("{location}")'
+            
+            # iCIMS jobs are on various domains - search for the distinctive /jobs/ URL pattern
+            # Most iCIMS boards use: careers.company.com/jobs/, company.com/careers/jobs/, etc.
+            query = f'(inurl:careers/jobs OR inurl:jobs OR site:icims.com) "{job_title}" {location_query}'
+            
+            date_restrict_mapping = {
+                "today": "d1",
+                "3days": "d3",
+                "week": "w1",
+                "month": "m1",
+                "all": None
+            }
+            date_restrict = date_restrict_mapping.get(date_posted.lower(), "w1")
+            
+            raw_results_needed = max_results * 2.5
+            max_pages = min(int((raw_results_needed + 9) // 10), 10)
+            
+            all_jobs = []
+            seen_urls = set()
+            
+            async with aiohttp.ClientSession(
+                timeout=self.timeout,
+                connector=aiohttp.TCPConnector(ssl=self.ssl_context)
+            ) as session:
+                for page in range(max_pages):
+                    start_index = 1 + page * 10
+                    
+                    params = {
+                        "key": self.google_cse_api_key,
+                        "cx": self.google_cse_cx,
+                        "q": query,
+                        "start": start_index,
+                        "num": 10,
+                        "gl": "us",
+                        "cr": "countryUS",
+                    }
+                    
+                    if date_restrict:
+                        params["dateRestrict"] = date_restrict
+                    
+                    if sort_by == "date":
+                        params["sort"] = "date"
+                    
+                    logger.info(f"[ICIMS_CSE] Page {page + 1}: query='{query}', dateRestrict={date_restrict}")
+                    
+                    async with session.get(self.google_cse_base_url, params=params) as response:
+                        if response.status != 200:
+                            error_text = await response.text()
+                            logger.error(f"[ICIMS_CSE] API error {response.status}: {error_text}")
+                            break
+                        
+                        data = await response.json()
+                        items = data.get("items", [])
+                        
+                        if not items:
+                            logger.info(f"[ICIMS_CSE] No more results on page {page + 1}")
+                            break
+                        
+                        for item in items:
+                            raw_url = item.get("link", "")
+                            if not raw_url:
+                                continue
+                            
+                            clean_link = self._clean_url(raw_url)
+                            if clean_link in seen_urls:
+                                continue
+                            
+                            if not self._is_valid_job_url(clean_link):
+                                continue
+                            
+                            seen_urls.add(clean_link)
+                            
+                            # Extract company from domain or title
+                            company = "Unknown"
+                            domain_match = re.search(r'https?://(?:careers\.)?((?:[a-z0-9-]+\.)*[a-z0-9-]+)\.[a-z]{2,}', clean_link)
+                            if domain_match:
+                                company = domain_match.group(1).split('.')[0].replace('-', ' ').title()
+                            
+                            snippet = item.get("snippet", "")
+                            location_match = re.search(
+                                r'\b(Remote|Hybrid|On-site|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\b',
+                                snippet
+                            )
+                            job_location = location_match.group(1) if location_match else location
+                            
+                            job = {
+                                'title': item.get("title", "").strip(),
+                                'company': company,
+                                'location': job_location,
+                                'link': clean_link,
+                                'snippet': snippet[:300],
+                                'source': 'iCIMS',
+                                'display_link': item.get("displayLink", "")
+                            }
+                            all_jobs.append(job)
+                        
+                        if page < max_pages - 1:
+                            await asyncio.sleep(0.2)
+            
+            logger.info(f"[ICIMS_CSE] Found {len(all_jobs)} unique iCIMS jobs")
+            return all_jobs[:max_results]
+        
+        except Exception as e:
+            logger.error(f"[ICIMS_CSE] Search failed: {e}")
+            return []
+    
+    async def _search_bamboohr_cse(
+        self,
+        job_title: str,
+        location: str,
+        date_posted: str,
+        max_results: int,
+        sort_by: str = "relevance"
+    ) -> List[Dict]:
+        """
+        Search BambooHR jobs using Google Custom Search Engine API.
+        BambooHR uses *.bamboohr.com/careers for their job boards.
+        """
+        try:
+            location_terms = location.lower()
+            if "remote" in location_terms:
+                location_query = '("remote" OR "United States" OR "USA" OR "US")'
+            else:
+                location_query = f'("{location}")'
+            
+            query = f'site:bamboohr.com/careers "{job_title}" {location_query}'
+            
+            date_restrict_mapping = {
+                "today": "d1",
+                "3days": "d3",
+                "week": "w1",
+                "month": "m1",
+                "all": None
+            }
+            date_restrict = date_restrict_mapping.get(date_posted.lower(), "w1")
+            
+            raw_results_needed = max_results * 2.5
+            max_pages = min(int((raw_results_needed + 9) // 10), 10)
+            
+            all_jobs = []
+            seen_urls = set()
+            
+            async with aiohttp.ClientSession(
+                timeout=self.timeout,
+                connector=aiohttp.TCPConnector(ssl=self.ssl_context)
+            ) as session:
+                for page in range(max_pages):
+                    start_index = 1 + page * 10
+                    
+                    params = {
+                        "key": self.google_cse_api_key,
+                        "cx": self.google_cse_cx,
+                        "q": query,
+                        "start": start_index,
+                        "num": 10,
+                        "gl": "us",
+                        "cr": "countryUS",
+                    }
+                    
+                    if date_restrict:
+                        params["dateRestrict"] = date_restrict
+                    
+                    if sort_by == "date":
+                        params["sort"] = "date"
+                    
+                    logger.info(f"[BAMBOOHR_CSE] Page {page + 1}: query='{query}', dateRestrict={date_restrict}")
+                    
+                    async with session.get(self.google_cse_base_url, params=params) as response:
+                        if response.status != 200:
+                            error_text = await response.text()
+                            logger.error(f"[BAMBOOHR_CSE] API error {response.status}: {error_text}")
+                            break
+                        
+                        data = await response.json()
+                        items = data.get("items", [])
+                        
+                        if not items:
+                            logger.info(f"[BAMBOOHR_CSE] No more results on page {page + 1}")
+                            break
+                        
+                        for item in items:
+                            raw_url = item.get("link", "")
+                            if not raw_url:
+                                continue
+                            
+                            clean_link = self._clean_url(raw_url)
+                            if clean_link in seen_urls:
+                                continue
+                            
+                            if not self._is_valid_job_url(clean_link):
+                                continue
+                            
+                            seen_urls.add(clean_link)
+                            
+                            # Extract company from BambooHR subdomain: company.bamboohr.com
+                            company = "Unknown"
+                            match = re.search(r'https?://([^.]+)\.bamboohr\.com', clean_link)
+                            if match:
+                                company = match.group(1).replace('-', ' ').title()
+                            
+                            snippet = item.get("snippet", "")
+                            location_match = re.search(
+                                r'\b(Remote|Hybrid|On-site|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*,\s*[A-Z]{2})\b',
+                                snippet
+                            )
+                            job_location = location_match.group(1) if location_match else location
+                            
+                            job = {
+                                'title': item.get("title", "").replace(" - BambooHR", "").strip(),
+                                'company': company,
+                                'location': job_location,
+                                'link': clean_link,
+                                'snippet': snippet[:300],
+                                'source': 'BambooHR',
+                                'display_link': item.get("displayLink", "")
+                            }
+                            all_jobs.append(job)
+                        
+                        if page < max_pages - 1:
+                            await asyncio.sleep(0.2)
+            
+            logger.info(f"[BAMBOOHR_CSE] Found {len(all_jobs)} unique BambooHR jobs")
+            return all_jobs[:max_results]
+        
+        except Exception as e:
+            logger.error(f"[BAMBOOHR_CSE] Search failed: {e}")
+            return []
+    
     async def _search_workday(
         self,
         job_title: str,
@@ -240,7 +890,18 @@ class JobScraper:
         date_posted: str,
         max_results: int
     ) -> List[Dict]:
-        """Search Workday job boards via Google"""
+        """
+        Search Workday job boards - uses CSE API first, falls back to Google scraping.
+        """
+        # Try Google CSE first (more reliable)
+        try:
+            cse_jobs = await self._search_workday_cse(job_title, location, date_posted, max_results)
+            if cse_jobs:
+                return cse_jobs
+        except Exception as e:
+            logger.warning(f"[WORKDAY] CSE failed: {e}, falling back to scraping")
+        
+        # Fallback to Google scraping
         try:
             query = f'site:myworkdayjobs.com "{job_title}" ({location})'
             if date_posted:

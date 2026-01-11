@@ -219,7 +219,7 @@ def authenticate_user(db, user_id: str, password: str) -> User:
     return None
 
 # Job search cache helpers
-def generate_cache_key(job_title: str, location: str, date_posted: str, sources: list) -> str:
+def generate_cache_key(job_title: str, location: str, date_posted: str, sources: list, sort_by: str = "relevance") -> str:
     """
     Generate MD5 hash cache key from search parameters
     Ensures consistent caching for identical searches
@@ -229,9 +229,10 @@ def generate_cache_key(job_title: str, location: str, date_posted: str, sources:
     location = location.lower().strip()
     date_posted = date_posted.lower().strip()
     sources_str = ",".join(sorted(sources))  # Sort for consistency
+    sort_by = sort_by.lower().strip()
     
     # Create hash
-    key_string = f"{job_title}|{location}|{date_posted}|{sources_str}"
+    key_string = f"{job_title}|{location}|{date_posted}|{sources_str}|{sort_by}"
     return hashlib.md5(key_string.encode('utf-8')).hexdigest()
 
 def get_cached_job_search(db, cache_key: str) -> dict:

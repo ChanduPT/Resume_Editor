@@ -75,6 +75,11 @@ def save_intermediate_state(request_id: str, jd_hints: dict, preprocessed_jd: di
         "timestamp": datetime.utcnow().isoformat()
     }
     
+    # CRITICAL MODE TRACE
+    logger.info(f"[MODE_TRACE] ===== SAVING INTERMEDIATE STATE =====")
+    logger.info(f"[MODE_TRACE] Request ID: {request_id}")
+    logger.info(f"[MODE_TRACE] Mode being saved: '{mode}'")
+    
     # Store in memory for quick access
     intermediate_state[request_id] = state
     
@@ -99,34 +104,75 @@ def save_intermediate_state(request_id: str, jd_hints: dict, preprocessed_jd: di
     }
 
 
-def load_intermediate_state(request_id: str) -> dict:
+def load_intermediate_state(request_id: str, db: Session = None) -> dict:
     """Load intermediate state for resuming after human feedback
+    
+    Loads from in-memory cache first, then falls back to database.
+    This ensures state survives server restarts.
     
     Args:
         request_id: The job request ID
+        db: Optional database session for fallback
         
     Returns:
         dict: Complete state object with all data needed to continue
         
     Raises:
-        ValueError: If state not found for request_id
+        ValueError: If state not found for request_id in both memory and database
     """
-    if request_id not in intermediate_state:
-        logger.error(f"[FEEDBACK] No intermediate state found for request {request_id}")
-        raise ValueError(f"No pending job found for request_id: {request_id}")
+    # First try in-memory cache (fastest)
+    if request_id in intermediate_state:
+        state = intermediate_state[request_id]
+        logger.info(f"[FEEDBACK] Loaded intermediate state from MEMORY for request {request_id}")
+        logger.info(f"[MODE_TRACE] Mode in memory state: '{state.get('mode', 'NOT_SET')}'")
+        return state
     
-    state = intermediate_state[request_id]
-    logger.info(f"[FEEDBACK] Loaded intermediate state for request {request_id}")
+    # Fallback to database
+    logger.warning(f"[FEEDBACK] State not in memory for {request_id}, trying database fallback...")
     
-    return state
+    if db:
+        job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id).first()
+        if job and job.intermediate_state:
+            state = job.intermediate_state
+            
+            # Ensure mode is set correctly from database record as source of truth
+            if job.mode and state.get("mode") != job.mode:
+                logger.warning(f"[MODE_TRACE] Mode mismatch! DB: '{job.mode}', State: '{state.get('mode')}' - Using DB value")
+                state["mode"] = job.mode
+            
+            # Re-cache in memory for future access
+            intermediate_state[request_id] = state
+            logger.info(f"[FEEDBACK] Loaded intermediate state from DATABASE for request {request_id}")
+            logger.info(f"[MODE_TRACE] Mode loaded from DB: '{state.get('mode', 'NOT_SET')}'")
+            return state
+        elif job:
+            # Job exists but intermediate_state is empty/null - reconstruct from job record
+            logger.warning(f"[FEEDBACK] Job found but intermediate_state is empty, reconstructing from job record")
+            state = {
+                "request_id": request_id,
+                "resume_json": job.resume_input_json or {},
+                "jd": job.jd_text or "",
+                "company_name": job.company_name,
+                "job_title": job.job_title,
+                "mode": job.mode or "complete_jd",
+                "jd_hints": {},  # Will need to be regenerated or loaded from elsewhere
+                "preprocessed_jd": {}
+            }
+            intermediate_state[request_id] = state
+            logger.info(f"[MODE_TRACE] Mode reconstructed from job record: '{state['mode']}'")
+            return state
+    
+    logger.error(f"[FEEDBACK] No intermediate state found for request {request_id} in memory or database")
+    raise ValueError(f"No pending job found for request_id: {request_id}. Session may have expired.")
 
 
-def update_jd_hints_from_feedback(request_id: str, feedback: dict) -> dict:
+def update_jd_hints_from_feedback(request_id: str, feedback: dict, db: Session = None) -> dict:
     """Update JD hints based on user feedback
     
     Args:
         request_id: The job request ID
         feedback: User's edited keywords/skills/phrases
+        db: Optional database session for state fallback
         
     Returns:
         dict: Updated jd_hints object
@@ -134,7 +180,7 @@ def update_jd_hints_from_feedback(request_id: str, feedback: dict) -> dict:
     Raises:
         ValueError: If state not found or feedback invalid
     """
-    state = load_intermediate_state(request_id)
+    state = load_intermediate_state(request_id, db)
     
     # Update jd_hints with user feedback
     jd_hints = state["jd_hints"].copy()
@@ -259,6 +305,12 @@ async def extract_jd_keywords(data: dict, request_id: str = None, db: Session = 
     
     resume_json = data.get("resume_data", {})
     mode = data.get("mode", "complete_jd")
+    
+    # CRITICAL MODE TRACE - Log at every stage
+    logger.info(f"[MODE_TRACE] ===== EXTRACT_JD_KEYWORDS START =====")
+    logger.info(f"[MODE_TRACE] Request ID: {request_id}")
+    logger.info(f"[MODE_TRACE] Mode from input data: '{mode}'")
+    logger.info(f"[MODE_TRACE] Mode default fallback: 'complete_jd'")
     
     # Log request metadata
     log_subsection(logger, "REQUEST METADATA")
@@ -399,17 +451,22 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     
     send_progress(request_id, 30, "Resuming with approved keywords...", db, status="processing")
     
-    # Load intermediate state
+    # Load intermediate state (with database fallback)
     try:
-        state = load_intermediate_state(request_id)
+        state = load_intermediate_state(request_id, db)
     except ValueError as e:
         logger.error(f"[GENERATION] {str(e)}")
         raise
     
+    # Log mode at start of generation
+    logger.info(f"[MODE_TRACE] ===== GENERATION PHASE START =====")
+    logger.info(f"[MODE_TRACE] Request ID: {request_id}")
+    logger.info(f"[MODE_TRACE] Mode from state: '{state.get('mode', 'NOT_SET')}'")
+    
     # Apply user feedback if provided
     if feedback:
         logger.info(f"[FEEDBACK] Applying user edits to keywords")
-        jd_hints = update_jd_hints_from_feedback(request_id, feedback)
+        jd_hints = update_jd_hints_from_feedback(request_id, feedback, db)
     else:
         logger.info(f"[FEEDBACK] No edits provided, using original extraction")
         jd_hints = state["jd_hints"]
