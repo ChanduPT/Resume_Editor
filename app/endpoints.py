@@ -262,6 +262,13 @@ async def extract_keywords_from_jd(
         # Get job_link if provided
         job_link = data.get("job_link", None)
         
+        # Get mode with tracing
+        mode_from_request = data.get("mode", "complete_jd")
+        logger.info(f"[MODE_TRACE] ===== EXTRACT_KEYWORDS_FROM_JD ENDPOINT =====")
+        logger.info(f"[MODE_TRACE] Request ID: {request_id}")
+        logger.info(f"[MODE_TRACE] Mode received from frontend: '{mode_from_request}'")
+        logger.info(f"[MODE_TRACE] User: {current_user.username}")
+        
         # Create job record
         mode_value = data.get("mode", "complete_jd")
         logger.info(f"[EXTRACT_KEYWORDS] Creating job with mode: '{mode_value}'")
@@ -271,7 +278,7 @@ async def extract_keywords_from_jd(
             request_id=request_id,
             company_name=company_name,
             job_title=job_title,
-            mode=mode_value,
+            mode=mode_from_request,
             format=resume_format,
             jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
@@ -282,6 +289,8 @@ async def extract_keywords_from_jd(
         db.add(resume_job)
         db.commit()
         db.refresh(resume_job)
+        
+        logger.info(f"[MODE_TRACE] Mode saved to DB job record: '{resume_job.mode}'")
         
         # Extract keywords (Phase 1)
         result = await extract_jd_keywords(data, request_id, db)
@@ -294,7 +303,7 @@ async def extract_keywords_from_jd(
         # Load the full state from memory which includes jd, preprocessed_jd, etc.
         try:
             full_state = load_intermediate_state(request_id, db)
-            logger.info(f"[EXTRACT_KEYWORDS] Loaded full state, mode in state: '{full_state.get('mode', 'NOT_SET')}'")
+            logger.info(f"[MODE_TRACE] Mode in full_state after extract: '{full_state.get('mode', 'NOT_SET')}'")
             resume_job.intermediate_state = full_state
         except ValueError:
             # Fallback: if loading from memory fails, reconstruct full state
@@ -353,7 +362,9 @@ async def regenerate_keywords(
         # Load intermediate state
         intermediate_data = job.intermediate_state
         if not intermediate_data:
-            intermediate_data = load_intermediate_state(request_id)
+            intermediate_data = load_intermediate_state(request_id, db)
+        
+        logger.info(f"[MODE_TRACE] Mode in intermediate_data for regenerate: '{intermediate_data.get('mode', 'NOT_SET') if intermediate_data else 'NO_DATA'}'")
         
         if not intermediate_data:
             raise HTTPException(
@@ -401,13 +412,12 @@ async def regenerate_keywords(
         result = await extract_jd_keywords(original_data, request_id, db)
         
         # Update job with new keywords - preserve full state structure
-        try:
-            full_state = load_intermediate_state(request_id, db)
-            if full_state:
-                # Update only the keyword portion of the full state
-                logger.info(f"[REGENERATE] Loaded full state, mode: '{full_state.get('mode', 'NOT_SET')}'")
-                job.intermediate_state = full_state
-        except ValueError:
+        full_state = load_intermediate_state(request_id, db)
+        if full_state:
+            # Update only the keyword portion of the full state
+            logger.info(f"[MODE_TRACE] Mode after keyword regeneration: '{full_state.get('mode', 'NOT_SET')}'")
+            job.intermediate_state = full_state
+        else:
             # Fallback: store the result but ensure resume_data is included
             logger.warning(f"[REGENERATE] Failed to load intermediate state, reconstructing")
             job.intermediate_state = {
@@ -674,7 +684,9 @@ async def get_job_keywords(request_id: str, current_user: User = Depends(get_cur
     keywords = job.intermediate_state
     if not keywords:
         # Try to load from memory as fallback
-        keywords = load_intermediate_state(request_id)
+        keywords = load_intermediate_state(request_id, db)
+    
+    logger.info(f"[MODE_TRACE] Mode in keywords response: '{keywords.get('mode', 'NOT_SET') if keywords else 'NO_KEYWORDS'}'")
     
     if not keywords:
         raise HTTPException(
@@ -768,6 +780,7 @@ async def get_user_jobs(
     company: str = None,
     job_title: str = None,
     status: str = None,
+    date_range: str = None,
     current_user: User = Depends(get_current_user), 
     db: Session = Depends(get_db)
 ):
@@ -781,6 +794,29 @@ async def get_user_jobs(
         query = query.filter(ResumeJob.job_title.ilike(f"%{job_title}%"))
     if status:
         query = query.filter(ResumeJob.status == status)
+    
+    # Apply date range filter
+    if date_range:
+        from datetime import datetime, timedelta
+        now = datetime.utcnow()
+        
+        if date_range == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif date_range == "week":
+            start_date = now - timedelta(days=7)
+        elif date_range == "month":
+            start_date = now - timedelta(days=30)
+        elif date_range == "3months":
+            start_date = now - timedelta(days=90)
+        elif date_range == "6months":
+            start_date = now - timedelta(days=180)
+        elif date_range == "year":
+            start_date = now - timedelta(days=365)
+        else:
+            start_date = None
+        
+        if start_date:
+            query = query.filter(ResumeJob.created_at >= start_date)
     
     # Get total count with filters applied
     total_count = query.count()
@@ -1039,6 +1075,7 @@ async def search_jobs_endpoint(
         salary_min = data.get("salary_min")
         salary_max = data.get("salary_max")
         salary_frequency = data.get("salary_frequency", "yearly")
+        sort_by = data.get("sort_by", "relevance")  # "relevance" or "date"
         
         # Validation
         if not job_title:
@@ -1051,7 +1088,7 @@ async def search_jobs_endpoint(
         logger.info(f"[API_JOB_SEARCH] User '{user_id}' searching: '{job_title}' in '{location}'")
         
         # Generate cache key
-        cache_key = generate_cache_key(job_title, location, date_posted, sources)
+        cache_key = generate_cache_key(job_title, location, date_posted, sources, sort_by)
         logger.info(f"[API_JOB_SEARCH] Cache key: {cache_key}")
         
         # Check cache first
@@ -1087,7 +1124,8 @@ async def search_jobs_endpoint(
             experience_level=experience_level,
             work_from_home=work_from_home,
             salary_min=salary_min,
-            salary_max=salary_max
+            salary_max=salary_max,
+            sort_by=sort_by
         )
         
         # Store in cache (24 hour TTL)
@@ -1461,8 +1499,8 @@ async def refresh_cache_endpoint(
         
         logger.info(f"[API_REFRESH_CACHE] Public request to refresh cache for: '{job_title}'")
         
-        # Generate cache key
-        cache_key = generate_cache_key(job_title, location, date_posted, sources)
+        # Generate cache key (use default sort for refresh)
+        cache_key = generate_cache_key(job_title, location, date_posted, sources, "relevance")
         
         # Delete existing cache entry
         db.query(JobSearchCache).filter(
@@ -1476,7 +1514,8 @@ async def refresh_cache_endpoint(
             location=location,
             date_posted=date_posted,
             sources=sources,
-            max_results=max_results
+            max_results=max_results,
+            sort_by="relevance"
         )
         
         # Store fresh results

@@ -62,31 +62,38 @@ security = HTTPBasic()
 # --------------------- Logging Setup ---------------------
 log_handlers = [logging.StreamHandler(sys.stdout)]
 
+# Only create debug_files directory in non-production environments
 if os.environ.get('ENVIRONMENT') != 'production':
     os.makedirs('debug_files', exist_ok=True)
     log_handlers.append(logging.FileHandler(os.path.join('debug_files', 'app.log')))
 
+# Set log level based on environment
+log_level = logging.WARNING if os.environ.get('ENVIRONMENT') == 'production' else logging.INFO
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=log_level,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=log_handlers
 )
 
 logger = logging.getLogger(__name__)
 
-# Setup debug directory
-debug_dir = os.path.join(os.getcwd(), "debug_files")
-try:
-    os.makedirs(debug_dir, exist_ok=True)
-    os.chmod(debug_dir, 0o755)
-    test_file = os.path.join(debug_dir, '.write_test')
-    with open(test_file, 'w') as f:
-        f.write('test')
-    os.remove(test_file)
-    logger.info(f"Debug directory ready at: {debug_dir}")
-except Exception as e:
-    logger.error(f"Failed to setup debug directory: {str(e)}")
-    raise
+# Setup debug directory (only in non-production)
+if os.environ.get('ENVIRONMENT') != 'production':
+    debug_dir = os.path.join(os.getcwd(), "debug_files")
+    try:
+        os.makedirs(debug_dir, exist_ok=True)
+        os.chmod(debug_dir, 0o755)
+        test_file = os.path.join(debug_dir, '.write_test')
+        with open(test_file, 'w') as f:
+            f.write('test')
+        os.remove(test_file)
+        logger.info(f"Debug directory ready at: {debug_dir}")
+    except Exception as e:
+        logger.error(f"Failed to setup debug directory: {str(e)}")
+        # Don't raise - debug directory is optional
+else:
+    logger.info("Running in production mode - debug files disabled")
 
 # --------------------- Database Startup ---------------------
 
