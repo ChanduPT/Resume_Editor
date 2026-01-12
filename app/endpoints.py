@@ -267,7 +267,7 @@ async def extract_keywords_from_jd(
         logger.info(f"[MODE_TRACE] ===== EXTRACT_KEYWORDS_FROM_JD ENDPOINT =====")
         logger.info(f"[MODE_TRACE] Request ID: {request_id}")
         logger.info(f"[MODE_TRACE] Mode received from frontend: '{mode_from_request}'")
-        logger.info(f"[MODE_TRACE] User: {current_user.username}")
+        logger.info(f"[MODE_TRACE] User: {current_user.user_id}")
         
         # Create job record
         mode_value = data.get("mode", "complete_jd")
