@@ -3013,6 +3013,7 @@
       
       const extractData = await extractRes.json();
       console.log('[FEEDBACK] Phase 1 complete. Request ID:', extractData.request_id);
+      console.log('[FEEDBACK] Mode from extractData:', extractData.keywords?.mode);
       
       // Check if keyword review is enabled
       const enableKeywordReview = document.getElementById('enableKeywordReview')?.checked;
@@ -3021,12 +3022,12 @@
         // Show keyword review modal for user to edit
         console.log('[FEEDBACK] Keyword review enabled - showing modal');
         updateRequestProgress(requestId, 26, '✓ Keywords extracted - Awaiting your review');
-        showKeywordReviewModal(extractData.jd_hints, extractData.request_id, requestId, companyName);
+        showKeywordReviewModal(extractData.keywords, extractData.request_id, requestId, companyName);
       } else {
-        // Skip review, proceed directly to Phase 2
+        // Skip review, proceed directly to Phase 2 - pass mode from extractData
         console.log('[FEEDBACK] Keyword review disabled - proceeding directly to generation');
         updateRequestProgress(requestId, 30, 'Generating resume...');
-        await proceedToGenerationPhase(extractData.request_id, requestId, companyName, null);
+        await proceedToGenerationPhase(extractData.request_id, requestId, companyName, null, extractData.keywords?.mode);
       }
       
     } catch (error) {
@@ -3083,12 +3084,14 @@
     isModalOpen = true;
     console.log(`[QUEUE] Modal marked as OPEN for request: ${nextReview.uiRequestId}`);
     
-    // Store request IDs for later use
+    // Store request IDs and mode for later use
     modal.dataset.backendRequestId = nextReview.backendRequestId;
     modal.dataset.uiRequestId = nextReview.uiRequestId;
     modal.dataset.companyName = nextReview.companyName;
+    modal.dataset.mode = nextReview.jdHints.mode || 'complete_jd';  // Store mode from backend
     
     console.log(`[QUEUE] Stored in modal dataset - Backend ID: ${nextReview.backendRequestId}, UI ID: ${nextReview.uiRequestId}`);
+    console.log(`[QUEUE] Mode stored in modal: ${modal.dataset.mode}`);
     
     // Show queue status if there are more items
     if (keywordReviewQueue.length > 0) {
@@ -3199,6 +3202,7 @@
     const backendRequestId = modal.dataset.backendRequestId;
     const uiRequestId = modal.dataset.uiRequestId;
     const companyName = modal.dataset.companyName;
+    const mode = modal.dataset.mode;  // Get mode from modal
     
     // Collect modified keywords
     const feedback = {
@@ -3209,16 +3213,17 @@
     
     console.log('[FEEDBACK] User feedback collected:', feedback);
     console.log('[FEEDBACK] Keywords - Technical:', feedback.technical_keywords.length, 'Soft:', feedback.soft_skills.length, 'Phrases:', feedback.phrases.length);
+    console.log('[FEEDBACK] Mode from modal:', mode);
     
     // Close modal WITHOUT marking as failed (user approved, not cancelled)
     closeKeywordReviewModal(false);
     
-    // Proceed to generation with feedback
-    await proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback);
+    // Proceed to generation with feedback AND mode
+    await proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback, mode);
   }
   
   // Proceed to Phase 2 generation (with or without feedback)
-  async function proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback) {
+  async function proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback, mode = null) {
     // Update UI progress
     updateRequestProgress(uiRequestId, 30, 'Generating resume...');
     
@@ -3239,6 +3244,12 @@
         request_id: backendRequestId
       };
       
+      // Add mode if provided (CRITICAL for correct generation)
+      if (mode) {
+        payload.mode = mode;
+        console.log('[FEEDBACK] Including mode in payload:', mode);
+      }
+      
       // Only add feedback if provided (when user reviews keywords)
       if (feedback) {
         payload.feedback = feedback;
@@ -3246,6 +3257,11 @@
       } else {
         console.log('[FEEDBACK] Phase 2: Calling generate endpoint without feedback (auto-proceed)...');
       }
+      
+      // Log complete payload for validation
+      console.log('[FEEDBACK] === GENERATE RESUME REQUEST PAYLOAD ===');
+      console.log(JSON.stringify(payload, null, 2));
+      console.log('[FEEDBACK] =======================================');
       
       const generateRes = await fetch(generateUrl, {
         method: 'POST',
@@ -4116,6 +4132,7 @@
 
         const extractResult = await extractResponse.json();
         console.log(`[FEEDBACK][${uiRequestId}] Phase 1 SUCCESS! Keywords extracted:`, extractResult);
+        console.log(`[FEEDBACK][${uiRequestId}] Mode from backend:`, extractResult.keywords?.mode);
         console.log(`[FEEDBACK][${uiRequestId}] Using stored keyword review preference:`, enableKeywordReview);
         
         if (enableKeywordReview) {
@@ -4127,7 +4144,7 @@
           // Skip review, proceed directly to Phase 2
           console.log(`[FEEDBACK][${uiRequestId}] Keyword review DISABLED - proceeding directly to generation`);
           updateRequestProgress(uiRequestId, 30, 'Generating resume...');
-          await proceedToGenerationPhase(extractResult.request_id, uiRequestId, companyName, null);
+          await proceedToGenerationPhase(extractResult.request_id, uiRequestId, companyName, null, extractResult.keywords?.mode);
         }
         
       } catch (error) {
