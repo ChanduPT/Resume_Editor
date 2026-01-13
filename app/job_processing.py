@@ -94,8 +94,10 @@ def save_intermediate_state(request_id: str, jd_hints: dict, preprocessed_jd: di
     logger.info(f"[FEEDBACK] Mode saved in state: '{mode}'")
     
     # Return user-facing data (exclude internal fields)
+    # IMPORTANT: Include mode so frontend can send it back with feedback
     return {
         "request_id": request_id,
+        "mode": mode,  # Critical: send mode to frontend
         "technical_keywords": jd_hints.get("technical_keywords", []),
         "soft_skills": jd_hints.get("soft_skills_role_keywords", []),
         "phrases": jd_hints.get("phrases", []),
@@ -427,7 +429,7 @@ async def extract_jd_keywords(data: dict, request_id: str = None, db: Session = 
     return feedback_data
 
 
-async def generate_resume_content(request_id: str, feedback: dict = None, db: Session = None) -> dict:
+async def generate_resume_content(request_id: str, feedback: dict = None, db: Session = None, mode_override: str = None) -> dict:
     """
     PHASE 2: Generate resume content after user approves/edits keywords.
     
@@ -444,6 +446,7 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
         request_id: The job request ID
         feedback: Optional user edits to keywords/skills/phrases
         db: Database session
+        mode_override: Explicit mode from frontend (takes priority over state)
         
     Returns:
         dict: Complete optimized resume JSON
@@ -474,13 +477,38 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     
     # Extract state variables with safe defaults
     resume_json = state.get("resume_json", {})
-    mode = state.get("mode", "complete_jd")
+    
+    # PRIORITY: Use mode_override from frontend (most reliable for parallel requests)
+    # FALLBACK: Load from state, then database, then default
+    if mode_override:
+        mode = mode_override
+        logger.info(f"[MODE] Using explicit mode from frontend: '{mode}'")
+    else:
+        mode = state.get("mode")
+        if not mode:
+            # Final fallback: check database
+            if db:
+                job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id).first()
+                if job and job.mode:
+                    mode = job.mode
+                    logger.warning(f"[MODE] Loaded from database fallback: '{mode}'")
+                else:
+                    mode = "complete_jd"  # Last resort default
+                    logger.error(f"[MODE] No mode found anywhere! Using default: '{mode}'")
+            else:
+                mode = "complete_jd"
+                logger.error(f"[MODE] No db session, using default: '{mode}'")
+        else:
+            logger.info(f"[MODE] Loaded from state: '{mode}'")
+    
     preprocessed_jd = state.get("preprocessed_jd", {})
     
     # DEBUG LOGGING: Critical for tracking mode issues
     logger.info(f"[MODE DEBUG] ========================================")
     logger.info(f"[MODE DEBUG] Request ID: {request_id}")
-    logger.info(f"[MODE DEBUG] Mode loaded from state: '{mode}'")
+    logger.info(f"[MODE DEBUG] Mode override from frontend: '{mode_override}'")
+    logger.info(f"[MODE DEBUG] Mode from state: '{state.get('mode')}'")
+    logger.info(f"[MODE DEBUG] Final mode used: '{mode}'")
     logger.info(f"[MODE DEBUG] State keys present: {list(state.keys())}")
     logger.info(f"[MODE DEBUG] ========================================")
     

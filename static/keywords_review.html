@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Keywords Review - Human Feedback Feature</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Resume Keywords Review - Human Feedback Feature [v2.0-MODE-FIX]</title>
     <style>
         * {
             margin: 0;
@@ -362,6 +365,7 @@
     <script>
         // Global state
         let requestId = '';
+        let jobMode = null;  // Store mode from backend - CRITICAL for correct generation
         let originalKeywords = {
             technical_keywords: [],
             soft_skills: [],
@@ -396,6 +400,13 @@
         }
 
         function loadKeywords(data) {
+            // CRITICAL: Store the mode from backend response
+            jobMode = data.mode;
+            console.log('=== KEYWORD EXTRACTION RESPONSE PAYLOAD ===');
+            console.log(JSON.stringify(data, null, 2));
+            console.log('[MODE] Received mode from backend:', jobMode);
+            console.log('==========================================');
+            
             // Store original keywords
             originalKeywords = {
                 technical_keywords: [...(data.technical_keywords || [])],
@@ -491,17 +502,26 @@
                 // Get auth token
                 const token = localStorage.getItem('access_token');
                 
-                // Submit feedback to API
+                // Prepare payload
+                const feedbackPayload = {
+                    request_id: requestId,
+                    mode: jobMode,  // CRITICAL: Send mode back to backend
+                    feedback: currentKeywords
+                };
+                
+                console.log('=== GENERATE RESUME REQUEST PAYLOAD ===');
+                console.log(JSON.stringify(feedbackPayload, null, 2));
+                console.log('[MODE] Submitting feedback with mode:', jobMode);
+                console.log('======================================');
+                
+                // Submit feedback to API - INCLUDE MODE!
                 const response = await fetch('/api/resume/generate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({
-                        request_id: requestId,
-                        feedback: currentKeywords
-                    })
+                    body: JSON.stringify(feedbackPayload)
                 });
 
                 if (!response.ok) {
