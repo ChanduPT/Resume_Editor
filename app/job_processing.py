@@ -596,20 +596,12 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
             
             # Extract additional context from preprocessing metadata
             preprocessed_metadata = jd_hints.get("preprocessed_metadata", {})
-            print(f"\n[DEBUG EXPERIENCE] preprocessed_metadata keys: {list(preprocessed_metadata.keys())}")
-            print(f"[DEBUG EXPERIENCE] preprocessed_metadata content: {preprocessed_metadata}")
-            
             role_title = preprocessed_metadata.get("title", "Not specified")
             role_seniority = preprocessed_metadata.get("seniority", "Not specified")
-            print(f"[DEBUG EXPERIENCE] Extracted role_title: {role_title}")
-            print(f"[DEBUG EXPERIENCE] Extracted role_seniority: {role_seniority}")
             
             # Extract requirements from preprocessed JD sections
             preprocessed_sections = preprocessed_jd.get("sections", {})
-            print(f"[DEBUG EXPERIENCE] preprocessed_sections keys: {list(preprocessed_sections.keys())}")
             jd_requirements = preprocessed_sections.get("requirements", [])
-            print(f"[DEBUG EXPERIENCE] jd_requirements count: {len(jd_requirements)}")
-            print(f"[DEBUG EXPERIENCE] jd_requirements sample: {jd_requirements[:3] if jd_requirements else 'None'}")
             
             logger.info(f"[EXPERIENCE] Role: {role_title}, Seniority: {role_seniority}, Requirements: {len(jd_requirements)}")
             
@@ -628,14 +620,6 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
                 
                 logger.info(f"[EXPERIENCE] Sending metadata only (no bullets) for {len(experience_metadata)} roles")
                 
-                print(f"\n[DEBUG EXPERIENCE complete_jd] Preparing prompt with:")
-                print(f"  - technical_keywords: {len(jd_hints.get('technical_keywords', []))} items")
-                print(f"  - soft_skills: {len(jd_hints.get('soft_skills_role_keywords', []))} items")
-                print(f"  - phrases: {len(jd_hints.get('phrases', []))} items")
-                print(f"  - jd_requirements: {len(jd_requirements)} items")
-                print(f"  - role_seniority: '{role_seniority}'")
-                print(f"  - role_title: '{role_title}'")
-                
                 prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
                     technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
                     soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
@@ -645,18 +629,9 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
                     role_seniority=role_seniority,
                     role_title=role_title
                 )
-                print(f"[DEBUG EXPERIENCE complete_jd] Prompt length: {len(prompt)} characters")
             else:  # resume_jd mode
                 logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT (resume_jd mode)")
                 logger.info(f"[EXPERIENCE] Enhancing existing bullets for {len(experience_data)} roles")
-                
-                print(f"\n[DEBUG EXPERIENCE resume_jd] Preparing prompt with:")
-                print(f"  - technical_keywords: {len(jd_hints.get('technical_keywords', []))} items")
-                print(f"  - soft_skills: {len(jd_hints.get('soft_skills_role_keywords', []))} items")
-                print(f"  - phrases: {len(jd_hints.get('phrases', []))} items")
-                print(f"  - jd_requirements: {len(jd_requirements)} items")
-                print(f"  - role_seniority: '{role_seniority}'")
-                print(f"  - role_title: '{role_title}'")
                 
                 # In resume_jd mode, send complete experience with all bullets for enhancement
                 prompt = GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT.format(
@@ -668,15 +643,10 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
                     role_seniority=role_seniority,
                     role_title=role_title
                 )
-                print(f"[DEBUG EXPERIENCE resume_jd] Prompt length: {len(prompt)} characters")
             
-            print(f"[DEBUG EXPERIENCE] Sending request to LLM...")
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
-            print(f"[DEBUG EXPERIENCE] Received response, length: {len(result_raw)} characters")
-            
             result = json.loads(result_raw)
             experience_result = result.get("experience", [])
-            print(f"[DEBUG EXPERIENCE] Parsed {len(experience_result)} experience entries")
             
             # Validate: Check if we got all experience entries back
             input_exp_count = len(experience_data)
@@ -689,10 +659,6 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
             
             # Clean experience bullets to remove markdown and excessive quotes
             experience_result = clean_experience_bullets(experience_result)
-            print(f"[DEBUG EXPERIENCE] After cleaning: {len(experience_result)} entries")
-            if experience_result:
-                print(f"[DEBUG EXPERIENCE] Sample output (first role): {experience_result[0].get('company', 'N/A')} - {len(experience_result[0].get('bullets', []))} bullets")
-            
             logger.info(f"[EXPERIENCE] Generated {len(experience_result)} roles (cleaned)")
             return experience_result
         except asyncio.TimeoutError:
@@ -1008,20 +974,12 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             
             # Extract additional context from preprocessing metadata
             preprocessed_metadata = jd_hints.get("preprocessed_metadata", {})
-            print(f"\n[DEBUG EXPERIENCE PARALLEL] preprocessed_metadata keys: {list(preprocessed_metadata.keys())}")
-            print(f"[DEBUG EXPERIENCE PARALLEL] preprocessed_metadata content: {preprocessed_metadata}")
-            
             role_title = preprocessed_metadata.get("title", "Not specified")
             role_seniority = preprocessed_metadata.get("seniority", "Not specified")
-            print(f"[DEBUG EXPERIENCE PARALLEL] Extracted role_title: {role_title}")
-            print(f"[DEBUG EXPERIENCE PARALLEL] Extracted role_seniority: {role_seniority}")
             
             # Extract requirements from preprocessed JD sections
             preprocessed_sections = preprocessed_jd.get("sections", {})
-            print(f"[DEBUG EXPERIENCE PARALLEL] preprocessed_sections keys: {list(preprocessed_sections.keys())}")
             jd_requirements = preprocessed_sections.get("requirements", [])
-            print(f"[DEBUG EXPERIENCE PARALLEL] jd_requirements count: {len(jd_requirements)}")
-            print(f"[DEBUG EXPERIENCE PARALLEL] jd_requirements sample: {jd_requirements[:3] if jd_requirements else 'None'}")
             
             logger.info(f"[EXPERIENCE] Role: {role_title}, Seniority: {role_seniority}, Requirements: {len(jd_requirements)}")
             
@@ -1040,14 +998,6 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
                 
                 logger.info(f"[EXPERIENCE] Sending metadata only (no bullets) for {len(experience_metadata)} roles")
                 
-                print(f"\n[DEBUG EXPERIENCE PARALLEL complete_jd] Preparing prompt with:")
-                print(f"  - technical_keywords: {len(jd_hints.get('technical_keywords', []))} items")
-                print(f"  - soft_skills: {len(jd_hints.get('soft_skills_role_keywords', []))} items")
-                print(f"  - phrases: {len(jd_hints.get('phrases', []))} items")
-                print(f"  - jd_requirements: {len(jd_requirements)} items")
-                print(f"  - role_seniority: '{role_seniority}'")
-                print(f"  - role_title: '{role_title}'")
-                
                 prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
                     technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
                     soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
@@ -1057,18 +1007,9 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
                     role_seniority=role_seniority,
                     role_title=role_title
                 )
-                print(f"[DEBUG EXPERIENCE PARALLEL complete_jd] Prompt length: {len(prompt)} characters")
             else:  # resume_jd mode
                 logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT (resume_jd mode)")
                 logger.info(f"[EXPERIENCE] Enhancing existing bullets for {len(experience_data)} roles")
-                
-                print(f"\n[DEBUG EXPERIENCE PARALLEL resume_jd] Preparing prompt with:")
-                print(f"  - technical_keywords: {len(jd_hints.get('technical_keywords', []))} items")
-                print(f"  - soft_skills: {len(jd_hints.get('soft_skills_role_keywords', []))} items")
-                print(f"  - phrases: {len(jd_hints.get('phrases', []))} items")
-                print(f"  - jd_requirements: {len(jd_requirements)} items")
-                print(f"  - role_seniority: '{role_seniority}'")
-                print(f"  - role_title: '{role_title}'")
                 
                 # In resume_jd mode, send complete experience with all bullets for enhancement
                 prompt = GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT.format(
@@ -1080,15 +1021,10 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
                     role_seniority=role_seniority,
                     role_title=role_title
                 )
-                print(f"[DEBUG EXPERIENCE PARALLEL resume_jd] Prompt length: {len(prompt)} characters")
             
-            print(f"[DEBUG EXPERIENCE PARALLEL] Sending request to LLM...")
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
-            print(f"[DEBUG EXPERIENCE PARALLEL] Received response, length: {len(result_raw)} characters")
-            
             result = json.loads(result_raw)
             experience_result = result.get("experience", [])
-            print(f"[DEBUG EXPERIENCE PARALLEL] Parsed {len(experience_result)} experience entries")
             
             # Validate: Check if we got all experience entries back
             input_exp_count = len(experience_data)
@@ -1101,10 +1037,6 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             
             # Clean experience bullets to remove markdown and excessive quotes
             experience_result = clean_experience_bullets(experience_result)
-            print(f"[DEBUG EXPERIENCE PARALLEL] After cleaning: {len(experience_result)} entries")
-            if experience_result:
-                print(f"[DEBUG EXPERIENCE PARALLEL] Sample output (first role): {experience_result[0].get('company', 'N/A')} - {len(experience_result[0].get('bullets', []))} bullets")
-            
             logger.info(f"[EXPERIENCE] Generated {len(experience_result)} roles (cleaned)")
             return experience_result
         except asyncio.TimeoutError:
