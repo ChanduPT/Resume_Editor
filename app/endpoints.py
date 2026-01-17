@@ -485,6 +485,14 @@ async def generate_resume_with_feedback(
         else:
             logger.info(f"[FEEDBACK] No feedback provided - using original extracted keywords for request {request_id}")
         
+        # Get mode from payload (priority) or fallback to stored job mode
+        mode = data.get("mode")
+        if mode:
+            logger.info(f"[MODE] Using mode from payload: '{mode}'")
+        else:
+            mode = resume_job.mode or "complete_jd"
+            logger.info(f"[MODE] No mode in payload, using stored job mode: '{mode}'")
+        
         # Update job status
         resume_job.status = "processing"
         resume_job.progress = 30
@@ -496,7 +504,8 @@ async def generate_resume_with_feedback(
             generate_resume_background,
             request_id,
             feedback,
-            resume_job.id
+            resume_job.id,
+            mode
         )
         
         return {
@@ -512,7 +521,7 @@ async def generate_resume_with_feedback(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def generate_resume_background(request_id: str, feedback: dict, job_id: int):
+def generate_resume_background(request_id: str, feedback: dict, job_id: int, mode: str = None):
     """Background task for Phase 2 generation"""
     db = SessionLocal()
     try:
@@ -528,7 +537,7 @@ def generate_resume_background(request_id: str, feedback: dict, job_id: int):
         db.commit()
         
         # Generate resume with feedback
-        result = asyncio.run(generate_resume_content(request_id, feedback, db))
+        result = asyncio.run(generate_resume_content(request_id, feedback, db, mode))
         
         # Update job with results
         job.final_resume_json = result
