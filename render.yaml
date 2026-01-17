@@ -11,6 +11,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
+    autoDeploy: true  # Auto-deploy on git push
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.4
@@ -26,8 +27,14 @@ services:
         sync: false  # Set manually in Render dashboard
       - key: JWT_SECRET
         generateValue: true  # Auto-generate secure random secret
+      - key: PASSWORD_SALT
+        generateValue: true  # Auto-generate secure salt for password hashing
       - key: JSEARCH_API_KEY
         sync: false  # Optional: Set if using job search feature
+      - key: GOOGLE_CSE_API_KEY
+        sync: false  # Required for Workday/Lever/iCIMS/BambooHR job search
+      - key: GOOGLE_CSE_CX
+        value: 5098f242ed69d4adb  # Your CSE engine ID
       - key: DATABASE_URL
         fromDatabase:
           name: resume-editor-db

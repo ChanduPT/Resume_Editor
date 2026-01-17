@@ -1230,7 +1230,7 @@
   #resumeFormContainer, #jobDescTabPanel {
     width: 100%;
     flex: 1;
-    display: none !important;
+    display: none;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
@@ -1515,7 +1515,7 @@
     box-shadow: var(--shadow-md);
     overflow: visible;
     border: 1px solid var(--border);
-    margin: 20px;
+    margin: 20px 0;
   }
   
   .resume-table-container h3 {
@@ -1847,11 +1847,14 @@
   
   .jd-form-container {
     display: flex;
+    display: -webkit-flex;
     flex-direction: column;
+    -webkit-flex-direction: column;
     height: 100%;
     max-height: 100%;
     overflow: hidden;
     position: relative;
+    box-sizing: border-box;
   }
   
   .jd-form-header {
@@ -2019,12 +2022,11 @@
   }
   
   .jd-textarea-container {
-    flex: 1 1 auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
     padding: 20px 24px;
     overflow: hidden;
-    min-height: 0;
     background: var(--bg);
     width: 100%;
     box-sizing: border-box;
@@ -2038,9 +2040,8 @@
   }
   
   #jobDescriptionTab {
-    flex: 1 1 auto;
+    flex: 1;
     width: 100%;
-    max-width: 100%;
     resize: none;
     font-family: inherit;
     font-size: 14px;
@@ -2051,10 +2052,8 @@
     color: var(--text);
     padding: 12px;
     min-height: 200px;
-    max-height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
-    -webkit-overflow-scrolling: touch;
   }
   
   /* Hide textarea when not in job description tab */

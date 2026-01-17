@@ -927,78 +927,46 @@
             <p style="color: var(--text-secondary); margin: 0;">Search thousands of jobs from top companies</p>
           </div>
           
-          <!-- Main Search Card -->
-          <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+          <!-- All-in-One Search Row -->
+          <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
             
-            <!-- Essential Search Fields -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; margin-bottom: 16px; align-items: end;">
-              <div class="form-group" style="position: relative;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px;">Job Title *</label>
-                <input type="text" id="jobSearchTitle" placeholder="e.g., Software Engineer" required
-                  style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;"
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              
+              <!-- Job Title -->
+              <div style="flex: 1.5; min-width: 180px; position: relative;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Job Title *</label>
+                <input type="text" id="jobSearchTitle" placeholder="e.g., Data Engineer" required
+                  style="width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; box-sizing: border-box;"
                   onfocus="this.style.borderColor='var(--primary)'" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)">
-                <div class="job-title-suggestions" id="jobTitleSuggestions" style="display: none;">
-                </div>
+                <div class="job-title-suggestions" id="jobTitleSuggestions" style="display: none;"></div>
               </div>
               
-              <div class="form-group" style="position: relative;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px;">Location</label>
-                <input type="text" id="jobSearchLocationCustom" placeholder="City, state, or 'remote'" 
-                  style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px;"
+              <!-- Location -->
+              <div style="flex: 1; min-width: 140px; position: relative;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Location</label>
+                <input type="text" id="jobSearchLocationCustom" placeholder="City or 'remote'" 
+                  style="width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; box-sizing: border-box;"
                   onfocus="this.style.borderColor='var(--primary)'; showLocationSuggestions(this.value)" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)"
                   oninput="showLocationSuggestions(this.value)">
-                <div class="location-suggestions" id="locationSuggestions" style="display: none;">
-                </div>
+                <div class="location-suggestions" id="locationSuggestions" style="display: none;"></div>
               </div>
               
-              <div class="form-group">
-                <select id="jobSearchMaxResults" style="padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 14px; min-width: 90px;">
-                  <option value="10">10 Jobs</option>
-                  <option value="20" selected>20 Jobs</option>
-                  <option value="50">50 Jobs</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Hidden elements for JavaScript compatibility -->
-            <div style="display: none;">
-              <input type="checkbox" id="typeFullTime" value="FULLTIME" checked>
-              <input type="checkbox" id="typePartTime" value="PARTTIME">
-              <input type="checkbox" id="typeContract" value="CONTRACTOR">
-              <input type="checkbox" id="typeIntern" value="INTERN">
-              <select id="jobExperienceLevel">
-                <option value="" selected>Any Experience</option>
-              </select>
-              <input type="number" id="salaryMin">
-              <input type="number" id="salaryMax">
-              <select id="salaryFrequency">
-                <option value="yearly" selected>Yearly</option>
-              </select>
-            </div>
-            </div>
-            
-            <!-- Quick Filters -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; padding: 24px; background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg) 100%); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-              
-              <!-- Job Type Dropdown -->
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">💼 Job Type</label>
-                <select id="jobTypeDisplay" style="padding: 12px 16px; width: 100%; border: 2px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 14px; cursor: pointer; outline: none; box-sizing: border-box; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%277%27 viewBox=%270 0 12 7%27%3e%3cpath fill=%27%23666%27 d=%27M1 1l5 5 5-5%27/%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 12px center;">
-                  <option value="FULLTIME,PARTTIME,CONTRACTOR,remote">All Types + Remote</option>
+              <!-- Job Type -->
+              <div style="flex: 0.9; min-width: 130px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Job Type</label>
+                <select id="jobTypeDisplay" style="width: 100%; padding: 10px 8px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; box-sizing: border-box;">
+                  <option value="FULLTIME,PARTTIME,CONTRACTOR,remote">All</option>
                   <option value="FULLTIME">Full-time</option>
                   <option value="PARTTIME">Part-time</option>
                   <option value="CONTRACTOR">Contract</option>
                   <option value="remote">Remote Only</option>
-                  <option value="FULLTIME,remote">Full-time + Remote</option>
-                  <option value="PARTTIME,remote">Part-time + Remote</option>
-                  <option value="CONTRACTOR,remote">Contract + Remote</option>
                 </select>
               </div>
               
-              <!-- Time Range Filter -->
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">📅 Date Posted</label>
-                <select id="jobSearchDate" style="padding: 12px 16px; width: 100%; border: 2px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 14px; cursor: pointer; outline: none; box-sizing: border-box;">
+              <!-- Date Posted -->
+              <div style="flex: 0.8; min-width: 110px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Date Posted</label>
+                <select id="jobSearchDate" style="width: 100%; padding: 10px 8px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; box-sizing: border-box;">
                   <option value="all">Any Time</option>
                   <option value="today">Today</option>
                   <option value="3days">Last 3 Days</option>
@@ -1007,25 +975,49 @@
                 </select>
               </div>
               
+              <!-- API Source -->
+              <div style="flex: 0.9; min-width: 130px;">
+                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Source</label>
+                <select id="jobSearchSource" style="width: 100%; padding: 10px 8px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; box-sizing: border-box;">
+                  <option value="jsearch">All Jobs</option>
+                  <option value="workday">Workday</option>
+                  <option value="lever">Lever</option>
+                  <option value="icims">iCIMS</option>
+                  <option value="bamboohr">BambooHR</option>
+                  <option value="greenhouse">Greenhouse</option>
+                </select>
+              </div>
+              
+              <!-- Search Button -->
+              <div style="flex: 0 0 auto;">
+                <button id="searchJobsBtn" class="primary-btn" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; white-space: nowrap; height: 42px;">
+                  🔍 Search
+                </button>
+              </div>
+              
+            </div>
+            
+            <!-- Greenhouse Companies Button (shown when greenhouse selected) -->
+            <div id="greenhouseToggleRow" style="display: none; margin-top: 12px; text-align: center;">
+              <button id="showCompanySelectionBtn" style="padding: 8px 20px; background: var(--card-bg); border: 2px solid var(--primary); color: var(--primary); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='var(--card-bg)'; this.style.color='var(--primary)'">
+                🏢 Select Companies (<span id="selectedCompanyCount">20</span>)
+              </button>
             </div>
 
-            <!-- Search Controls in One Row -->
-            <div style="display: flex; align-items: center; gap: 16px; justify-content: center; margin: 24px 0; flex-wrap: wrap;">
-              <select id="jobSearchSource" style="padding: 12px 20px; font-size: 15px; border-radius: 8px; border: 2px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; min-width: 280px; font-weight: 500; box-sizing: border-box;">
-                <option value="jsearch">🌐 All Jobs (JSearch API)</option>
-                <option value="greenhouse">🏢 Greenhouse (20 Tech Companies)</option>
-              </select>
-              
-              <button id="showCompanySelectionBtn" style="display: none; padding: 12px 24px; background: var(--card-bg); border: 2px solid var(--primary); color: var(--primary); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='var(--card-bg)'; this.style.color='var(--primary)'">
-                <span id="selectedCompanyCount">20</span> Companies
-              </button>
-              
-              <button id="searchJobsBtn" class="primary-btn" style="padding: 14px 32px; font-size: 16px; font-weight: 600; border-radius: 8px; min-width: 180px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">
-                🔍 Search Jobs
-              </button>
+            <!-- Hidden elements for JavaScript compatibility -->
+            <div style="display: none;">
+              <input type="checkbox" id="typeFullTime" value="FULLTIME" checked>
+              <input type="checkbox" id="typePartTime" value="PARTTIME">
+              <input type="checkbox" id="typeContract" value="CONTRACTOR">
+              <input type="checkbox" id="typeIntern" value="INTERN">
+              <select id="jobExperienceLevel"><option value="" selected>Any Experience</option></select>
+              <input type="number" id="salaryMin">
+              <input type="number" id="salaryMax">
+              <select id="salaryFrequency"><option value="yearly" selected>Yearly</option></select>
+              <select id="jobSearchMaxResults"><option value="20" selected>20</option></select>
+              <select id="jobSearchSort"><option value="relevance" selected>relevance</option></select>
             </div>
           </div>
-          
 
           <!-- Greenhouse Company Selection (shows when greenhouse source is selected) -->
           <div id="greenhouseCompanySection" style="display: none; background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 2px solid var(--primary); box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);">
@@ -1219,6 +1211,17 @@
               <option value="processing">Processing</option>
               <option value="pending">Pending</option>
               <option value="failed">Failed</option>
+            </select>
+            
+            <select id="filterDate" onchange="filterDashboardTable()" 
+              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
+              <option value="">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="3months">Last 3 Months</option>
+              <option value="6months">Last 6 Months</option>
+              <option value="year">This Year</option>
             </select>
             
             <button onclick="clearDashboardFilters()" 
@@ -2125,9 +2128,9 @@
     const selectedMode = document.querySelector('input[name="resumeMode"]:checked').value;
     
     if (selectedMode === 'complete_jd') {
-      modeDescription.innerHTML = '📝 <strong>Complete JD:</strong> Creates a complete resume from scratch using only the job description';
+      modeDescription.innerHTML = ' <strong>Complete JD:</strong> Creates a complete resume from scratch using only the job description';
     } else {
-      modeDescription.innerHTML = '✏️ <strong>Resume + JD:</strong> Takes your existing resume data and tailors it to match the job description';
+      modeDescription.innerHTML = ' <strong>Resume + JD:</strong> Takes your existing resume data and tailors it to match the job description';
     }
   }
 
@@ -2488,6 +2491,30 @@
     } catch (error) {
       console.error('Error saving changes:', error);
       showNotification(`Failed to save changes: ${error.message}`, 'error');
+    }
+  }
+
+  async function copyJobDescription(requestId) {
+    try {
+      showDashMessage('📋 Copying job description...', 'info');
+      
+      const response = await fetch(`/api/jobs/${requestId}/download-jd`, {
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword)
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to load job description');
+      
+      const text = await response.text();
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(text);
+      
+      showDashMessage('✅ Job description copied to clipboard!', 'success');
+    } catch (error) {
+      console.error('Error copying job description:', error);
+      showDashMessage('❌ Failed to copy job description', 'error');
     }
   }
 
@@ -2986,6 +3013,7 @@
       
       const extractData = await extractRes.json();
       console.log('[FEEDBACK] Phase 1 complete. Request ID:', extractData.request_id);
+      console.log('[FEEDBACK] Mode from extractData:', extractData.keywords?.mode);
       
       // Check if keyword review is enabled
       const enableKeywordReview = document.getElementById('enableKeywordReview')?.checked;
@@ -2994,12 +3022,12 @@
         // Show keyword review modal for user to edit
         console.log('[FEEDBACK] Keyword review enabled - showing modal');
         updateRequestProgress(requestId, 26, '✓ Keywords extracted - Awaiting your review');
-        showKeywordReviewModal(extractData.jd_hints, extractData.request_id, requestId, companyName);
+        showKeywordReviewModal(extractData.keywords, extractData.request_id, requestId, companyName);
       } else {
-        // Skip review, proceed directly to Phase 2
+        // Skip review, proceed directly to Phase 2 - pass mode from extractData
         console.log('[FEEDBACK] Keyword review disabled - proceeding directly to generation');
         updateRequestProgress(requestId, 30, 'Generating resume...');
-        await proceedToGenerationPhase(extractData.request_id, requestId, companyName, null);
+        await proceedToGenerationPhase(extractData.request_id, requestId, companyName, null, extractData.keywords?.mode);
       }
       
     } catch (error) {
@@ -3056,12 +3084,14 @@
     isModalOpen = true;
     console.log(`[QUEUE] Modal marked as OPEN for request: ${nextReview.uiRequestId}`);
     
-    // Store request IDs for later use
+    // Store request IDs and mode for later use
     modal.dataset.backendRequestId = nextReview.backendRequestId;
     modal.dataset.uiRequestId = nextReview.uiRequestId;
     modal.dataset.companyName = nextReview.companyName;
+    modal.dataset.mode = nextReview.jdHints.mode || 'complete_jd';  // Store mode from backend
     
     console.log(`[QUEUE] Stored in modal dataset - Backend ID: ${nextReview.backendRequestId}, UI ID: ${nextReview.uiRequestId}`);
+    console.log(`[QUEUE] Mode stored in modal: ${modal.dataset.mode}`);
     
     // Show queue status if there are more items
     if (keywordReviewQueue.length > 0) {
@@ -3172,6 +3202,7 @@
     const backendRequestId = modal.dataset.backendRequestId;
     const uiRequestId = modal.dataset.uiRequestId;
     const companyName = modal.dataset.companyName;
+    const mode = modal.dataset.mode;  // Get mode from modal
     
     // Collect modified keywords
     const feedback = {
@@ -3182,16 +3213,17 @@
     
     console.log('[FEEDBACK] User feedback collected:', feedback);
     console.log('[FEEDBACK] Keywords - Technical:', feedback.technical_keywords.length, 'Soft:', feedback.soft_skills.length, 'Phrases:', feedback.phrases.length);
+    console.log('[FEEDBACK] Mode from modal:', mode);
     
     // Close modal WITHOUT marking as failed (user approved, not cancelled)
     closeKeywordReviewModal(false);
     
-    // Proceed to generation with feedback
-    await proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback);
+    // Proceed to generation with feedback AND mode
+    await proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback, mode);
   }
   
   // Proceed to Phase 2 generation (with or without feedback)
-  async function proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback) {
+  async function proceedToGenerationPhase(backendRequestId, uiRequestId, companyName, feedback, mode = null) {
     // Update UI progress
     updateRequestProgress(uiRequestId, 30, 'Generating resume...');
     
@@ -3212,6 +3244,12 @@
         request_id: backendRequestId
       };
       
+      // Add mode if provided (CRITICAL for correct generation)
+      if (mode) {
+        payload.mode = mode;
+        console.log('[FEEDBACK] Including mode in payload:', mode);
+      }
+      
       // Only add feedback if provided (when user reviews keywords)
       if (feedback) {
         payload.feedback = feedback;
@@ -3219,6 +3257,11 @@
       } else {
         console.log('[FEEDBACK] Phase 2: Calling generate endpoint without feedback (auto-proceed)...');
       }
+      
+      // Log complete payload for validation
+      console.log('[FEEDBACK] === GENERATE RESUME REQUEST PAYLOAD ===');
+      console.log(JSON.stringify(payload, null, 2));
+      console.log('[FEEDBACK] =======================================');
       
       const generateRes = await fetch(generateUrl, {
         method: 'POST',
@@ -4089,6 +4132,7 @@
 
         const extractResult = await extractResponse.json();
         console.log(`[FEEDBACK][${uiRequestId}] Phase 1 SUCCESS! Keywords extracted:`, extractResult);
+        console.log(`[FEEDBACK][${uiRequestId}] Mode from backend:`, extractResult.keywords?.mode);
         console.log(`[FEEDBACK][${uiRequestId}] Using stored keyword review preference:`, enableKeywordReview);
         
         if (enableKeywordReview) {
@@ -4100,7 +4144,7 @@
           // Skip review, proceed directly to Phase 2
           console.log(`[FEEDBACK][${uiRequestId}] Keyword review DISABLED - proceeding directly to generation`);
           updateRequestProgress(uiRequestId, 30, 'Generating resume...');
-          await proceedToGenerationPhase(extractResult.request_id, uiRequestId, companyName, null);
+          await proceedToGenerationPhase(extractResult.request_id, uiRequestId, companyName, null, extractResult.keywords?.mode);
         }
         
       } catch (error) {
@@ -4361,6 +4405,7 @@
     document.getElementById('filterCompany').value = '';
     document.getElementById('filterJobTitle').value = '';
     document.getElementById('filterStatus').value = '';
+    document.getElementById('filterDate').value = '';
     currentPage = 1; // Reset to first page when clearing filters
     filterDashboardTable();
   }
@@ -4913,10 +4958,12 @@
       const companyFilter = document.getElementById('filterCompany')?.value || '';
       const jobTitleFilter = document.getElementById('filterJobTitle')?.value || '';
       const statusFilter = document.getElementById('filterStatus')?.value || '';
+      const dateFilter = document.getElementById('filterDate')?.value || '';
       
       if (companyFilter) params.append('company', companyFilter);
       if (jobTitleFilter) params.append('job_title', jobTitleFilter);
       if (statusFilter) params.append('status', statusFilter);
+      if (dateFilter) params.append('date_range', dateFilter);
       
       // Add timestamp to prevent caching
       params.append('_t', Date.now());
@@ -4931,7 +4978,7 @@
       const resultCount = document.getElementById('resultCount');
 
       // Update result count display
-      const isFiltered = companyFilter || jobTitleFilter || statusFilter;
+      const isFiltered = companyFilter || jobTitleFilter || statusFilter || dateFilter;
       if (isFiltered) {
         resultCount.textContent = `Found ${data.count} resume${data.count !== 1 ? 's' : ''} matching your search`;
       } else {
@@ -4993,6 +5040,10 @@
                 <button class="secondary" onclick="viewJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
                   <span class="menu-icon">📋</span>
                   <span>View Job Description</span>
+                </button>
+                <button class="secondary" onclick="copyJobDescription('${job.request_id}'); closeKebabMenu('${job.request_id}')">
+                  <span class="menu-icon">📄</span>
+                  <span>Copy JD</span>
                 </button>
                 <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
                   <span class="menu-icon">📥</span>
@@ -6302,6 +6353,10 @@
     const datePostedEl = document.getElementById('jobSearchDate');
     const datePosted = datePostedEl ? datePostedEl.value : 'week';
     
+    // Get sort by with null check
+    const sortByEl = document.getElementById('jobSearchSort');
+    const sortBy = sortByEl ? sortByEl.value : 'relevance';
+    
     const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value);
     
     // Get employment types (with null checks)
@@ -6338,8 +6393,23 @@
     const salaryMax = salaryMaxEl ? salaryMaxEl.value : '';
     const salaryFrequency = salaryFrequencyEl ? salaryFrequencyEl.value : 'yearly';
     
-    // Default to JSearch API
-    const sources = ['jsearch'];
+    // Get selected source
+    const jobSourceEl = document.getElementById('jobSearchSource');
+    const selectedSource = jobSourceEl ? jobSourceEl.value : 'jsearch';
+    
+    // Map source to backend sources list
+    let sources = ['jsearch'];
+    if (selectedSource === 'workday') {
+      sources = ['workday'];
+    } else if (selectedSource === 'lever') {
+      sources = ['lever'];
+    } else if (selectedSource === 'icims') {
+      sources = ['icims'];
+    } else if (selectedSource === 'bamboohr') {
+      sources = ['bamboohr'];
+    } else if (selectedSource === 'greenhouse') {
+      sources = ['greenhouse'];
+    }
     
     if (!jobTitle) {
       showNotification('Please enter a job title', 'warning');
@@ -6350,7 +6420,9 @@
       job_title: jobTitle,
       location: location,
       max_results: maxResults,
-      employment_types: employmentTypes
+      employment_types: employmentTypes,
+      source: selectedSource,
+      sort_by: sortBy
     });
     
     // Show loading
@@ -6371,7 +6443,8 @@
         work_from_home: workFromHome,
         salary_min: salaryMin ? parseInt(salaryMin) : undefined,
         salary_max: salaryMax ? parseInt(salaryMax) : undefined,
-        salary_frequency: salaryFrequency
+        salary_frequency: salaryFrequency,
+        sort_by: sortBy
       };
       
       // Remove undefined values
@@ -6454,7 +6527,7 @@
             View Job →
           </a>
           <button class="job-use-btn" onclick='useJobForResume(${JSON.stringify(job).replace(/'/g, "&#39;")})'>
-            ✨ Use for Resume
+            Use for Resume
           </button>
         </div>
       </div>
@@ -6488,19 +6561,47 @@
     // Fill company and title
     if (companyField) companyField.value = job.company || '';
     if (titleField) titleField.value = job.title || '';
-    if (linkField) linkField.value = job.link || '';
+    if (linkField) linkField.value = job.link || job.url || '';
     
     // For description, use: job_description (full) > description > snippet
-    const description = job.job_description || job.description || job.snippet || '';
+    let description = job.job_description || job.description || job.snippet || '';
+    
+    // If we only have a snippet and there's a valid link, try to fetch full description
+    if (!job.job_description && !job.description && job.snippet && (job.link || job.url)) {
+      const jobUrl = job.link || job.url;
+      console.log('[USE_FOR_RESUME] Only snippet available, attempting to fetch full description from:', jobUrl);
+      
+      try {
+        showResult('🔄 Fetching full job description...', 'info');
+        
+        const response = await fetch('/api/scrape-job', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: jobUrl })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.job && data.job.description) {
+            description = data.job.description;
+            console.log('[USE_FOR_RESUME] Successfully fetched full description');
+          }
+        }
+      } catch (error) {
+        console.warn('[USE_FOR_RESUME] Failed to fetch full description:', error);
+        // Continue with snippet - not a critical error
+      }
+    }
+    
     if (jdField) jdField.value = description;
     
     // Show appropriate message
-    if (job.job_description || job.description) {
+    if (description && description.length > 300) {
       showResult('✅ Job details loaded! Review and generate your resume.', 'success');
-    } else if (job.snippet) {
-      showResult('⚠️ Using job snippet. Click "View Job" to see full description and copy if needed.', 'warning');
+    } else if (description && description.length > 100) {
+      showResult('⚠️ Limited job description available. You may want to copy more details from the job posting.', 'warning');
     } else {
-      showResult('⚠️ No description available. Please paste the job description manually.', 'warning');
+      showResult('⚠️ No full description available. Please click "View Job" and copy the description manually.', 'warning');
     }
   }
 
@@ -6718,14 +6819,14 @@
   
   // Show/hide Greenhouse company selection based on source dropdown
   document.getElementById('jobSearchSource').addEventListener('change', function() {
-    const button = document.getElementById('showCompanySelectionBtn');
+    const toggleRow = document.getElementById('greenhouseToggleRow');
     const section = document.getElementById('greenhouseCompanySection');
     
     if (this.value === 'greenhouse') {
-      button.style.display = 'block';
+      toggleRow.style.display = 'block';
       updateSelectedCompanyCount();
     } else {
-      button.style.display = 'none';
+      toggleRow.style.display = 'none';
       section.style.display = 'none';
     }
   });
