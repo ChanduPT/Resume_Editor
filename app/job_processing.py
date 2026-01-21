@@ -13,7 +13,8 @@ from app.utils import (
     normalize_whitespace, split_resume_sections,
     chat_completion, chat_completion_async,
     parse_experience_to_json, parse_skills_to_json,
-    clean_job_description, clean_experience_bullets
+    clean_job_description, clean_experience_bullets,
+    repair_json
 )
 from app.prompts import (
     JD_HINTS_PROMPT, jd_hints_response_schema,
@@ -480,21 +481,35 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     
     # PRIORITY: Use mode_override from frontend (most reliable for parallel requests)
     # FALLBACK: Load from state, then database, then default
+    VALID_MODES = ["complete_jd", "resume_jd"]
+    
     if mode_override:
-        mode = mode_override
-        logger.info(f"[MODE] Using explicit mode from frontend: '{mode}'")
-    else:
+        # Validate mode from frontend
+        if mode_override in VALID_MODES:
+            mode = mode_override
+            logger.info(f"[MODE] Using explicit mode from frontend: '{mode}'")
+        else:
+            logger.error(f"[MODE] Invalid mode_override '{mode_override}' - will use fallback")
+            mode_override = None  # Reset to trigger fallback logic
+    
+    # Fallback: if mode_override wasn't valid or wasn't provided
+    if not mode_override:
         mode = state.get("mode")
+        # Validate mode from state
+        if mode and mode not in VALID_MODES:
+            logger.error(f"[MODE] Invalid mode in state '{mode}' - treating as unset")
+            mode = None
+            
         if not mode:
             # Final fallback: check database
             if db:
                 job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id).first()
-                if job and job.mode:
+                if job and job.mode and job.mode in VALID_MODES:
                     mode = job.mode
                     logger.warning(f"[MODE] Loaded from database fallback: '{mode}'")
                 else:
                     mode = "complete_jd"  # Last resort default
-                    logger.error(f"[MODE] No mode found anywhere! Using default: '{mode}'")
+                    logger.error(f"[MODE] No valid mode found anywhere! Using default: '{mode}'")
             else:
                 mode = "complete_jd"
                 logger.error(f"[MODE] No db session, using default: '{mode}'")
@@ -645,7 +660,18 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
                 )
             
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
-            result = json.loads(result_raw)
+            
+            # Log raw response for debugging
+            logger.info(f"[EXPERIENCE] Raw LLM response length: {len(result_raw)} chars")
+            if len(result_raw) < 500:
+                logger.warning(f"[EXPERIENCE] ⚠️ Response seems short. Raw content: {result_raw[:500]}")
+            
+            # Try to repair malformed JSON from LLM response
+            result_raw_repaired = repair_json(result_raw)
+            if result_raw_repaired != result_raw:
+                logger.info(f"[EXPERIENCE] JSON was repaired. Original length: {len(result_raw)}, Repaired length: {len(result_raw_repaired)}")
+            
+            result = json.loads(result_raw_repaired)
             experience_result = result.get("experience", [])
             
             # Validate: Check if we got all experience entries back
@@ -662,11 +688,30 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
             logger.info(f"[EXPERIENCE] Generated {len(experience_result)} roles (cleaned)")
             return experience_result
         except asyncio.TimeoutError:
-            logger.error("[EXPERIENCE] Timeout after 90 seconds")
-            return resume_json.get("experience", [])
+            logger.error("[EXPERIENCE] ❌ TIMEOUT after 90 seconds")
+            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
+            # This was causing complete_jd to look like resume_jd when errors occurred
+            if mode == "complete_jd":
+                logger.error("[EXPERIENCE] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
+                logger.error("[EXPERIENCE] ⚠️ This prevents original bullets from appearing in complete_jd output")
+                return []  # Return empty - will show error to user instead of wrong content
+            else:
+                logger.warning("[EXPERIENCE] resume_jd mode - returning original bullets as fallback")
+                return resume_json.get("experience", [])
         except Exception as e:
-            logger.error(f"[EXPERIENCE] Error: {str(e)}")
-            return resume_json.get("experience", [])
+            logger.error(f"[EXPERIENCE] ❌ ERROR: {str(e)}")
+            # Log raw response for debugging JSON parse errors
+            if 'result_raw' in locals():
+                logger.error(f"[EXPERIENCE] Raw response (first 500 chars): {result_raw[:500] if len(result_raw) > 500 else result_raw}")
+                logger.error(f"[EXPERIENCE] Raw response (last 200 chars): {result_raw[-200:] if len(result_raw) > 200 else result_raw}")
+            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
+            if mode == "complete_jd":
+                logger.error("[EXPERIENCE] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
+                logger.error("[EXPERIENCE] ⚠️ This prevents original bullets from appearing in complete_jd output")
+                return []  # Return empty - will show error to user instead of wrong content
+            else:
+                logger.warning("[EXPERIENCE] resume_jd mode - returning original bullets as fallback")
+                return resume_json.get("experience", [])
     
     async def generate_skills():
         """Generate technical skills categorized by JD requirements - SAME FOR BOTH MODES"""
@@ -1023,6 +1068,9 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
                 )
             
             result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
+            
+            # Try to repair malformed JSON from LLM response
+            result_raw = repair_json(result_raw)
             result = json.loads(result_raw)
             experience_result = result.get("experience", [])
             
@@ -1040,11 +1088,23 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             logger.info(f"[EXPERIENCE] Generated {len(experience_result)} roles (cleaned)")
             return experience_result
         except asyncio.TimeoutError:
-            logger.error("[EXPERIENCE] Timeout after 90 seconds")
-            return resume_json.get("experience", [])
+            logger.error("[EXPERIENCE PARALLEL] ❌ TIMEOUT after 90 seconds")
+            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
+            if mode == "complete_jd":
+                logger.error("[EXPERIENCE PARALLEL] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
+                return []
+            else:
+                logger.warning("[EXPERIENCE PARALLEL] resume_jd mode - returning original bullets as fallback")
+                return resume_json.get("experience", [])
         except Exception as e:
-            logger.error(f"[EXPERIENCE] Error: {str(e)}")
-            return resume_json.get("experience", [])
+            logger.error(f"[EXPERIENCE PARALLEL] ❌ ERROR: {str(e)}")
+            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
+            if mode == "complete_jd":
+                logger.error("[EXPERIENCE PARALLEL] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
+                return []
+            else:
+                logger.warning("[EXPERIENCE PARALLEL] resume_jd mode - returning original bullets as fallback")
+                return resume_json.get("experience", [])
     
     async def generate_skills():
         """Generate technical skills categorized by JD requirements - SAME FOR BOTH MODES"""

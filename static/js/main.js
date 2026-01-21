@@ -572,11 +572,13 @@
       
       const extractData = await extractRes.json();
       console.log('[FEEDBACK] Phase 1 complete. Request ID:', extractData.request_id);
+      console.log('[FEEDBACK] Mode from backend:', extractData.keywords?.mode || resumeMode);
       
       updateRequestProgress(requestId, 25, 'Keywords extracted - Review required');
       
-      // Show keyword review modal
-      showKeywordReviewModal(extractData.jd_hints, extractData.request_id, requestId, companyName);
+      // Show keyword review modal - pass the mode (from backend response or fallback to selected mode)
+      const extractedMode = extractData.keywords?.mode || resumeMode;
+      showKeywordReviewModal(extractData.keywords, extractData.request_id, requestId, companyName, extractedMode);
       
     } catch (error) {
       console.error('[FEEDBACK] Error in Phase 1:', error);
@@ -586,17 +588,19 @@
   }
   
   // Show keyword review modal for user feedback
-  function showKeywordReviewModal(jdHints, backendRequestId, uiRequestId, companyName) {
+  function showKeywordReviewModal(jdHints, backendRequestId, uiRequestId, companyName, mode) {
     const modal = document.getElementById('keywordReviewModal');
     if (!modal) {
       console.error('Keyword review modal not found!');
       return;
     }
     
-    // Store request IDs for later use
+    // Store request IDs and mode for later use
     modal.dataset.backendRequestId = backendRequestId;
     modal.dataset.uiRequestId = uiRequestId;
     modal.dataset.companyName = companyName;
+    modal.dataset.mode = mode || 'complete_jd';  // Store mode - CRITICAL for Phase 2
+    console.log('[FEEDBACK] Stored mode in modal:', modal.dataset.mode);
     
     // Populate keyword lists
     populateKeywordList('technicalKeywordsList', jdHints.technical_keywords || []);
@@ -643,6 +647,7 @@
     const backendRequestId = modal.dataset.backendRequestId;
     const uiRequestId = modal.dataset.uiRequestId;
     const companyName = modal.dataset.companyName;
+    const mode = modal.dataset.mode || 'complete_jd';  // Retrieve stored mode - CRITICAL
     
     // Collect modified keywords
     const feedback = {
@@ -652,12 +657,19 @@
     };
     
     console.log('[FEEDBACK] User feedback collected:', feedback);
+    console.log('[FEEDBACK] Mode to send to backend:', mode);
     
     // Close modal
     closeKeywordReviewModal();
     
     // Update UI progress
     updateRequestProgress(uiRequestId, 30, 'Generating resume with your keywords...');
+    
+    // Ensure mode has a valid value (fallback to complete_jd if undefined/null)
+    const modeToSend = mode || 'complete_jd';
+    if (!mode) {
+      console.warn('[FEEDBACK] WARNING: Mode was undefined/null, defaulting to complete_jd');
+    }
     
     try {
       // PHASE 2: Generate resume with feedback
@@ -670,7 +682,8 @@
         },
         body: JSON.stringify({
           request_id: backendRequestId,
-          feedback: feedback
+          feedback: feedback,
+          mode: modeToSend  // CRITICAL: Send mode back to backend to ensure correct processing
         })
       });
       

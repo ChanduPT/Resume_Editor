@@ -29,6 +29,104 @@ def normalize_whitespace(text: str) -> str:
     return re.sub(r"\s+\n", "\n", re.sub(r"[ \t]+", " ", text)).strip()
 
 
+def repair_json(json_str: str) -> str:
+    """
+    Attempt to repair malformed JSON from LLM responses.
+    Common issues: unterminated strings, missing closing brackets/braces, trailing commas.
+    
+    Args:
+        json_str: The potentially malformed JSON string
+        
+    Returns:
+        Repaired JSON string (or original if already valid)
+    """
+    if not json_str:
+        return json_str
+    
+    # First try to parse as-is
+    try:
+        json.loads(json_str)
+        return json_str  # Already valid
+    except json.JSONDecodeError:
+        pass
+    
+    logger.warning("[JSON_REPAIR] Attempting to repair malformed JSON...")
+    repaired = json_str.strip()
+    
+    # Remove markdown code blocks if present
+    if repaired.startswith("```json"):
+        repaired = repaired[7:]
+    elif repaired.startswith("```"):
+        repaired = repaired[3:]
+    if repaired.endswith("```"):
+        repaired = repaired[:-3]
+    repaired = repaired.strip()
+    
+    # Strategy 1: Find the last complete bullet point ending with "
+    # This handles truncation mid-sentence
+    last_complete_bullet = -1
+    
+    # Look for patterns like: "..." followed by comma or bracket
+    import re
+    # Find all positions where a string ends properly (not mid-word)
+    bullet_endings = list(re.finditer(r'"\s*[,\]\}]', repaired))
+    if bullet_endings:
+        last_match = bullet_endings[-1]
+        # Check if this is inside the points array
+        last_complete_bullet = last_match.end() - 1
+        logger.info(f"[JSON_REPAIR] Found last complete string at position {last_complete_bullet}")
+    
+    # If we can find a truncation point, use it
+    if last_complete_bullet > 0:
+        repaired = repaired[:last_complete_bullet + 1]
+    
+    # Count remaining open brackets/braces and close them
+    open_braces = 0
+    open_brackets = 0
+    in_string = False
+    escape_next = False
+    
+    for char in repaired:
+        if escape_next:
+            escape_next = False
+            continue
+        if char == '\\':
+            escape_next = True
+            continue
+        if char == '"' and not escape_next:
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if char == '{':
+            open_braces += 1
+        elif char == '}':
+            open_braces -= 1
+        elif char == '[':
+            open_brackets += 1
+        elif char == ']':
+            open_brackets -= 1
+    
+    # Remove trailing comma if present
+    repaired = repaired.rstrip()
+    if repaired.endswith(','):
+        repaired = repaired[:-1]
+    
+    # Add missing closing brackets/braces
+    repaired += ']' * open_brackets
+    repaired += '}' * open_braces
+    
+    # Try to parse the repaired JSON
+    try:
+        json.loads(repaired)
+        logger.info(f"[JSON_REPAIR] Successfully repaired JSON (added {open_brackets} ] and {open_braces} }})")
+        return repaired
+    except json.JSONDecodeError as e:
+        logger.error(f"[JSON_REPAIR] Failed to repair JSON: {e}")
+        # Return original - let caller handle the error
+        return json_str
+
+
 def clean_job_description(jd_text: str) -> str:
     """
     Clean and sanitize job description text by removing extra spaces,
@@ -318,13 +416,13 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
         model_name = "gemini-2.5-flash"
         
         # Configure generation with response schema if provided
-        # Set max_output_tokens high enough to handle large resumes with 4+ experiences
-        # Each experience can have 8-10 bullets of ~30 words each = ~300 words per role
-        # 4 roles = ~1200 words = ~1600 tokens, plus JSON overhead
-        # Setting to 8192 tokens to be safe for complex resumes
+        # Set max_output_tokens high enough to handle large resumes with multiple experiences
+        # Each experience can have 5-6 bullets of ~25 words each = ~150 words per role
+        # Plus JSON overhead and multiple roles
+        # Setting to 16384 tokens to prevent truncation
         generation_config = {
             "temperature": 0.2,
-            "max_output_tokens": 8192,
+            "max_output_tokens": 16384,
         }
         
         if response_schema:
