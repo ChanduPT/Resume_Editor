@@ -243,20 +243,20 @@ PRIORITY:
 - Realistic, seniority-appropriate complexity > over-engineering.
 
 BULLET WRITING RULES:
-- Each role must contain 8-10 bullets.
-- Each bullet should contain 24-32 words.
-- Use only ONE connector per bullet (“using”, “to”, “for”, “with”, “enabling” etc , based on context)
+- Each role must contain 6-8 bullets.
+- CRITICAL: Each bullet MUST contain exactly 24-30 words. Count words before finalizing each bullet.
+- Use only ONE connector per bullet ("using", "to", "for", "with", "enabling" etc , based on context)
 - Use Past tense throughout bullets generation.
 - Use realistic tools based on job period and industry context.
-- Include metrics in 2–3 bullets per role only when they are realistic and natural.
-- Final 1–2 bullets per role must highlight testing, documentation, knowledge-sharing, or cross-functional collaboration.
+- Include metrics in 1-2 bullets per role only when they are realistic and natural.
+- Final bullet per role should highlight testing, documentation, or collaboration.
 - Never include Vague modifiers, quotes, awkward phrasing, broken sentences, or repetition anywhere in bullets.
 
 KEYWORDS DISTRIBUTION RULES:
 If multiple roles exist:
-- Most Recent Role → include 30–40% of all JD keywords.
-- Second Most Recent Role → include another 30–40%.
-- Older Roles → include the remaining 20–30%.
+- Most Recent Role → include 40-50% of all JD keywords.
+- Second Most Recent Role → include 30-40% of JD keywords.
+- Older Roles → include the remaining 10-20% of JD keywords.
 - Spread keywords evenly across bullets; never cluster at the top.
 
 CLARIFICATIONS:

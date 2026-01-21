@@ -3088,10 +3088,16 @@
     modal.dataset.backendRequestId = nextReview.backendRequestId;
     modal.dataset.uiRequestId = nextReview.uiRequestId;
     modal.dataset.companyName = nextReview.companyName;
-    modal.dataset.mode = nextReview.jdHints.mode || 'complete_jd';  // Store mode from backend
+    
+    // CRITICAL: Extract and validate mode from backend response
+    const modeFromBackend = nextReview.jdHints?.mode;
+    modal.dataset.mode = modeFromBackend || 'complete_jd';  // Store mode from backend with fallback
     
     console.log(`[QUEUE] Stored in modal dataset - Backend ID: ${nextReview.backendRequestId}, UI ID: ${nextReview.uiRequestId}`);
-    console.log(`[QUEUE] Mode stored in modal: ${modal.dataset.mode}`);
+    console.log(`[QUEUE] Mode from jdHints: '${modeFromBackend}', Mode stored in modal: '${modal.dataset.mode}'`);
+    if (!modeFromBackend) {
+      console.warn(`[QUEUE] WARNING: Mode was not in jdHints! jdHints keys: ${Object.keys(nextReview.jdHints || {})}`);
+    }
     
     // Show queue status if there are more items
     if (keywordReviewQueue.length > 0) {
@@ -3244,10 +3250,12 @@
         request_id: backendRequestId
       };
       
-      // Add mode if provided (CRITICAL for correct generation)
-      if (mode) {
-        payload.mode = mode;
-        console.log('[FEEDBACK] Including mode in payload:', mode);
+      // Add mode - CRITICAL for correct generation (always send, default to complete_jd)
+      // This ensures the backend knows which prompt to use even if mode was lost
+      payload.mode = mode || 'complete_jd';
+      console.log('[FEEDBACK] Including mode in payload:', payload.mode);
+      if (!mode) {
+        console.warn('[FEEDBACK] WARNING: Mode was undefined/null, defaulting to complete_jd');
       }
       
       // Only add feedback if provided (when user reviews keywords)
