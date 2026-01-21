@@ -31,7 +31,8 @@ from app.endpoints import (
     search_jobs_endpoint, search_greenhouse_jobs_endpoint, scrape_job_details_endpoint,
     get_cache_stats_endpoint, clear_cache_endpoint, refresh_cache_endpoint,
     extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint,
-    update_application_status, get_application_stats
+    update_application_status, get_application_stats,
+    validate_payload_endpoint
 )
 
 # --------------------- App Setup ---------------------
@@ -160,6 +161,9 @@ app.post("/api/auth/reset-password")(reset_password)
 app.put("/api/auth/update-profile")(update_profile)
 
 # --------------------- Resume Generation Endpoints ---------------------
+
+# Validation endpoint - call first before generation
+app.post("/api/resume/validate")(validate_payload_endpoint)
 
 # Legacy single-phase endpoint (backward compatible)
 app.post("/api/generate_resume_json")(limiter.limit("5/minute")(generate_resume_json))

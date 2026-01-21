@@ -10,9 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import ResumeJob, User
 from app.utils import (
-    normalize_whitespace, split_resume_sections,
-    chat_completion, chat_completion_async,
-    parse_experience_to_json, parse_skills_to_json,
+    chat_completion_async,
     clean_job_description, clean_experience_bullets
 )
 from app.prompts import (
@@ -20,13 +18,9 @@ from app.prompts import (
     GENERATE_SUMMARY_FROM_JD_PROMPT, summary_response_schema,
     GENERATE_EXPERIENCE_FROM_JD_PROMPT, GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT, experience_response_schema,
     GENERATE_TECHNICAL_SKILLS_FROM_JD, skills_response_schema,
-    SCORING_PROMPT_JSON, APPLY_EDITS_PROMPT,
-    ORGANIZE_SKILLS_PROMPT, GENERATE_FROM_JD_PROMPT,
 )
 from app.helpers import (
-    save_debug_file, balance_experience_roles,
-    safe_load_json, normalize_section_name,
-    convert_resume_json_to_text, extract_json
+    save_debug_file, extract_json
 )
 from app.jd_preprocessing import (
     preprocess_jd, get_jd_summary, validate_preprocessed_jd
@@ -749,563 +743,54 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     return final_json
 
 
-async def process_resume_parallel(data: dict, request_id: str = None, db: Session = None) -> dict:
+async def process_resume_full(data: dict, request_id: str = None, db: Session = None) -> dict:
     """
-    LEGACY: Process resume with parallel API calls (without human feedback).
+    Process resume end-to-end WITHOUT human feedback.
     
-    This function is kept for backward compatibility. For new implementations,
-    use the two-phase approach:
-    1. extract_jd_keywords() - returns for feedback
-    2. generate_resume_content() - continues after approval
+    This is a convenience function that chains:
+    1. extract_jd_keywords() - extracts keywords from JD
+    2. generate_resume_content() - generates resume using extracted keywords
     
-    Flow:
-    1. Extract JD hints (sequential - required for other steps)
-    2. Generate summary, experience, skills in parallel
-    3. Combine results into final resume JSON
+    Use this when you want to skip the human feedback step and process
+    the resume in one shot.
     
-    Expected time savings: 40-50% (14-23s → 8-13s)
+    For human-in-the-loop processing, use:
+    - extract_jd_keywords() -> user reviews -> generate_resume_content()
+    
+    Args:
+        data: Input data containing resume_data, job_description_data, mode
+        request_id: Unique request identifier
+        db: Database session
+        
+    Returns:
+        dict: Complete optimized resume JSON
     """
-    logger.info("[LEGACY] Using process_resume_parallel without human feedback")
-    logger.warning("⚠️ Using legacy process_resume_parallel - consider migrating to two-phase flow")
-    logger.info("   Phase 1: extract_jd_keywords() - returns for user review")
-    logger.info("   Phase 2: generate_resume_content() - continues after approval")
-    
-    # Setup detailed logging for this request
-    debug_log, summary_log = setup_detailed_logging(request_id)
-    logger.info(f"📝 Detailed logs created:")
-    logger.info(f"   Debug log: {debug_log}")
-    logger.info(f"   Summary log: {summary_log}")
-    
-    log_section_header(logger, f"RESUME PROCESSING START (LEGACY) - Request ID: {request_id}")
-    
-    send_progress(request_id, 5, "Starting resume processing...", db)
-    
-    resume_json = data.get("resume_data", {})
-    mode = data.get("mode", "complete_jd")
-    
-    # Log request metadata
-    log_subsection(logger, "REQUEST METADATA")
-    logger.info(f"Processing Mode: {mode}")
-    logger.info(f"Request ID: {request_id}")
-    
-    # Extract job description - handle both old and new payload formats
-    if "job_description_data" in data:
-        job_json = data.get("job_description_data", {})
-        jd = job_json.get("job_description", "")
-        company_name = job_json.get("company_name", "")
-        job_title = job_json.get("job_title", "")
-    else:
-        jd = data.get("jd", "")
-        company_name = data.get("company_name", "")
-        job_title = data.get("job_title", "")
-    
-    logger.info(f"Company: {company_name}")
-    logger.info(f"Job Title: {job_title}")
-    logger.info(f"JD Length (raw): {len(jd)} chars")
-    
-    # Clean job description to remove extra spaces and special characters
-    jd = clean_job_description(jd)
-    logger.info(f"JD Length (cleaned): {len(jd)} chars")
-    
-    # Log input resume data
-    log_subsection(logger, "INPUT RESUME DATA")
-    log_data(logger, "Name", resume_json.get("name", ""))
-    log_data(logger, "Summary", resume_json.get("summary", ""), max_length=300)
-    log_data(logger, "Technical Skills", resume_json.get("technical_skills", {}), max_length=400)
-    
-    input_experience = resume_json.get("experience", [])
-    logger.info(f"Experience: {len(input_experience)} roles")
-    for idx, exp in enumerate(input_experience[:3]):  # Log first 3 roles
-        logger.info(f"  Role {idx+1}: {exp.get('company', '')} - {exp.get('role', '')} ({exp.get('period', '')})")
-        logger.info(f"          {len(exp.get('points', exp.get('bullets', [])))} bullet points")
-
-    # Prepare final JSON with static fields
-    final_json = {
-        "name": resume_json.get("name", ""),
-        "contact": resume_json.get("contact", ""),
-        "education": resume_json.get("education", [])
-    }
-    
-    send_progress(request_id, 10, "Processing basic information...", db)
-    
-    # Add projects if present and not empty
-    projects = resume_json.get("projects", [])
-    if projects:
-        valid_projects = [
-            p for p in projects 
-            if p.get("title", "").strip() and p.get("bullets") and len(p.get("bullets", [])) > 0
-        ]
-        if valid_projects:
-            final_json["projects"] = valid_projects
-    
-    # Add certifications if present and not empty
-    certifications = resume_json.get("certifications", [])
-    if certifications:
-        valid_certifications = [
-            c for c in certifications 
-            if c.get("name", "").strip()
-        ]
-        if valid_certifications:
-            final_json["certifications"] = valid_certifications
-
-    # STEP 1: Preprocess JD (new comprehensive preprocessing layer)
-    send_progress(request_id, 10, "Preprocessing job description...", db)
-    
-    import time
-    preprocess_start = time.time()
-    try:
-        # Run JD preprocessing pipeline
-        preprocessed_jd = await preprocess_jd(
-            raw_text=jd,
-            job_title=job_title,
-            use_llm_extraction=True  # Use LLM for maximum accuracy
-        )
-        
-        # Validate preprocessed JD
-        is_valid, error_msg = validate_preprocessed_jd(preprocessed_jd)
-        if not is_valid:
-            raise ValueError(f"JD preprocessing validation failed: {error_msg}")
-        
-        # Log preprocessing summary
-        logger.info(f"\n{get_jd_summary(preprocessed_jd)}")
-        
-        # # Save preprocessed JD for debugging
-        # save_debug_file(
-        #     content=json.dumps(preprocessed_jd, indent=2),
-        #     filename=f"{request_id}_preprocessed_jd.json",
-        #     prefix="jd_preprocessing"
-        # )
-        
-        preprocess_duration = time.time() - preprocess_start
-        logger.info(f"[PERF] JD preprocessing took {preprocess_duration:.2f}s")
-        
-    except Exception as e:
-        logger.error(f"[JD_PREPROCESSING] Error: {str(e)}")
-        raise Exception(f"Failed to preprocess job description: {str(e)}")
-    
-    # STEP 2: Extract JD hints using preprocessed text (SEQUENTIAL - required first)
-    send_progress(request_id, 15, "Analyzing job description...", db)
-    
-    jd_start = time.time()
-    try:
-        # Use normalized JD text for LLM analysis (cleaner, structured)
-        jd_text_for_llm = preprocessed_jd["normalized_jd"]
-        
-        jd_hints_raw = await chat_completion_async(
-            JD_HINTS_PROMPT.format(jd_text=jd_text_for_llm),
-            response_schema=jd_hints_response_schema,
-            timeout=90  # 90 seconds timeout for JD analysis
-        )
-        jd_hints = json.loads(jd_hints_raw)
-        
-        # Rename soft_skills to soft_skills_role_keywords for consistency
-        if "soft_skills" in jd_hints:
-            jd_hints["soft_skills_role_keywords"] = jd_hints.pop("soft_skills")
-        
-        # Enrich jd_hints with preprocessing metadata
-        jd_hints["preprocessed_metadata"] = preprocessed_jd["metadata"]
-        jd_hints["section_weights"] = preprocessed_jd["section_weights"]
-        
-        jd_duration = time.time() - jd_start
-        logger.info(f"[PERF] JD analysis took {jd_duration:.2f}s - extracted {len(jd_hints.get('technical_keywords', []))} keywords")
-    except asyncio.TimeoutError:
-        logger.error(f"[JD_HINTS] Timeout after 90 seconds")
-        raise Exception("Job description analysis timed out. Please try again.")
-    except Exception as e:
-        logger.error(f"[JD_HINTS] Error: {str(e)}")
-        raise Exception(f"Failed to analyze job description: {str(e)}")
-    
-    # Log JD hints extraction result
-    log_subsection(logger, "JD ANALYSIS RESULTS")
-    logger.info(f"Technical Keywords: {len(jd_hints.get('technical_keywords', []))} found")
-    log_data(logger, "Technical Keywords", jd_hints.get('technical_keywords', [])[:20], max_length=500)
-    logger.info(f"Soft Skills: {len(jd_hints.get('soft_skills_role_keywords', []))} found")
-    log_data(logger, "Soft Skills", jd_hints.get('soft_skills_role_keywords', [])[:10], max_length=300)
-    logger.info(f"Key Phrases: {len(jd_hints.get('phrases', []))} found")
-    
-    log_section_header(logger, f"PARALLEL PROCESSING - Mode: {mode.upper()}")
-    
-    send_progress(request_id, 25, "JD analysis complete. Starting parallel optimization...", db)
-    
-    # STEP 2: Generate summary, experience, skills in PARALLEL
-    async def generate_summary():
-        """Generate optimized summary from JD hints - SAME FOR BOTH MODES"""
-        try:
-            original_summary = resume_json.get("summary", "")
-            
-            # Always generate new summary using JD (regardless of mode)
-            log_subsection(logger, "SUMMARY GENERATION")
-            logger.info("✓ Generating summary from JD hints (applies to both modes)")
-            
-            # Always use complete_jd logic
-            prompt = GENERATE_SUMMARY_FROM_JD_PROMPT.format(
-                technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
-                soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
-                phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
-                original_summary=original_summary
-            )
-            
-            logger.info(f"[SUMMARY] Using GENERATE_SUMMARY_FROM_JD_PROMPT")
-            result_raw = await asyncio.wait_for(
-                chat_completion_async(prompt, response_schema=summary_response_schema),
-                timeout=60
-            )
-            result = json.loads(result_raw)
-            logger.info("[SUMMARY] Generated successfully")
-            return result.get("summary", "")
-            
-        except asyncio.TimeoutError:
-            logger.error("[SUMMARY] Timeout after 60 seconds")
-            return resume_json.get("summary", "")
-        except Exception as e:
-            logger.error(f"[SUMMARY] Error: {str(e)}")
-            return resume_json.get("summary", "")
-    
-    async def generate_experience():
-        """Generate optimized experience bullets from JD hints"""
-        try:
-            experience_data = resume_json.get("experience", [])
-            
-            # Extract additional context from preprocessing metadata
-            preprocessed_metadata = jd_hints.get("preprocessed_metadata", {})
-            role_title = preprocessed_metadata.get("title", "Not specified")
-            role_seniority = preprocessed_metadata.get("seniority", "Not specified")
-            
-            # Extract requirements from preprocessed JD sections
-            preprocessed_sections = preprocessed_jd.get("sections", {})
-            jd_requirements = preprocessed_sections.get("requirements", [])
-            
-            logger.info(f"[EXPERIENCE] Role: {role_title}, Seniority: {role_seniority}, Requirements: {len(jd_requirements)}")
-            
-            # Use different prompts based on mode
-            if mode == "complete_jd":
-                logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_FROM_JD_PROMPT (complete_jd mode)")
-                
-                # Extract only company, role, period (no bullets) for complete_jd mode
-                experience_metadata = []
-                for exp in experience_data:
-                    experience_metadata.append({
-                        "company": exp.get("company", ""),
-                        "role": exp.get("role", ""),
-                        "period": exp.get("period", "")
-                    })
-                
-                logger.info(f"[EXPERIENCE] Sending metadata only (no bullets) for {len(experience_metadata)} roles")
-                
-                prompt = GENERATE_EXPERIENCE_FROM_JD_PROMPT.format(
-                    technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
-                    soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
-                    phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
-                    experience_data=json.dumps(experience_metadata, ensure_ascii=False, indent=2),
-                    jd_requirements=json.dumps(jd_requirements, ensure_ascii=False),
-                    role_seniority=role_seniority,
-                    role_title=role_title
-                )
-            else:  # resume_jd mode
-                logger.info("[EXPERIENCE] Using GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT (resume_jd mode)")
-                logger.info(f"[EXPERIENCE] Enhancing existing bullets for {len(experience_data)} roles")
-                
-                # In resume_jd mode, send complete experience with all bullets for enhancement
-                prompt = GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT.format(
-                    technical_keywords=json.dumps(jd_hints.get("technical_keywords", []), ensure_ascii=False),
-                    soft_skills=json.dumps(jd_hints.get("soft_skills_role_keywords", []), ensure_ascii=False),
-                    phrases=json.dumps(jd_hints.get("phrases", []), ensure_ascii=False),
-                    experience_data=json.dumps(experience_data, ensure_ascii=False, indent=2),
-                    jd_requirements=json.dumps(jd_requirements, ensure_ascii=False),
-                    role_seniority=role_seniority,
-                    role_title=role_title
-                )
-            
-            result_raw = await chat_completion_async(prompt, response_schema=experience_response_schema, timeout=90)
-            result = json.loads(result_raw)
-            experience_result = result.get("experience", [])
-            
-            # Validate: Check if we got all experience entries back
-            input_exp_count = len(experience_data)
-            output_exp_count = len(experience_result)
-            if output_exp_count < input_exp_count:
-                logger.warning(f"[EXPERIENCE PARALLEL] ⚠️ MISSING ENTRIES: Input had {input_exp_count} roles, but LLM returned only {output_exp_count} roles")
-                logger.warning(f"[EXPERIENCE PARALLEL] Input companies: {[exp.get('company', 'N/A') for exp in experience_data]}")
-                logger.warning(f"[EXPERIENCE PARALLEL] Output companies: {[exp.get('company', 'N/A') for exp in experience_result]}")
-                logger.warning(f"[EXPERIENCE PARALLEL] This may be due to LLM output token limits. Response length: {len(result_raw)} chars")
-            
-            # Clean experience bullets to remove markdown and excessive quotes
-            experience_result = clean_experience_bullets(experience_result)
-            logger.info(f"[EXPERIENCE] Generated {len(experience_result)} roles (cleaned)")
-            return experience_result
-        except asyncio.TimeoutError:
-            logger.error("[EXPERIENCE] Timeout after 90 seconds")
-            return resume_json.get("experience", [])
-        except Exception as e:
-            logger.error(f"[EXPERIENCE] Error: {str(e)}")
-            return resume_json.get("experience", [])
-    
-    async def generate_skills():
-        """Generate technical skills categorized by JD requirements - SAME FOR BOTH MODES"""
-        try:
-            existing_skills = resume_json.get("technical_skills", {})
-            
-            # Always generate new skills using JD (regardless of mode)
-            log_subsection(logger, "SKILLS GENERATION")
-            logger.info("✓ Generating skills from JD hints (applies to both modes)")
-            
-            # Always use complete_jd logic
-            prompt = GENERATE_TECHNICAL_SKILLS_FROM_JD.format(
-                jd_technical_keywords=", ".join(jd_hints.get("technical_keywords", [])),
-                existing_skills=json.dumps(existing_skills, ensure_ascii=False, indent=2)
-            )
-            
-            logger.info(f"[SKILLS] Using GENERATE_TECHNICAL_SKILLS_FROM_JD")
-            result_raw = await chat_completion_async(prompt, response_schema=skills_response_schema, timeout=60)
-            
-            # Log raw response to see what model returns
-            logger.info(f"[SKILLS] Raw response (first 500 chars): {result_raw[:500]}")
-            
-            # Use extract_json to handle markdown code blocks
-            result = extract_json(result_raw)
-            if not result:
-                logger.error(f"[SKILLS] Failed to extract JSON from response")
-                logger.error(f"[SKILLS] Raw response: {result_raw}")
-                return resume_json.get("technical_skills", {})
-            
-            logger.info(f"[SKILLS] Parsed JSON structure: {list(result.keys())}")
-            
-            # Extract the nested technical_skills object
-            technical_skills = result.get("technical_skills", {})
-            logger.info(f"[SKILLS] Generated {len(technical_skills)} categories: {list(technical_skills.keys())}")
-            return technical_skills
-            
-        except asyncio.TimeoutError:
-            logger.error("[SKILLS] Timeout after 60 seconds")
-            return resume_json.get("technical_skills", {})
-        except Exception as e:
-            logger.error(f"[SKILLS] Error: {str(e)}")
-            return resume_json.get("technical_skills", {})
-    
-    # Run all three tasks in parallel
-    send_progress(request_id, 30, "Generating new content...", db)
-    
-    summary, experience, skills = await asyncio.gather(
-        generate_summary(),
-        generate_experience(),
-        generate_skills()
-    )
-    
-    send_progress(request_id, 90, "Parallel optimization complete. Finalizing...", db)
-    
-    # STEP 3: Combine results into final JSON
-    final_json["summary"] = summary
-    final_json["experience"] = experience
-    final_json["technical_skills"] = skills
-    
-    # Log final output comparison
-    log_section_header(logger, "FINAL OUTPUT COMPARISON")
-    
-    # Log final output
-    log_section_header(logger, "FINAL OUTPUT COMPARISON")
-    
-    if mode == "resume_jd":
-        logger.info("🔍 RESUME_JD MODE - Enhanced content with JD keywords:")
-        logger.info("")
-        logger.info(f"✓ Summary: Generated from JD (ATS-optimized)")
-        logger.info(f"✓ Skills: Generated from JD (ATS-optimized)")
-        logger.info(f"✓ Experience: Enhanced existing bullets with JD keywords")
-        logger.info(f"   - Input: {len(resume_json.get('experience', []))} roles")
-        logger.info(f"   - Output: {len(final_json['experience'])} roles")
-    else:
-        logger.info("🔍 COMPLETE_JD MODE - Generated fresh content from JD:")
-        log_data(logger, "Generated Summary", final_json['summary'], max_length=300)
-        logger.info(f"Generated Experience: {len(final_json['experience'])} roles")
-        logger.info(f"Generated Skills: {len(final_json['technical_skills'])} categories")
-    
-    send_progress(request_id, 100, "Resume completed!", db)
-    log_section_header(logger, "PROCESSING COMPLETE ✅")
-    logger.info(f"📊 Final resume JSON has {len(final_json)} top-level fields")
-    logger.info(f"📝 Detailed logs saved")
-    logger.info(f"   Debug: {debug_log}")
-    logger.info(f"   Summary: {summary_log}")
-    
-    return final_json
-
-
-def process_resume(data: dict, request_id: str = None, db: Session = None) -> dict:
-    """Process resume in thread pool - this is the CPU-intensive part (DEPRECATED - use process_resume_parallel)"""
-    send_progress(request_id, 5, "Starting resume processing...", db)
-    
-    resume_json = data.get("resume_data", {})
-    
-    # Extract job description - handle both old and new payload formats
-    if "job_description_data" in data:
-        job_json = data.get("job_description_data", {})
-        jd = job_json.get("job_description", "")
-        company_name = job_json.get("company_name", "")
-    else:
-        jd = data.get("jd", "")
-        company_name = data.get("company_name", "")
+    log_section_header(logger, f"FULL RESUME PROCESSING (No Feedback) - Request ID: {request_id}")
+    logger.info("🚀 Running extract_jd_keywords() → generate_resume_content() chain")
     
     mode = data.get("mode", "complete_jd")
+    logger.info(f"[MODE] Processing in '{mode}' mode without human feedback")
     
-    logger.info(f"[MODE] Processing resume in '{mode}' mode")
-    logger.info(f"[JD] Job description length: {len(jd)} chars")
-    logger.info(f"[COMPANY] Company name: {company_name}")
-
-    final_json = {
-        "name": resume_json.get("name", ""),
-        "contact": resume_json.get("contact", ""),
-        "education": resume_json.get("education", [])
-    }
+    # Phase 1: Extract JD keywords (this also saves intermediate state)
+    try:
+        keywords_result = await extract_jd_keywords(data, request_id, db)
+        logger.info(f"[PHASE 1] Keywords extracted: {len(keywords_result.get('technical_keywords', []))} technical, "
+                   f"{len(keywords_result.get('soft_skills', []))} soft skills")
+    except Exception as e:
+        logger.error(f"[PHASE 1] Failed to extract keywords: {str(e)}")
+        raise
     
-    send_progress(request_id, 10, "Processing basic information...", db)
-    
-    # Add projects if present and not empty
-    projects = resume_json.get("projects", [])
-    if projects:
-        valid_projects = [
-            p for p in projects 
-            if p.get("title", "").strip() and p.get("bullets") and len(p.get("bullets", [])) > 0
-        ]
-        if valid_projects:
-            final_json["projects"] = valid_projects
-    
-    # Add certifications if present and not empty
-    certifications = resume_json.get("certifications", [])
-    if certifications:
-        valid_certifications = [
-            c for c in certifications 
-            if c.get("name", "").strip()
-        ]
-        if valid_certifications:
-            final_json["certifications"] = valid_certifications
-
-    # Convert resume_json to text format
-    resume_txt = convert_resume_json_to_text(resume_json)
-
-    # Save JD file
-    jd_file_name = company_name.replace(" ", "_") + ".txt" if company_name else "job_description.txt"
-    save_debug_file(jd, jd_file_name, prefix="job_description")
-
-    resume_text = normalize_whitespace(resume_txt)
-    sections = split_resume_sections(resume_text)
-
-    # Plan + JD hints
-    plan_prompt = SCORING_PROMPT_JSON.replace("{jd_text}", jd).replace("{resume_text}", resume_text)    
-    plan_raw = chat_completion(plan_prompt)
-    plan = safe_load_json(plan_raw) or {"section_updates": []}
-    
-    logger.info(f"[SCORING PLAN] Received {len(plan.get('section_updates', []))} section updates")
-    for update in plan.get("section_updates", []):
-        section_name = update.get("section", "Unknown")
-        logger.info(f"[SCORING PLAN] - Section: {section_name}")
-    
-    jd_hints = chat_completion(JD_HINTS_PROMPT.format(jd_text=jd))
-
-    # Apply plan
-    rewritten: Dict[str, str] = {}
-    updates = plan.get("section_updates", [])
-
-    # Process Summary section
-    if sections.get("Summary"):
-        summary_edits = [e for e in updates if normalize_section_name(e.get("section")) == "summary"]
-        logger.info(f"[SUMMARY] Found {len(summary_edits)} summary edits from scoring plan")
-        
-        if mode == "complete_jd":
-            logger.info("[SUMMARY] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
-            send_progress(request_id, 40, "Generating summary...", db)
-            prompt = GENERATE_FROM_JD_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Summary"],
-                section_edits_json=json.dumps(summary_edits, ensure_ascii=False) if summary_edits else "[]"
-            )
-        else:
-            logger.info("[SUMMARY] Using APPLY_EDITS_PROMPT (resume_jd mode)")
-            send_progress(request_id, 40, "Optimizing summary...", db)
-            prompt = APPLY_EDITS_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Summary"],
-                section_edits_json=json.dumps(summary_edits, ensure_ascii=False) if summary_edits else "[]"
-            )
-        rewritten["Summary"] = chat_completion(prompt).strip()
-        logger.info("[SUMMARY] Summary section rewritten successfully")
-        
-    # Process Skills section
-    if sections.get("Skills"):
-        send_progress(request_id, 60, "Processing skills...", db)
-        skills_edits = [e for e in updates if normalize_section_name(e.get("section")) == "skills"]
-        logger.info(f"[SKILLS] Found {len(skills_edits)} skills edits from scoring plan")
-        
-        if mode == "complete_jd":
-            logger.info("[SKILLS] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
-            prompt = GENERATE_FROM_JD_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Skills"],
-                section_edits_json=json.dumps(skills_edits, ensure_ascii=False) if skills_edits else "[]"
-            )
-        else:
-            logger.info("[SKILLS] Using APPLY_EDITS_PROMPT (resume_jd mode)")
-            prompt = APPLY_EDITS_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Skills"],
-                section_edits_json=json.dumps(skills_edits, ensure_ascii=False) if skills_edits else "[]"
-            )
-        rewritten["Skills"] = chat_completion(prompt).strip()
-        logger.info("[SKILLS] Skills section rewritten successfully")
-    else:
-        logger.warning("[SKILLS] No Skills section found in parsed resume sections")
-
-    # Process Experience section
-    send_progress(request_id, 75, "Optimizing experience section...", db)
-    if sections.get("Experience"):
-        experience_edits = [e for e in updates if normalize_section_name(e.get("section")) == "experience"]
-        logger.info(f"[EXPERIENCE] Found {len(experience_edits)} experience edits from scoring plan")
-        
-        if mode == "complete_jd":
-            logger.info("[EXPERIENCE] Using GENERATE_FROM_JD_PROMPT (complete_jd mode)")
-            prompt = GENERATE_FROM_JD_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Experience"],
-                section_edits_json=json.dumps(experience_edits, ensure_ascii=False) if experience_edits else "[]"
-            )
-        else:
-            logger.info("[EXPERIENCE] Using APPLY_EDITS_PROMPT (resume_jd mode)")
-            prompt = APPLY_EDITS_PROMPT.format(
-                jd_hints=jd_hints,
-                section_text=sections["Experience"],
-                section_edits_json=json.dumps(experience_edits, ensure_ascii=False) if experience_edits else "[]"
-            )
-        rewritten["Experience"] = chat_completion(prompt).strip()
-        logger.info("[EXPERIENCE] Experience section rewritten successfully")
-
-    # Get summary from rewritten into final_json
-    if rewritten.get("Summary"):
-        final_json["summary"] = rewritten["Summary"]
-
-    # Process Experience
-    if rewritten.get("Experience"):
-        experience_json = parse_experience_to_json(rewritten["Experience"])
-        logger.info(f"[EXPERIENCE] Parsed experience JSON: {experience_json}")
-
-        new_experience_json = balance_experience_roles(experience_json, jd_hints)
-        logger.info("[EXPERIENCE] Balanced experience JSON")
-
-        final_json["experience"] = new_experience_json
-
-    # Process Skills
-    if rewritten.get("Skills"):
-        skills_json = parse_skills_to_json(rewritten["Skills"])
-        logger.info(f"[SKILLS] Parsed skills JSON: {skills_json}")
-        
-        prompt = ORGANIZE_SKILLS_PROMPT.format(skills_json=json.dumps(skills_json, ensure_ascii=False, indent=2))
-        response = chat_completion(prompt)
-
-        organized_skills = extract_json(response)
-        logger.info(f"[SKILLS] Organized skills JSON: {organized_skills}")
-        final_json["technical_skills"] = organized_skills
-    else:
-        logger.warning("[SKILLS] No Skills section in rewritten content, using original")
-        final_json["technical_skills"] = resume_json.get("technical_skills", {})
-
-    send_progress(request_id, 95, "Finalizing resume...", db)
-    send_progress(request_id, 100, "Resume completed!", db)
-    logger.info(f"[COMPLETE] Resume processing finished successfully")
-
-    return final_json
+    # Phase 2: Generate resume content using extracted keywords (no feedback)
+    try:
+        # Pass mode explicitly since we're not waiting for feedback
+        result = await generate_resume_content(
+            request_id=request_id,
+            feedback=None,  # No human feedback
+            db=db,
+            mode=mode
+        )
+        logger.info(f"[PHASE 2] Resume generated successfully")
+        return result
+    except Exception as e:
+        logger.error(f"[PHASE 2] Failed to generate resume: {str(e)}")
+        raise

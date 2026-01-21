@@ -22,7 +22,7 @@ from app.database import (
 from app.auth import get_current_user, get_current_user_optional
 from app.create_resume import create_resume
 from app.job_processing import (
-    process_resume_parallel, job_progress, send_progress,
+    process_resume_full, job_progress, send_progress,
     extract_jd_keywords, generate_resume_content,
     load_intermediate_state, cleanup_expired_intermediate_states
 )
@@ -30,15 +30,16 @@ from app.job_scraper import job_scraper
 
 logger = logging.getLogger(__name__)
 
-
 def validate_resume_payload(data: dict) -> list:
     """
-    Validate the resume generation payload.
-    Returns a list of error messages (empty if valid).
+    Validate the resume generation payload. Returns a list of error messages (empty if valid).
     """
     errors = []
     
-    mode = data.get("mode", "complete_jd")
+    mode = data.get("mode")
+    if not mode:
+        errors.append("Mode is required")
+
     job_data = data.get("job_description_data", {})
     resume_data = data.get("resume_data", {})
     
@@ -55,60 +56,84 @@ def validate_resume_payload(data: dict) -> list:
     if not job_title:
         errors.append("Job Title is required")
     
-    # Validate Resume Data (only for resume+jd mode)
-    if mode == "resume_jd":
-        name = resume_data.get("name", "").strip()
-        if not name:
-            errors.append("Name is required in Resume+JD mode")
-        
-        summary = resume_data.get("summary", "").strip()
-        if not summary or len(summary) < 50:
-            errors.append("Professional Summary must be at least 50 characters")
-        
-        # Check contact
-        contact = resume_data.get("contact", {})
-        if isinstance(contact, dict):
-            if not contact.get("email") and not contact.get("phone"):
-                errors.append("At least one contact method (Email or Phone) is required")
-        
-        # Check technical skills
-        skills = resume_data.get("technical_skills", {})
-        if not skills or not isinstance(skills, dict):
-            errors.append("Technical Skills are required")
-        else:
-            has_skills = any(
-                isinstance(v, list) and len(v) > 0 
-                for v in skills.values()
-            )
-            if not has_skills:
-                errors.append("Technical Skills must have at least one skill listed")
-        
-        # Check experience
-        experience = resume_data.get("experience", [])
-        if not experience or not isinstance(experience, list) or len(experience) == 0:
-            errors.append("At least one Experience entry is required")
-        else:
-            for idx, exp in enumerate(experience):
-                if not exp.get("company"):
-                    errors.append(f"Experience {idx + 1}: Company name is required")
-                if not (exp.get("role") or exp.get("title") or exp.get("job_title")):
-                    errors.append(f"Experience {idx + 1}: Job title is required")
-                bullets = exp.get("bullets", exp.get("points", exp.get("responsibilities", [])))
-                if not bullets or len(bullets) == 0:
-                    errors.append(f"Experience {idx + 1}: At least one responsibility is required")
-        
-        # Check education
-        education = resume_data.get("education", [])
-        if not education or not isinstance(education, list) or len(education) == 0:
-            errors.append("At least one Education entry is required")
-        else:
-            for idx, edu in enumerate(education):
-                if not edu.get("degree"):
-                    errors.append(f"Education {idx + 1}: Degree is required")
-                if not edu.get("institution"):
-                    errors.append(f"Education {idx + 1}: Institution is required")
+    # Validate Resume Data (required for all modes)
+    name = resume_data.get("name", "").strip()
+    if not name:
+        errors.append("Name is required")
+    
+    summary = resume_data.get("summary", "").strip()
+    if not summary or len(summary) < 50:
+        errors.append("Professional Summary must be at least 50 characters")
+    
+    # Check contact
+    contact = resume_data.get("contact", {})
+    if isinstance(contact, dict):
+        if not contact.get("email") and not contact.get("phone"):
+            errors.append("At least one contact method (Email or Phone) is required")
+    
+    # Check technical skills
+    skills = resume_data.get("technical_skills", {})
+    if not skills or not isinstance(skills, dict):
+        errors.append("Technical Skills are required")
+    else:
+        has_skills = any(
+            isinstance(v, list) and len(v) > 0 
+            for v in skills.values()
+        )
+        if not has_skills:
+            errors.append("Technical Skills must have at least one skill listed")
+    
+    # Check experience
+    experience = resume_data.get("experience", [])
+    if not experience or not isinstance(experience, list) or len(experience) == 0:
+        errors.append("At least one Experience entry is required")
+    else:
+        for idx, exp in enumerate(experience):
+            if not exp.get("company"):
+                errors.append(f"Experience {idx + 1}: Company name is required")
+            if not (exp.get("role") or exp.get("title") or exp.get("job_title")):
+                errors.append(f"Experience {idx + 1}: Job title is required")
+            bullets = exp.get("bullets", exp.get("points", exp.get("responsibilities", [])))
+            if not bullets or len(bullets) == 0:
+                errors.append(f"Experience {idx + 1}: At least one responsibility is required")
+    
+    # Check education
+    education = resume_data.get("education", [])
+    if not education or not isinstance(education, list) or len(education) == 0:
+        errors.append("At least one Education entry is required")
+    else:
+        for idx, edu in enumerate(education):
+            if not edu.get("degree"):
+                errors.append(f"Education {idx + 1}: Degree is required")
+            if not edu.get("institution"):
+                errors.append(f"Education {idx + 1}: Institution is required")
     
     return errors
+
+
+def check_concurrent_jobs_limit(user_id: str, db: Session, include_awaiting_feedback: bool = False):
+    """
+    Check if user has reached concurrent job limit.
+    Raises HTTPException 429 if limit exceeded.
+    
+    Args:
+        user_id: The user's ID
+        db: Database session
+        include_awaiting_feedback: If True, also count 'awaiting_feedback' jobs (for two-phase flow)
+    """
+    max_concurrent = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
+    
+    statuses = ["pending", "processing"]
+    if include_awaiting_feedback:
+        statuses.append("awaiting_feedback")
+    
+    active_jobs = db.query(ResumeJob).filter(
+        ResumeJob.user_id == user_id,
+        ResumeJob.status.in_(statuses)
+    ).count()
+    
+    if active_jobs >= max_concurrent:
+        raise HTTPException(status_code=429, detail="Too many concurrent jobs")
 
 
 def process_resume_background(data: dict, request_id: str, job_id: int):
@@ -123,7 +148,7 @@ def process_resume_background(data: dict, request_id: str, job_id: int):
                 user.active_jobs_count = (user.active_jobs_count or 0) + 1
             db.commit()
         
-        result = asyncio.run(process_resume_parallel(data, request_id, db))
+        result = asyncio.run(process_resume_full(data, request_id, db))
         
         if job:
             job.final_resume_json = result
@@ -166,19 +191,8 @@ async def generate_resume_json(
 ):
     """Generate resume with job tracking"""
     try:
-        MAX_CONCURRENT_JOBS = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
-        active_jobs = db.query(ResumeJob).filter(
-            ResumeJob.user_id == current_user.user_id,
-            ResumeJob.status.in_(["pending", "processing"])
-        ).count()
-        if active_jobs >= MAX_CONCURRENT_JOBS:
-            raise HTTPException(status_code=429, detail=f"Too many concurrent jobs")
+        check_concurrent_jobs_limit(current_user.user_id, db)
         data = await request.json()
-        
-        # Validate input payload
-        validation_errors = validate_resume_payload(data)
-        if validation_errors:
-            raise HTTPException(status_code=400, detail=f"Validation failed: {'; '.join(validation_errors)}")
         
         request_id = data.get("request_id", f"req_{int(time.time())}_{current_user.user_id}")
         
@@ -231,20 +245,9 @@ async def extract_keywords_from_jd(
     Returns extracted keywords for user review/editing.
     """
     try:
-        MAX_CONCURRENT_JOBS = int(os.getenv("MAX_CONCURRENT_JOBS", "2"))
-        active_jobs = db.query(ResumeJob).filter(
-            ResumeJob.user_id == current_user.user_id,
-            ResumeJob.status.in_(["pending", "processing", "awaiting_feedback"])
-        ).count()
-        if active_jobs >= MAX_CONCURRENT_JOBS:
-            raise HTTPException(status_code=429, detail=f"Too many concurrent jobs")
+        check_concurrent_jobs_limit(current_user.user_id, db, include_awaiting_feedback=True)
         
         data = await request.json()
-        
-        # Validate input payload
-        validation_errors = validate_resume_payload(data)
-        if validation_errors:
-            raise HTTPException(status_code=400, detail=f"Validation failed: {'; '.join(validation_errors)}")
         
         request_id = data.get("request_id", f"req_{int(time.time())}_{current_user.user_id}")
         
@@ -262,23 +265,17 @@ async def extract_keywords_from_jd(
         # Get job_link if provided
         job_link = data.get("job_link", None)
         
-        # Get mode with tracing
-        mode_from_request = data.get("mode", "complete_jd")
-        logger.info(f"[MODE_TRACE] ===== EXTRACT_KEYWORDS_FROM_JD ENDPOINT =====")
-        logger.info(f"[MODE_TRACE] Request ID: {request_id}")
-        logger.info(f"[MODE_TRACE] Mode received from frontend: '{mode_from_request}'")
-        logger.info(f"[MODE_TRACE] User: {current_user.user_id}")
+        # Get mode
+        mode = data.get("mode", "complete_jd")
+        logger.info(f"[MODE_TRACE][extract_keywords_from_jd] request_id={request_id} mode='{mode}' user_id={current_user.user_id} company='{company_name}' job_title='{job_title}'")
         
         # Create job record
-        mode_value = data.get("mode", "complete_jd")
-        logger.info(f"[EXTRACT_KEYWORDS] Creating job with mode: '{mode_value}'")
-        
         resume_job = ResumeJob(
             user_id=current_user.user_id,
             request_id=request_id,
             company_name=company_name,
             job_title=job_title,
-            mode=mode_from_request,
+            mode=mode,
             format=resume_format,
             jd_text=jd_text,
             resume_input_json=data.get("resume_data", {}),
@@ -314,7 +311,7 @@ async def extract_keywords_from_jd(
                 "jd": jd_text,
                 "company_name": company_name,
                 "job_title": job_title,
-                "mode": mode_value,
+                "mode": mode,
                 **result  # Merge in the extracted keywords
             }
         db.commit()
@@ -579,6 +576,36 @@ def generate_resume_background(request_id: str, feedback: dict, job_id: int, mod
         db.close()
 
 
+async def validate_payload_endpoint(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Validate resume generation payload before submission.
+    Call this endpoint first when user clicks 'Generate Resume'.
+    If valid, proceed to extract_keywords or generate_resume endpoint.
+    """
+    try:
+        data = await request.json()
+        
+        validation_errors = validate_resume_payload(data)
+        
+        if validation_errors:
+            return {
+                "valid": False,
+                "errors": validation_errors
+            }
+        
+        return {
+            "valid": True,
+            "errors": [],
+            "message": "Payload is valid. Proceed with resume generation."
+        }
+    except Exception as e:
+        logger.error(f"Error validating payload: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def validate_feedback_data(feedback: dict) -> list:
     """
     Validate feedback data structure.
@@ -784,7 +811,7 @@ async def download_job_description(request_id: str, current_user: User = Depends
 
 
 async def get_user_jobs(
-    limit: int = 20, 
+    limit: int = 10, 
     offset: int = 0, 
     company: str = None,
     job_title: str = None,
@@ -806,7 +833,6 @@ async def get_user_jobs(
     
     # Apply date range filter
     if date_range:
-        from datetime import datetime, timedelta
         now = datetime.utcnow()
         
         if date_range == "today":
@@ -939,8 +965,6 @@ async def delete_job(request_id: str, current_user: User = Depends(get_current_u
 def cleanup_stale_jobs(db: Session):
     """Clean up jobs that have been stuck in processing for too long"""
     try:
-        from datetime import datetime, timedelta
-        
         # Find jobs stuck in processing/pending for more than 10 minutes
         stale_threshold = datetime.utcnow() - timedelta(minutes=10)
         
