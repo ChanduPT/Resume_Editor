@@ -480,9 +480,10 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     resume_json = state.get("resume_json", {})
     preprocessed_jd = state.get("preprocessed_jd", {})
     
-    # PRIORITY: Use mode_override from frontend (most reliable for parallel requests)
+    # PRIORITY: Use mode from parameter (frontend) - most reliable for parallel requests
     # FALLBACK: Load from state, then database, then default
     VALID_MODES = ["complete_jd", "resume_jd"]
+    mode_override = mode  # Store original parameter for fallback logic
     
     if mode_override:
         # Validate mode from frontend
