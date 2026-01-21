@@ -495,16 +495,13 @@ async def generate_resume_with_feedback(
         else:
             logger.info(f"[FEEDBACK] No feedback provided - using original extracted keywords for request {request_id}")
         
-        # Extract mode from frontend payload (critical for parallel requests)
-        mode_from_frontend = data.get("mode")
-        if mode_from_frontend:
-            logger.info(f"[MODE] Mode received from frontend: '{mode_from_frontend}'")
-            # Validate mode
-            if mode_from_frontend not in ["complete_jd", "resume_jd"]:
-                logger.warning(f"[MODE] Invalid mode '{mode_from_frontend}', will use stored value")
-                mode_from_frontend = None
+        # Get mode from payload (priority) or fallback to stored job mode
+        mode = data.get("mode")
+        if mode:
+            logger.info(f"[MODE] Using mode from payload: '{mode}'")
         else:
-            logger.warning(f"[MODE] No mode in feedback payload, will load from state/database")
+            mode = resume_job.mode or "complete_jd"
+            logger.info(f"[MODE] No mode in payload, using stored job mode: '{mode}'")
         
         # Update job status
         resume_job.status = "processing"
@@ -518,7 +515,7 @@ async def generate_resume_with_feedback(
             request_id,
             feedback,
             resume_job.id,
-            mode_from_frontend  # Pass mode explicitly
+            mode
         )
         
         return {
@@ -534,15 +531,8 @@ async def generate_resume_with_feedback(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def generate_resume_background(request_id: str, feedback: dict, job_id: int, mode_override: str = None):
-    """Background task for Phase 2 generation
-    
-    Args:
-        request_id: The request ID
-        feedback: User's keyword edits
-        job_id: Database job ID
-        mode_override: Mode from frontend (takes priority)
-    """
+def generate_resume_background(request_id: str, feedback: dict, job_id: int, mode: str = None):
+    """Background task for Phase 2 generation"""
     db = SessionLocal()
     try:
         job = db.query(ResumeJob).filter(ResumeJob.id == job_id).first()
@@ -556,9 +546,8 @@ def generate_resume_background(request_id: str, feedback: dict, job_id: int, mod
             user.active_jobs_count = (user.active_jobs_count or 0) + 1
         db.commit()
         
-        # Generate resume with feedback - pass mode explicitly
-        logger.info(f"[BACKGROUND] Generating resume with mode_override='{mode_override}'")
-        result = asyncio.run(generate_resume_content(request_id, feedback, db, mode_override))
+        # Generate resume with feedback
+        result = asyncio.run(generate_resume_content(request_id, feedback, db, mode))
         
         # Update job with results
         job.final_resume_json = result

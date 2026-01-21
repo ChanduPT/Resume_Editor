@@ -430,7 +430,7 @@ async def extract_jd_keywords(data: dict, request_id: str = None, db: Session = 
     return feedback_data
 
 
-async def generate_resume_content(request_id: str, feedback: dict = None, db: Session = None, mode_override: str = None) -> dict:
+async def generate_resume_content(request_id: str, feedback: dict = None, db: Session = None, mode: str = None) -> dict:
     """
     PHASE 2: Generate resume content after user approves/edits keywords.
     
@@ -447,7 +447,7 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
         request_id: The job request ID
         feedback: Optional user edits to keywords/skills/phrases
         db: Database session
-        mode_override: Explicit mode from frontend (takes priority over state)
+        mode: Processing mode from payload (priority), falls back to DB if not provided
         
     Returns:
         dict: Complete optimized resume JSON
@@ -478,6 +478,7 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     
     # Extract state variables with safe defaults
     resume_json = state.get("resume_json", {})
+    preprocessed_jd = state.get("preprocessed_jd", {})
     
     # PRIORITY: Use mode_override from frontend (most reliable for parallel requests)
     # FALLBACK: Load from state, then database, then default
@@ -521,9 +522,7 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     # DEBUG LOGGING: Critical for tracking mode issues
     logger.info(f"[MODE DEBUG] ========================================")
     logger.info(f"[MODE DEBUG] Request ID: {request_id}")
-    logger.info(f"[MODE DEBUG] Mode override from frontend: '{mode_override}'")
-    logger.info(f"[MODE DEBUG] Mode from state: '{state.get('mode')}'")
-    logger.info(f"[MODE DEBUG] Final mode used: '{mode}'")
+    logger.info(f"[MODE DEBUG] Final resolved mode: '{mode}'")
     logger.info(f"[MODE DEBUG] State keys present: {list(state.keys())}")
     logger.info(f"[MODE DEBUG] ========================================")
     
