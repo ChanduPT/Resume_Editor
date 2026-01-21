@@ -689,12 +689,9 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
             return experience_result
         except asyncio.TimeoutError:
             logger.error("[EXPERIENCE] ❌ TIMEOUT after 90 seconds")
-            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
-            # This was causing complete_jd to look like resume_jd when errors occurred
             if mode == "complete_jd":
-                logger.error("[EXPERIENCE] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
-                logger.error("[EXPERIENCE] ⚠️ This prevents original bullets from appearing in complete_jd output")
-                return []  # Return empty - will show error to user instead of wrong content
+                # Raise exception to fail the job properly
+                raise RuntimeError("Experience generation timed out. Please try again.")
             else:
                 logger.warning("[EXPERIENCE] resume_jd mode - returning original bullets as fallback")
                 return resume_json.get("experience", [])
@@ -704,11 +701,9 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
             if 'result_raw' in locals():
                 logger.error(f"[EXPERIENCE] Raw response (first 500 chars): {result_raw[:500] if len(result_raw) > 500 else result_raw}")
                 logger.error(f"[EXPERIENCE] Raw response (last 200 chars): {result_raw[-200:] if len(result_raw) > 200 else result_raw}")
-            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
             if mode == "complete_jd":
-                logger.error("[EXPERIENCE] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
-                logger.error("[EXPERIENCE] ⚠️ This prevents original bullets from appearing in complete_jd output")
-                return []  # Return empty - will show error to user instead of wrong content
+                # Raise exception to fail the job properly
+                raise RuntimeError(f"Experience generation failed: {str(e)}. The AI response was incomplete or malformed.")
             else:
                 logger.warning("[EXPERIENCE] resume_jd mode - returning original bullets as fallback")
                 return resume_json.get("experience", [])
@@ -758,11 +753,30 @@ async def generate_resume_content(request_id: str, feedback: dict = None, db: Se
     # Run all three tasks in parallel
     send_progress(request_id, 50, "Generating summary, experience, and skills...", db)
     
-    summary, experience, skills = await asyncio.gather(
-        generate_summary(),
-        generate_experience(),
-        generate_skills()
-    )
+    try:
+        summary, experience, skills = await asyncio.gather(
+            generate_summary(),
+            generate_experience(),
+            generate_skills()
+        )
+    except RuntimeError as e:
+        # Handle generation failures (e.g., experience generation failed in complete_jd mode)
+        error_msg = str(e)
+        logger.error(f"[GENERATE_RESUME_CONTENT] ❌ Generation failed: {error_msg}")
+        send_progress(request_id, 0, f"Error: {error_msg}", db, status="failed")
+        
+        # Update job in database with error
+        if db:
+            try:
+                job = db.query(ResumeJob).filter(ResumeJob.request_id == request_id).first()
+                if job:
+                    job.status = "failed"
+                    job.error_message = error_msg
+                    db.commit()
+            except Exception as db_error:
+                logger.error(f"Failed to update job status to failed: {db_error}")
+        
+        raise  # Re-raise to propagate to endpoint
     
     send_progress(request_id, 90, "Parallel optimization complete. Finalizing...", db)
     
@@ -1089,19 +1103,15 @@ async def process_resume_parallel(data: dict, request_id: str = None, db: Sessio
             return experience_result
         except asyncio.TimeoutError:
             logger.error("[EXPERIENCE PARALLEL] ❌ TIMEOUT after 90 seconds")
-            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
             if mode == "complete_jd":
-                logger.error("[EXPERIENCE PARALLEL] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
-                return []
+                raise RuntimeError("Experience generation timed out. Please try again.")
             else:
                 logger.warning("[EXPERIENCE PARALLEL] resume_jd mode - returning original bullets as fallback")
                 return resume_json.get("experience", [])
         except Exception as e:
             logger.error(f"[EXPERIENCE PARALLEL] ❌ ERROR: {str(e)}")
-            # CRITICAL FIX: Don't silently return original bullets for complete_jd mode
             if mode == "complete_jd":
-                logger.error("[EXPERIENCE PARALLEL] ⚠️ complete_jd mode - returning EMPTY list instead of original bullets")
-                return []
+                raise RuntimeError(f"Experience generation failed: {str(e)}. The AI response was incomplete or malformed.")
             else:
                 logger.warning("[EXPERIENCE PARALLEL] resume_jd mode - returning original bullets as fallback")
                 return resume_json.get("experience", [])
