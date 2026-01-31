@@ -228,7 +228,7 @@ CONTENT GENERATION RULES:
 5. Ensure all bullets flow like professional resume achievements, not keyword lists.
 6. Never mix incompatible tools (AWS + Azure, Tableau + Power BI, etc.).
 7. Maintain consistent tech stack within each role
-8. Don't combine technologies that serve the same purpose in the same role unnecessarily
+8. Don't combine technologies that serve the same purpose in the same role, even if keywords contain them both.
 
 KEYWORD INTEGRATION POLICY:
 Each bullet SHOULD aim to include (where contextually appropriate):
