@@ -46,12 +46,12 @@ async def generate_custom_email(
     """
     
     length_guide = {
-        "short": "100-150 words",
-        "medium": "200-300 words",
-        "long": "400-500 words"
+        "short": "0-100 words",
+        "medium": "100-150 words",
+        "long": "150-250 words"
     }
     
-    word_count = length_guide.get(length, "200-300 words")
+    word_count = length_guide.get(length, "100-150 words")
     
     # Get current date and time for accurate context
     from datetime import datetime

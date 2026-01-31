@@ -207,6 +207,41 @@ Return JSON with "subject" and "body" fields.
 """
 
 
+# Cover Letter
+COVER_LETTER_PROMPT = """You are an expert cover letter writer who creates compelling, personalized cover letters.
+
+CURRENT DATE: {current_date}
+CURRENT TIME: {current_time}
+
+Company: {company}
+Job Title: {job_title}
+Job Description: {jd}
+Resume Summary: {resume_summary}
+Tone: {tone}
+Length: {length} ({word_count})
+
+Generate a professional cover letter that:
+- Opens with a compelling hook that shows genuine interest in the specific role
+- Demonstrates knowledge of the company and why you want to work there
+- Highlights 3-4 key qualifications that directly match the job requirements
+- Uses specific achievements and metrics from the resume summary when available
+- Shows how your experience aligns with the company's needs
+- Connects your career goals with this opportunity
+- Demonstrates soft skills through examples, not just listing them
+- Includes a confident but not arrogant closing with clear next steps
+- Maintains {tone} tone throughout
+- Is approximately {word_count} in length
+- Uses "I am excited" or similar openings sparingly - be creative
+- Avoids clichés like "I believe I would be a great fit" - show, don't tell
+- DO NOT include closing salutation ("Sincerely", etc.) or signature - these will be added automatically
+- DO NOT include address headers or date - this is for the body only
+
+The cover letter should read as authentic and tailored, not generic.
+
+Return JSON with "subject" (e.g., "Cover Letter - [Job Title] at [Company]") and "body" fields.
+"""
+
+
 # Request for Referral
 REFERRAL_REQUEST_PROMPT = """You are an expert at writing referral request emails.
 
@@ -343,6 +378,7 @@ def get_email_prompt(email_type: str) -> str:
         "decline_offer": DECLINE_OFFER_PROMPT,
         "feedback_request": FEEDBACK_REQUEST_PROMPT,
         "interview_scheduling": INTERVIEW_SCHEDULING_PROMPT,
+        "cover_letter": COVER_LETTER_PROMPT,
     }
     
     prompt = prompts.get(email_type)

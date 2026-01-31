@@ -547,7 +547,9 @@
 
   /* ===== Sidebar & Tab Layout ===== */
   #tabContainer {
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
     margin: 0;
     padding: 0;
@@ -557,20 +559,36 @@
   }
   
   #sidebar {
+    position: -webkit-sticky;
     position: sticky;
     top: 64px;
     left: 0;
     width: 100%;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: row;
     flex-direction: row;
+    -webkit-align-items: center;
     align-items: center;
+    -webkit-justify-content: center;
     justify-content: center;
     padding: 16px 24px;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
     gap: 12px;
     z-index: 998;
+  }
+  
+  /* Safari gap fallback */
+  @supports not (gap: 12px) {
+    #sidebar > * {
+      margin-right: 12px;
+    }
+    #sidebar > *:last-child {
+      margin-right: 0;
+    }
   }
 
   /* Action Buttons Bar - Remove */
@@ -908,11 +926,14 @@
     margin-left: 0;
     padding: 20px 32px;
     padding-bottom: 80px;
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
     min-width: 0;
     max-width: 100%;
     width: 100%;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
     overflow-x: hidden;
   }
@@ -1227,47 +1248,70 @@
     color: var(--text);
   }
   
-  #resumeFormContainer, #jobDescTabPanel {
+  #resumeFormContainer, #jobDescTabPanel, #jobSearchTabPanel, #emailWriterTabPanel {
     width: 100%;
+    -webkit-flex: 1;
     flex: 1;
     display: none;
+    -webkit-flex-direction: column;
     flex-direction: column;
+    -webkit-justify-content: flex-start;
     justify-content: flex-start;
+    -webkit-align-items: stretch;
     align-items: stretch;
     min-width: 0;
     max-width: 100%;
     position: relative;
     overflow: hidden;
     visibility: hidden;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
   }
   
   #resumeFormContainer.active, #jobDescTabPanel.active {
+    display: -webkit-flex !important;
     display: flex !important;
+    -webkit-flex-direction: column;
     flex-direction: column;
+    -webkit-animation: fadeIn 0.3s ease;
     animation: fadeIn 0.3s ease;
     visibility: visible;
+  }
+  
+  /* Job Search Tab Panel */
+  #jobSearchTabPanel[style*="display: block"],
+  #jobSearchTabPanel[style*="display:block"] {
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Email Writer Tab Panel */
+  #emailWriterTabPanel[style*="display: block"],
+  #emailWriterTabPanel[style*="display:block"] {
+    display: block !important;
+    visibility: visible !important;
   }
   
   /* Dashboard Tab Panel - Modern 2025 Design */
   #dashboardTabPanel {
     width: 100%;
     display: none;
+    -webkit-flex-direction: column;
     flex-direction: column;
     background: transparent;
     padding: 16px;
   }
   
   #dashboardTabPanel.active {
+    display: -webkit-flex;
     display: flex;
+    -webkit-animation: fadeIn 0.3s ease;
     animation: fadeIn 0.3s ease;
   }
   
-  /* Force hide Job Description textarea when Dashboard is active */
+  /* Force hide Job Description textarea when Dashboard is active - Safari compatible */
   #dashboardTabPanel.active ~ #jobDescTabPanel,
-  #dashboardTabPanel.active ~ * #jobDescTabPanel,
-  body:has(#dashboardTabPanel.active) #jobDescTabPanel,
-  body:has(#dashboardTabPanel.active) #jobDescriptionTab,
-  body:has(#dashboardTabPanel.active) .jd-textarea-container {
+  #dashboardTabPanel.active ~ * #jobDescTabPanel {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
@@ -1823,6 +1867,7 @@
   }
 
   .job-actions {
+    display: -webkit-flex;
     display: flex;
     gap: 10px;
     margin-top: 15px;
@@ -1835,25 +1880,37 @@
     padding: 0;
     margin-top: 0;
     margin-bottom: 0;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
     max-width: 100%;
     width: 100%;
     box-shadow: var(--shadow-sm);
-    height: calc(100vh - 180px);
-    min-height: 400px;
-    overflow: hidden;
+    min-height: 500px;
+    height: auto; /* Safari-friendly - let content determine height */
+    overflow: visible; /* Allow content to show */
     position: relative;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
   }
   
   .jd-form-container {
-    display: flex;
+    display: -webkit-box;
     display: -webkit-flex;
-    flex-direction: column;
+    display: flex;
+    -webkit-box-orient: vertical;
     -webkit-flex-direction: column;
-    height: 100%;
-    max-height: 100%;
-    overflow: hidden;
+    flex-direction: column;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-height: 500px;
+    overflow: visible;
     position: relative;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
   
@@ -1861,25 +1918,32 @@
     padding: 20px 24px 16px;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
+    -webkit-flex-shrink: 0;
     flex-shrink: 0;
+    position: -webkit-sticky;
     position: sticky;
     top: 0;
     z-index: 10;
     width: 100%;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
   
   .jd-input-row {
+    display: -ms-grid;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 16px;
     width: 100%;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
   
   .jd-input-col {
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
   }
   
@@ -1898,6 +1962,7 @@
     color: var(--text);
     transition: all 0.2s;
     width: 100%;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
   
@@ -1908,7 +1973,11 @@
   }
   
   .jd-mode-generate-row {
+    display: -webkit-box;
+    display: -webkit-flex;
     display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
     align-items: center;
     gap: 16px;
     padding: 12px;
@@ -1916,20 +1985,43 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     width: 100%;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
   
+  /* Safari gap fallback for jd-mode-generate-row */
+  @supports not (gap: 16px) {
+    .jd-mode-generate-row > * {
+      margin-right: 16px;
+    }
+    .jd-mode-generate-row > *:last-child {
+      margin-right: 0;
+    }
+  }
+  
   .jd-mode-section {
-    flex: 1;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 0%;
+    flex: 1 1 0%;
+    display: -webkit-box;
+    display: -webkit-flex;
     display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
     flex-direction: column;
     gap: 8px;
     min-width: 0;
   }
   
   .jd-format-section {
-    flex: 0.8;
+    -webkit-box-flex: 0.8;
+    -webkit-flex: 0.8 1 0%;
+    flex: 0.8 1 0%;
+    display: -webkit-box;
+    display: -webkit-flex;
     display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
     flex-direction: column;
     gap: 8px;
     min-width: 0;
@@ -1943,12 +2035,26 @@
   }
   
   .mode-options {
+    display: -webkit-box;
+    display: -webkit-flex;
     display: flex;
     gap: 20px;
   }
   
+  /* Safari gap fallback for mode-options */
+  @supports not (gap: 20px) {
+    .mode-options > * {
+      margin-right: 20px;
+    }
+    .mode-options > *:last-child {
+      margin-right: 0;
+    }
+  }
+  
   .mode-option {
+    display: -webkit-flex;
     display: flex;
+    -webkit-align-items: center;
     align-items: center;
     gap: 8px;
     cursor: pointer;
@@ -1996,15 +2102,21 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+    display: -webkit-flex;
     display: flex;
+    -webkit-align-items: center;
     align-items: center;
+    -webkit-justify-content: center;
     justify-content: center;
     gap: 8px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     white-space: nowrap;
     min-width: 180px;
+    height: -webkit-fit-content;
     height: fit-content;
+    height: auto; /* Fallback for older Safari */
+    -webkit-flex-shrink: 0;
     flex-shrink: 0;
   }
   
@@ -2022,25 +2134,36 @@
   }
   
   .jd-textarea-container {
-    flex: 1;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    display: -webkit-box;
+    display: -webkit-flex;
     display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
     flex-direction: column;
     padding: 20px 24px;
     overflow: hidden;
     background: var(--bg);
     width: 100%;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
+    min-height: 300px; /* Ensure minimum height for Safari */
   }
   
   .jd-textarea-container label {
     margin-bottom: 8px;
     font-size: 13px;
     color: var(--text-secondary);
+    -webkit-flex-shrink: 0;
     flex-shrink: 0;
   }
   
   #jobDescriptionTab {
-    flex: 1;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
     width: 100%;
     resize: none;
     font-family: inherit;
@@ -2053,6 +2176,7 @@
     padding: 12px;
     min-height: 200px;
     overflow-y: auto;
+    -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
   
@@ -2379,70 +2503,212 @@
     max-width: 100%;
   }
 
-  /* Form Section Navigation */
+  /* ===================================
+     NEW RESUME BUILDER LAYOUT
+     =================================== */
+
+  /* Resume Builder Header */
+  .resume-builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .resume-builder-title h2 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .resume-builder-title p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .resume-builder-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rb-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .rb-action-btn:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .rb-action-btn.danger:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+  
+  .rb-action-btn .dropdown-arrow {
+    font-size: 10px;
+    margin-left: 2px;
+  }
+
+  /* Download dropdown in resume header */
+  .rb-download-dropdown {
+    position: relative;
+  }
+  
+  .rb-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    min-width: 160px;
+    overflow: hidden;
+  }
+  
+  .rb-dropdown-menu.show {
+    display: block;
+  }
+  
+  .rb-dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  .rb-dropdown-menu button:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  /* Resume Accordion Container - Not used in sidebar layout */
+  .resume-accordion {
+    display: none;
+  }
+
+  /* ===================================
+     IMPROVED SIDEBAR NAVIGATION
+     =================================== */
+  
   .form-nav-container {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 220px 1fr;
     gap: 24px;
-    margin-top: 16px;
+    margin-top: 0;
     align-items: start;
   }
 
   .form-nav {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     position: sticky;
-    top: 0px;
-    height: fit-content;
-    align-self: start;
-  }
-  
-  .form-sections {
-    min-height: 500px;
+    top: 20px;
+    background: var(--card);
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
   }
 
   .form-nav-btn {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 12px 16px;
-    text-align: left;
-    cursor: pointer;
+    background: transparent;
+    border: none;
     border-radius: var(--radius-md);
     font-size: 14px;
     font-weight: 500;
     color: var(--text);
+    cursor: pointer;
     transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    text-align: left;
   }
 
   .form-nav-btn:hover {
-    background: var(--accent-light);
-    border-color: var(--accent);
+    background: var(--bg);
     color: var(--accent);
   }
 
   .form-nav-btn.active {
     background: var(--accent);
-    border-color: var(--accent);
     color: white;
     font-weight: 600;
   }
 
-  .form-nav-btn .icon {
+  .form-nav-btn .nav-icon {
     font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .form-nav-btn .nav-text {
+    flex: 1;
+  }
+
+  /* Form Sections Container */
+  .form-sections {
+    background: var(--card);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    min-height: 500px;
   }
 
   .form-section-panel {
     display: none;
     animation: fadeIn 0.3s ease;
-    min-height: 400px;
   }
 
   .form-section-panel.active {
     display: block;
+  }
+
+  .form-section-panel h3 {
+    margin: 0 0 24px 0;
+    font-size: 20px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
   }
 
   @keyframes fadeIn {
@@ -2450,17 +2716,365 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .form-section-panel h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 20px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  /* Section Cards - hide for sidebar layout */
+  .resume-section-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
   }
 
-  /* Responsive: Stack navigation on mobile */
+  .resume-section-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Section Header (Clickable) */
+  .section-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 18px 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s ease;
+  }
+
+  .section-card-header:hover {
+    background: var(--bg);
+  }
+
+  .section-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .section-icon {
+    font-size: 20px;
+  }
+
+  .section-toggle-icon {
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+  }
+
+  .section-card-body.active + .section-card-header .section-toggle-icon,
+  .section-card-header:has(+ .section-card-body.active) ~ .section-toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Body is closed by default */
+  .section-card-body {
+    display: none;
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid var(--border);
+    animation: slideDown 0.3s ease;
+  }
+
+  .section-card-body.active {
+    display: block;
+  }
+
+  @keyframes slideDown {
+    from { 
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Form Fields */
+  .form-field {
+    margin-top: 16px;
+  }
+
+  .form-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .form-field input,
+  .form-field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .form-field input:focus,
+  .form-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  /* Contact & Skill Entries */
+  .contact-entry,
+  .skill-entry {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 12px;
+    margin-top: 12px;
+    align-items: center;
+  }
+
+  .contact-entry input,
+  .skill-entry input {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .contact-entry input:focus,
+  .skill-entry input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  .entry-remove-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .entry-remove-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  /* Add Entry Button */
+  .add-entry-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    margin-top: 16px;
+    border: 2px dashed var(--border);
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .add-entry-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .add-entry-btn span {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  /* Experience Entry */
+  .experience-entry {
+    margin-top: 16px;
+    padding: 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .experience-header-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .experience-header-inputs input {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .experience-header-inputs input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  .experience-bullets {
+    margin-top: 16px;
+  }
+
+  .experience-bullets label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  .bullet-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .bullet-item input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .bullet-item input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .bullet-remove-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .bullet-remove-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  .add-bullet-btn {
+    padding: 10px 16px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .add-bullet-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .remove-entry-btn {
+    display: block;
+    margin-top: 16px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .remove-entry-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  /* Education Entry */
+  .education-entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 12px;
+    margin-top: 12px;
+    align-items: center;
+  }
+
+  .education-entry input {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .education-entry input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  /* Scroll to Top Button */
+  #scrollToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+  }
+
+  #scrollToTop.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #scrollToTop:hover {
+    background: var(--accent-hover);
+    transform: translateY(-3px);
+  }
+
+  /* Responsive: Stack navigation on mobile (tablet) */
   @media (max-width: 850px) {
     .form-nav-container {
       grid-template-columns: 1fr;
@@ -2471,12 +3085,28 @@
       position: static;
       flex-direction: row;
       overflow-x: auto;
-      padding-bottom: 8px;
+      padding: 12px;
+      gap: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .form-nav::-webkit-scrollbar {
+      display: none;
     }
 
     .form-nav-btn {
       white-space: nowrap;
       min-width: fit-content;
+      padding: 10px 14px;
+      border-radius: 20px;
+    }
+    
+    .form-nav-btn .nav-text {
+      display: none;
+    }
+    
+    .form-nav-btn .nav-icon {
+      width: auto;
     }
   }
 
@@ -3305,6 +3935,109 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* Safari-compatible flex field classes for search form */
+.search-field-row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-align-items: flex-end;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* Safari gap fallback for search-field-row */
+@supports not (gap: 10px) {
+  .search-field-row > * {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  .search-field-row > *:last-child {
+    margin-right: 0;
+  }
+}
+
+.search-field {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.search-field-xl {
+  -webkit-box-flex: 1.5;
+  -webkit-flex: 1.5 1 180px;
+  flex: 1.5 1 180px;
+  min-width: 180px;
+}
+
+.search-field-lg {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1 1 140px;
+  flex: 1 1 140px;
+  min-width: 140px;
+}
+
+.search-field-md {
+  -webkit-box-flex: 0.9;
+  -webkit-flex: 0.9 1 130px;
+  flex: 0.9 1 130px;
+  min-width: 130px;
+}
+
+.search-field-sm {
+  -webkit-box-flex: 0.8;
+  -webkit-flex: 0.8 1 110px;
+  flex: 0.8 1 110px;
+  min-width: 110px;
+}
+
+.search-field-auto {
+  -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+
+.search-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.search-field input,
+.search-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-field select {
+  padding: 10px 8px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  border-color: var(--primary, var(--accent));
+  outline: none;
 }
 
 .search-form {
@@ -3315,14 +4048,54 @@
   box-shadow: var(--shadow-md);
 }
 
+.search-card {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.search-card > div {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Safari gap fallback for search card */
+@supports not (gap: 10px) {
+  .search-card > div > * {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  .search-card > div > *:last-child {
+    margin-right: 0;
+  }
+}
+
 .form-row {
+  display: -webkit-flex;
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+/* Safari gap fallback for form-row */
+@supports not (gap: 20px) {
+  .form-row > * {
+    margin-right: 20px;
+    margin-bottom: 20px;
+  }
+  .form-row > *:last-child {
+    margin-right: 0;
+  }
 }
 
 .form-group {
+  -webkit-flex: 1;
   flex: 1;
+  min-width: 0;
 }
 
 .form-group label {
@@ -3352,13 +4125,28 @@
 }
 
 .checkbox-group {
+  display: -webkit-flex;
   display: flex;
   gap: 20px;
+  -webkit-flex-wrap: wrap;
   flex-wrap: wrap;
 }
 
+/* Safari gap fallback for checkbox-group */
+@supports not (gap: 20px) {
+  .checkbox-group > label {
+    margin-right: 20px;
+    margin-bottom: 8px;
+  }
+  .checkbox-group > label:last-child {
+    margin-right: 0;
+  }
+}
+
 .checkbox-group label {
+  display: -webkit-flex;
   display: flex;
+  -webkit-align-items: center;
   align-items: center;
   gap: 8px;
   font-weight: normal;
@@ -3406,13 +4194,28 @@
 }
 
 .radio-group {
+  display: -webkit-flex;
   display: flex;
   gap: 20px;
+  -webkit-flex-wrap: wrap;
   flex-wrap: wrap;
 }
 
+/* Safari gap fallback for radio-group */
+@supports not (gap: 20px) {
+  .radio-group > label {
+    margin-right: 20px;
+    margin-bottom: 8px;
+  }
+  .radio-group > label:last-child {
+    margin-right: 0;
+  }
+}
+
 .radio-group label {
+  display: -webkit-flex;
   display: flex;
+  -webkit-align-items: center;
   align-items: center;
   gap: 8px;
   font-weight: normal;
@@ -3425,8 +4228,19 @@
 }
 
 .job-results {
+  display: -ms-grid;
   display: grid;
   gap: 20px;
+}
+
+/* Safari gap fallback for job-results */
+@supports not (gap: 20px) {
+  .job-results > * {
+    margin-bottom: 20px;
+  }
+  .job-results > *:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .job-card {
@@ -3444,9 +4258,12 @@
 }
 
 .job-header {
+  display: -webkit-flex;
   display: flex;
+  -webkit-justify-content: space-between;
   justify-content: space-between;
-  align-items: start;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
   margin-bottom: 12px;
   gap: 16px;
 }
@@ -3469,7 +4286,9 @@
 .job-location {
   font-size: 14px;
   color: var(--text-secondary);
+  display: -webkit-flex;
   display: flex;
+  -webkit-align-items: center;
   align-items: center;
   gap: 4px;
 }
@@ -3483,6 +4302,7 @@
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  -webkit-flex-shrink: 0;
   flex-shrink: 0;
 }
 
@@ -3494,10 +4314,23 @@
 }
 
 .job-actions {
+  display: -webkit-flex;
   display: flex;
   gap: 12px;
   margin-top: 16px;
+  -webkit-flex-wrap: wrap;
   flex-wrap: wrap;
+}
+
+/* Safari gap fallback for job-actions */
+@supports not (gap: 12px) {
+  .job-actions > * {
+    margin-right: 12px;
+    margin-bottom: 8px;
+  }
+  .job-actions > *:last-child {
+    margin-right: 0;
+  }
 }
 
 .job-link-btn {
@@ -3509,7 +4342,9 @@
   cursor: pointer;
   font-weight: 600;
   text-decoration: none;
+  display: -webkit-inline-flex;
   display: inline-flex;
+  -webkit-align-items: center;
   align-items: center;
   gap: 8px;
   transition: background 0.2s;
@@ -3989,6 +4824,311 @@ select:focus {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Email Form Card */
+.email-form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.email-form-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.email-form-card .help-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* Email form inputs */
+.email-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.email-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.email-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+textarea.email-input {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+/* Email form row for side-by-side fields */
+.email-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.email-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.email-form-group select {
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.email-form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Email checkbox */
+.email-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.email-checkbox-wrapper input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.email-checkbox-wrapper span {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Email generate button */
+.email-generate-btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.email-generate-btn:hover {
+  background: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+}
+
+/* Generated email output */
+.email-output-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.email-output-card h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.email-field-group {
+  margin-bottom: 20px;
+}
+
+.email-field-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.email-field-group input,
+.email-field-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.email-field-group input:focus,
+.email-field-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.email-field-group textarea {
+  resize: vertical;
+  line-height: 1.7;
+  min-height: 200px;
+}
+
+/* Email action buttons */
+.email-action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.email-action-buttons button {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.email-action-buttons .btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+}
+
+.email-action-buttons .btn-primary:hover {
+  background: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3);
+}
+
+.email-action-buttons .btn-secondary {
+  background: var(--card);
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.email-action-buttons .btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* Email history section */
+.email-history-section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.email-history-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.email-history-section h3 .subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.email-history-list {
+  display: grid;
+  gap: 12px;
+}
+
+/* Email loading state */
+.email-loading {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.email-loading .spinner {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.email-loading p {
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* Email error state */
+.email-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--danger);
+}
+
 .history-item {
   animation: slideIn 0.3s ease;
 }
@@ -4024,78 +5164,97 @@ select:focus {
   line-height: 1.5;
 }
 
-/* Responsive design for email writer */
+/* ===== COMPREHENSIVE MOBILE RESPONSIVE STYLES ===== */
+/* Consolidated mobile-first approach with consistent breakpoints */
+/* Tablet: 768px | Phone: 480px */
+
+/* ===== MOBILE BASE RESETS ===== */
 @media (max-width: 768px) {
-  .email-writer-container {
-    padding: 16px;
+  /* Ensure proper touch behavior */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
   
-  .email-mode-selector {
-    flex-direction: column;
+  /* Prevent zoom on input focus (iOS) */
+  input, textarea, select {
+    font-size: 16px !important;
   }
   
-  .email-mode-selector select,
-  .email-mode-selector button {
-    width: 100%;
-  }
-  
-  .email-form > div[style*="grid-template-columns"] {
-    grid-template-columns: 1fr !important;
-  }
-  
-  .email-actions {
-    flex-direction: column;
-  }
-  
-  .email-actions button {
-    width: 100%;
+  /* Smooth scrolling for all scrollable areas */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ===== COMPREHENSIVE MOBILE RESPONSIVE STYLES ===== */
-
-/* Mobile Header Adjustments */
+/* ===== MOBILE HEADER ===== */
 @media (max-width: 768px) {
   header {
-    padding: 12px 16px;
-    height: 56px;
+    padding: 10px 16px !important;
+    height: 56px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
   }
   
   header h1 {
-    font-size: 16px;
+    font-size: 15px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
   }
   
   #menuActions {
-    gap: 8px;
+    gap: 6px !important;
   }
   
   #headerUserInfo {
     display: none !important;
   }
   
-  header button {
-    padding: 6px 10px;
-    font-size: 12px;
-    height: 32px;
+  #menuToggleBtn {
+    padding: 10px 14px !important;
+    font-size: 20px !important;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .header-dropdown-menu {
+    position: fixed !important;
+    top: 56px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .header-dropdown-menu button {
+    padding: 16px 20px !important;
+    font-size: 15px !important;
+    min-height: 52px;
+    border-bottom: 1px solid var(--border);
   }
 }
 
-/* Mobile Tab Navigation */
+/* ===== MOBILE TAB NAVIGATION ===== */
 @media (max-width: 768px) {
   #sidebar {
     position: sticky !important;
     top: 56px !important;
-    padding: 12px 16px !important;
+    z-index: 100 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     gap: 8px !important;
+    padding: 12px 16px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none !important;
-    flex-wrap: nowrap !important;
-    justify-content: flex-start !important;
-    display: flex !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    scrollbar-width: none;
+    background: var(--bg) !important;
+    border-bottom: 1px solid var(--border) !important;
   }
   
   #sidebar::-webkit-scrollbar {
@@ -4103,38 +5262,29 @@ select:focus {
   }
   
   .tab-btn {
-    padding: 10px 20px !important;
+    flex: 0 0 auto !important;
+    padding: 12px 18px !important;
     font-size: 13px !important;
-    min-width: max-content !important;
     white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    flex-grow: 0 !important;
-    flex: none !important;
-    border-radius: 8px !important;
+    min-width: auto !important;
+    border-radius: 20px !important;
   }
 }
 
-/* Mobile Resume Content */
+/* ===== MOBILE MAIN CONTENT AREA ===== */
 @media (max-width: 768px) {
-  .resume-content {
-    padding: 16px;
+  #tabContentArea {
+    padding: 16px !important;
+    padding-bottom: 100px !important;
   }
   
-  .section-card {
-    padding: 16px;
-    margin-bottom: 16px;
+  main {
+    padding-bottom: 80px !important;
   }
-  
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .section-header h3 {
-    font-size: 16px;
-  }
-  
+}
+
+/* ===== MOBILE ACTION BAR (Resume Tab) ===== */
+@media (max-width: 768px) {
   .top-action-buttons {
     display: none !important;
   }
@@ -4147,20 +5297,33 @@ select:focus {
     display: none !important;
   }
   
-  /* Form Navigation - Horizontal Scroll */
+  /* Show header mobile menu actions instead */
+  #mobileResumeActions {
+    display: block !important;
+  }
+}
+
+/* ===== MOBILE FORM NAVIGATION (Resume Sections) ===== */
+@media (max-width: 768px) {
   .form-nav-container {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 16px !important;
   }
   
   .form-nav {
     position: static !important;
+    display: flex !important;
     flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    gap: 8px !important;
-    padding-bottom: 8px;
+    padding: 4px 0 12px 0 !important;
+    margin: 0 -16px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
   
   .form-nav::-webkit-scrollbar {
@@ -4168,247 +5331,231 @@ select:focus {
   }
   
   .form-nav-btn {
-    white-space: nowrap !important;
-    min-width: 120px !important;
-    flex-shrink: 0;
-    padding: 10px 14px !important;
+    flex: 0 0 auto !important;
+    padding: 10px 16px !important;
     font-size: 13px !important;
-    justify-content: center;
+    white-space: nowrap !important;
+    min-width: auto !important;
+    border-radius: 20px !important;
+    gap: 6px !important;
+  }
+  
+  .form-nav-btn .icon {
+    font-size: 14px !important;
+  }
+  
+  .form-content {
+    width: 100% !important;
   }
 }
 
-/* Mobile Form Inputs */
+/* ===== MOBILE SECTION CARDS ===== */
 @media (max-width: 768px) {
-  input, textarea {
-    font-size: 16px; /* Prevents zoom on iOS */
+  .section-card,
+  .card {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    border-radius: 12px !important;
   }
   
-  .form-group input {
-    padding: 10px 12px;
+  .section-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
   }
   
-  h3 {
-    font-size: 16px;
-    margin-top: 24px;
-    margin-bottom: 12px;
+  .section-header h3 {
+    font-size: 16px !important;
+    margin: 0 !important;
   }
   
-  label {
-    font-size: 13px;
+  .section-header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .section-header-actions button {
+    flex: 1;
   }
 }
 
-/* Mobile Buttons */
+/* ===== MOBILE FORM INPUTS ===== */
 @media (max-width: 768px) {
-  .sub-btn, .add-btn, .remove-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-    width: 100%;
+  .form-group {
+    margin-bottom: 16px !important;
   }
   
-  .primary-btn {
-    width: 100%;
-    padding: 12px 20px;
-    font-size: 14px;
+  .form-group label {
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+    min-height: 48px;
+  }
+  
+  textarea {
+    min-height: 100px !important;
+  }
+  
+  /* Two column grids become single column */
+  .form-row,
+  .two-column,
+  .grid-2 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
   }
 }
 
-/* Mobile Lists and Entries */
+/* ===== MOBILE BUTTONS ===== */
+@media (max-width: 768px) {
+  .primary-btn,
+  .secondary-btn,
+  .btn {
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+    min-height: 48px !important;
+    border-radius: 10px !important;
+  }
+  
+  .add-btn,
+  .remove-btn,
+  .sub-btn {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    min-height: 44px !important;
+    width: 100% !important;
+  }
+  
+  /* Button groups stack vertically */
+  .button-group,
+  .btn-group,
+  .actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+}
+
+/* ===== MOBILE LIST ENTRIES (Experience, Education, etc.) ===== */
 @media (max-width: 768px) {
   .entry {
-    padding: 12px;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    border-radius: 12px !important;
   }
   
-  .list-item {
-    display: grid !important;
-    grid-template-columns: 1fr auto auto !important;
+  .entry-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  
+  .entry input,
+  .entry textarea,
+  .entry select {
+    width: 100% !important;
+    margin-bottom: 12px !important;
+  }
+  
+  /* Bullet points */
+  .bullet,
+  .bullet-item {
+    display: flex !important;
+    flex-direction: column !important;
     gap: 8px !important;
-    align-items: center !important;
   }
   
-  .list-item input {
-    grid-column: 1 / -1;
+  .bullet input,
+  .bullet-item input {
+    width: 100% !important;
   }
   
-  .list-item .remove-btn {
-    width: auto !important;
-    min-width: 40px;
-    padding: 8px 12px !important;
+  .bullet .remove-btn,
+  .bullet-item .remove-btn {
+    width: 100% !important;
+    margin-top: 4px !important;
   }
   
-  /* Contact List Mobile Fix */
+  /* Skills list */
+  #skillsList .entry,
   #contactList .entry {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
   }
   
+  #skillsList .entry input,
   #contactList .entry input {
     width: 100% !important;
   }
   
+  #skillsList .entry .remove-btn,
   #contactList .entry .remove-btn {
     width: 100% !important;
-    max-width: none !important;
-  }
-  
-  /* Skills List Mobile Fix */
-  #skillsList .entry {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
-  }
-  
-  #skillsList .entry input {
-    width: 100% !important;
-  }
-  
-  #skillsList .entry .remove-btn {
-    width: 100% !important;
-    max-width: none !important;
   }
 }
 
-/* Mobile Modal */
+/* ===== MOBILE JOB DESCRIPTION (Generate Resume Tab) ===== */
 @media (max-width: 768px) {
-  .modal-content {
-    width: 90% !important;
-    max-width: 90% !important;
+  #jdContainer,
+  #editJDSection {
+    padding: 0 !important;
+  }
+  
+  .jd-form {
     padding: 16px !important;
-    margin: 0 16px;
   }
   
-  .modal-content h3 {
-    font-size: 16px !important;
+  .jd-input-section textarea {
+    min-height: 150px !important;
   }
   
-  .modal-content p {
-    font-size: 13px !important;
+  .jd-actions {
+    flex-direction: column !important;
+    gap: 10px !important;
   }
   
-  .modal-content button {
-    font-size: 12px !important;
-    padding: 8px 12px !important;
-  }
-}
-
-/* Mobile Scroll to Top Button */
-@media (max-width: 768px) {
-  #scrollToTop {
-    bottom: 16px;
-    right: 16px;
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-}
-
-/* Small Mobile Devices */
-@media (max-width: 480px) {
-  header {
-    padding: 10px 12px;
-    height: 52px;
-  }
-  
-  header h1 {
-    font-size: 14px;
-  }
-  
-  .tab-button {
-    padding: 8px 12px;
-    font-size: 11px;
-    min-width: 80px;
-  }
-  
-  .resume-content {
-    padding: 12px;
-  }
-  
-  .section-card {
-    padding: 12px;
-  }
-}
-
-/* ===== ADDITIONAL MOBILE TABLE & LAYOUT FIXES ===== */
-@media (max-width: 768px) {
-  /* Dashboard Table - Make Scrollable */
-  .dashboard-table-container,
-  table {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    display: block;
-    width: 100%;
-  }
-  
-  table {
-    min-width: 600px;
-  }
-  
-  /* Experience Section Mobile Fix */
-  #experienceList .entry,
-  #educationList .entry,
-  #projectsList .entry,
-  #certificationsList .entry {
-    padding: 12px !important;
-  }
-  
-  #experienceList .entry input,
-  #educationList .entry input,
-  #projectsList .entry input,
-  #certificationsList .entry input {
+  .jd-actions button {
     width: 100% !important;
   }
-  
-  #experienceList .bullets,
-  #projectsList .bullets {
-    width: 100% !important;
+}
+
+/* ===== MOBILE JOB SEARCH TAB ===== */
+@media (max-width: 768px) {
+  .job-search-container {
+    padding: 0 !important;
   }
   
-  #experienceList .bullet,
-  #projectsList .bullet {
+  .search-form {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  
+  .search-form input,
+  .search-form select {
     width: 100% !important;
   }
   
-  #experienceList .bullet input,
-  #projectsList .bullet input {
+  .search-form button {
     width: 100% !important;
+    min-height: 48px !important;
   }
   
-  #experienceList .bullet .remove-btn,
-  #projectsList .bullet .remove-btn {
-    width: 100% !important;
-  }
-  
-  /* Skills Section - Make Categories Scrollable */
-  .skills-categories {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    flex-wrap: nowrap !important;
-    gap: 8px;
-    padding-bottom: 8px;
-    scrollbar-width: none;
-  }
-  
-  .skills-categories::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .skill-category-item {
-    flex-shrink: 0;
-    min-width: 120px;
-    white-space: nowrap;
-  }
-  
-  /* Certifications Section */
-  .certification-entry {
-    padding: 12px !important;
-  }
-  
-  /* Job Search Results */
+  /* Job cards */
   .job-card {
-    padding: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
   }
   
   .job-header {
@@ -4417,78 +5564,1258 @@ select:focus {
     gap: 8px !important;
   }
   
+  .job-title {
+    font-size: 16px !important;
+  }
+  
+  .job-company {
+    font-size: 14px !important;
+  }
+  
+  .job-meta {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    font-size: 13px !important;
+  }
+  
   .job-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 12px !important;
   }
   
   .job-actions button {
     width: 100% !important;
+    min-height: 44px !important;
   }
   
-  /* Email Writer Form */
-  .email-form-grid {
+  /* Saved jobs list */
+  .saved-jobs-section {
+    margin-top: 24px !important;
+  }
+}
+
+/* ===== MOBILE EMAIL WRITER TAB ===== */
+@media (max-width: 768px) {
+  .email-writer-container {
+    padding: 0 !important;
+  }
+  
+  .email-header h2 {
+    font-size: 20px !important;
+  }
+  
+  .email-mode-selector {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .email-template-select,
+  .email-custom-btn {
+    width: 100% !important;
+  }
+  
+  .email-form-card {
+    padding: 20px !important;
+  }
+  
+  .email-form-row {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
   }
   
-  /* Dashboard Stats Cards */
-  .stats-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
+  .email-action-buttons {
+    flex-direction: column !important;
   }
   
-  .stat-card {
+  .email-action-buttons button {
+    width: 100% !important;
+  }
+  
+  .email-history-section {
+    margin-top: 32px !important;
+    padding-top: 24px !important;
+  }
+}
+
+/* Mobile resume cards - hidden on desktop, visible on mobile */
+.mobile-resume-cards {
+  display: none;
+}
+
+/* ===== MOBILE DASHBOARD TAB ===== */
+@media (max-width: 768px) {
+  #dashboardTabPanel {
+    padding: 0 !important;
+  }
+  
+  /* Stats grid - 2 columns */
+  .stats-grid,
+  #statsCards {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
     padding: 16px !important;
   }
   
-  /* Resume Templates Grid */
-  .templates-grid {
-    grid-template-columns: 1fr !important;
+  .stat-card {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+  
+  .stat-value {
+    font-size: 22px !important;
+  }
+  
+  .stat-label {
+    font-size: 11px !important;
+  }
+  
+  /* Resume history table container */
+  .resume-table-container {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+  
+  /* Table header section */
+  .resume-table-container > div:first-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  
+  /* Filter section - stack vertically */
+  .resume-table-container > div[style*="display: flex"][style*="flex-wrap"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 0 16px 16px 16px !important;
+  }
+  
+  .resume-table-container > div[style*="display: flex"][style*="flex-wrap"] input,
+  .resume-table-container > div[style*="display: flex"][style*="flex-wrap"] select {
+    width: 100% !important;
+    min-width: auto !important;
+    flex: none !important;
+  }
+  
+  .resume-table-container > div[style*="display: flex"][style*="flex-wrap"] button {
+    width: 100% !important;
+  }
+  
+  /* Hide the table on mobile */
+  .resume-table-wrapper {
+    display: none !important;
+  }
+  
+  /* Show mobile cards instead - will be added via JS */
+  .mobile-resume-cards {
+    display: block !important;
+    padding: 0 16px 16px !important;
+  }
+  
+  .mobile-resume-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .mobile-resume-card:last-child {
+    margin-bottom: 0;
+  }
+  
+  .mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  
+  .mobile-card-company {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  
+  .mobile-card-jobtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  
+  .mobile-card-status {
+    flex-shrink: 0;
+  }
+  
+  .mobile-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .mobile-card-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .mobile-card-actions button {
+    flex: 1;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    min-height: 40px;
+    border-radius: 8px !important;
+  }
+  
+  /* Pagination */
+  .pagination-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 16px !important;
+  }
+  
+  .pagination-container button {
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 8px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ===== MOBILE VIEW RESUME TAB - NEW ACCORDION LAYOUT ===== */
+@media (max-width: 768px) {
+  #resumeFormContainer {
+    padding: 0 16px !important;
+  }
+  
+  /* Resume Builder Header - Mobile */
+  .resume-builder-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 16px !important;
     gap: 12px !important;
   }
   
-  /* Action Buttons in Cards */
-  .card-actions {
+  .resume-builder-title h2 {
+    font-size: 20px !important;
+  }
+  
+  .resume-builder-title p {
+    font-size: 13px !important;
+  }
+  
+  .resume-builder-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  
+  .rb-action-btn {
+    flex: 1 !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    justify-content: center !important;
+  }
+  
+  .rb-action-btn span:last-child {
+    display: none !important;
+  }
+  
+  .rb-action-btn span:first-child {
+    font-size: 18px !important;
+  }
+  
+  /* Resume Accordion - Mobile */
+  .resume-accordion {
+    gap: 10px !important;
+  }
+  
+  .resume-section-card {
+    border-radius: 12px !important;
+  }
+  
+  .section-card-header {
+    padding: 14px 16px !important;
+  }
+  
+  .section-card-title {
+    font-size: 15px !important;
+    gap: 10px !important;
+  }
+  
+  .section-icon {
+    font-size: 18px !important;
+  }
+  
+  .section-card-body {
+    padding: 0 16px 16px 16px !important;
+  }
+  
+  .form-field {
+    margin-top: 14px !important;
+  }
+  
+  .form-field input,
+  .form-field textarea {
+    padding: 14px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Contact & Skill entries - stack on mobile */
+  .contact-entry,
+  .skill-entry {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  .contact-entry input,
+  .skill-entry input {
+    padding: 14px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+  }
+  
+  .entry-remove-btn {
+    width: 100% !important;
+    height: 44px !important;
+  }
+  
+  /* Experience entry - mobile */
+  .experience-entry {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  .experience-header-inputs {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  .experience-header-inputs input {
+    padding: 14px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+  }
+  
+  .experience-bullets {
+    margin-top: 14px !important;
+  }
+  
+  .bullet-item {
     flex-direction: column !important;
     gap: 8px !important;
   }
   
-  .card-actions button {
-    width: 100% !important;
-  }
-  
-  /* Date Pickers and Select Inputs */
-  input[type="date"],
-  input[type="month"],
-  select {
+  .bullet-item input {
+    padding: 14px !important;
     font-size: 16px !important;
+    border-radius: 10px !important;
   }
   
-  /* Achievement/Bullet Points Lists */
-  .achievements-list,
-  .responsibilities-list {
-    padding-left: 16px;
+  .bullet-remove-btn {
+    width: 100% !important;
+    height: 44px !important;
   }
   
-  /* Grid Layouts - Force Single Column */
-  .two-column-grid,
-  .three-column-grid {
+  .add-bullet-btn {
+    width: 100% !important;
+    padding: 12px !important;
+  }
+  
+  .remove-entry-btn {
+    padding: 14px !important;
+  }
+  
+  /* Education entry - mobile */
+  .education-entry {
     grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
   
-  /* Horizontal Scrollable Containers */
-  .horizontal-scroll {
-    overflow-x: auto;
+  .education-entry input {
+    padding: 14px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Add entry button - mobile */
+  .add-entry-btn {
+    padding: 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Scroll to top button - mobile positioning */
+  #scrollToTop {
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 20px !important;
+  }
+  
+  /* Mobile sidebar nav - horizontal scrolling */
+  .form-nav-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  .form-nav {
+    position: sticky !important;
+    top: 110px !important;
+    z-index: 50 !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    background: var(--card) !important;
+    border-radius: var(--radius-lg) !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
   
-  .horizontal-scroll::-webkit-scrollbar {
+  .form-nav::-webkit-scrollbar {
     display: none;
+  }
+  
+  .form-nav-btn {
+    flex: 0 0 auto !important;
+    padding: 10px 16px !important;
+    border-radius: 20px !important;
+    white-space: nowrap !important;
+    background: var(--bg) !important;
+    border: 1px solid var(--border) !important;
+  }
+  
+  .form-nav-btn.active {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+  }
+  
+  .form-nav-btn .nav-icon {
+    font-size: 16px !important;
+  }
+  
+  .form-nav-btn .nav-text {
+    display: inline !important;
+    font-size: 13px !important;
+  }
+  
+  .form-sections {
+    padding: 16px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+  
+  .form-section-panel h3 {
+    font-size: 18px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+  }
+  
+  /* Form inputs */
+  .form-section-panel label,
+  .form-field label {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+  }
+  
+  .form-section-panel input,
+  .form-section-panel textarea,
+  .form-section-panel select,
+  .form-field input,
+  .form-field textarea {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .form-section-panel textarea,
+  .form-field textarea {
+    min-height: 120px !important;
+  }
+  
+  /* Entry cards (Experience, Education, etc.) */
+  .entry {
+    background: var(--bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .entry input,
+  .entry textarea {
+    margin-bottom: 12px !important;
+  }
+  
+  /* Bullets/Responsibilities */
+  .bullets,
+  .bullet-points {
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    border-top: 1px dashed var(--border) !important;
+  }
+  
+  .bullet,
+  .bullet-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .bullet input,
+  .bullet-item input {
+    width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .bullet .remove-btn,
+  .bullet-item .remove-btn {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  /* Add/Remove buttons */
+  .sub-btn,
+  .add-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 14px !important;
+    margin-top: 8px !important;
+    border-radius: 10px !important;
+  }
+  
+  .remove-btn {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Skills and Contact list entries */
+  #skillsList .entry,
+  #contactList .entry {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  #skillsList .entry input,
+  #contactList .entry input {
+    width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Phone-specific refinements */
+@media (max-width: 480px) {
+  .resume-builder-header {
+    margin: 0 -16px 16px -16px !important;
+    border-radius: 0 !important;
+    padding: 14px !important;
+  }
+  
+  .resume-builder-actions {
+    gap: 6px !important;
+  }
+  
+  .rb-action-btn {
+    padding: 8px 10px !important;
+    min-width: 44px !important;
+  }
+  
+  .section-card-title span:last-child {
+    font-size: 14px !important;
+  }
+  
+  .form-field input,
+  .form-field textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
+
+/* ===== MOBILE MODALS ===== */
+@media (max-width: 768px) {
+  .modal-content,
+  .view-modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    max-height: 90vh !important;
+    margin: 5vh auto !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+    overflow-y: auto !important;
+  }
+  
+  .modal-content h2,
+  .modal-content h3 {
+    font-size: 18px !important;
+  }
+  
+  .modal-content p {
+    font-size: 14px !important;
+  }
+  
+  .modal-content button {
+    width: 100% !important;
+    min-height: 44px !important;
+    margin-top: 8px !important;
+  }
+  
+  /* View Resume Modal */
+  #viewResumeModal .modal-content {
+    padding: 16px !important;
+  }
+  
+  .resume-preview {
+    padding: 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ===== MOBILE TUTORIAL ===== */
+@media (max-width: 768px) {
+  .tutorial-tooltip {
+    position: fixed !important;
+    left: 16px !important;
+    right: 16px !important;
+    max-width: none !important;
+    min-width: auto !important;
+    width: auto !important;
+  }
+  
+  .tutorial-welcome-modal {
+    width: 95% !important;
+    max-width: none !important;
+  }
+  
+  .tutorial-welcome-header,
+  .tutorial-welcome-body,
+  .tutorial-welcome-footer {
+    padding: 16px 20px !important;
+  }
+  
+  .tutorial-welcome-title {
+    font-size: 22px !important;
+  }
+  
+  .tutorial-trigger-btn {
+    bottom: 80px !important;
+    left: 16px !important;
+  }
+}
+
+/* ===== MOBILE SCROLL TO TOP ===== */
+@media (max-width: 768px) {
+  #scrollToTop {
+    bottom: 80px !important;
+    right: 16px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
+
+/* ===== MOBILE TOAST NOTIFICATIONS ===== */
+@media (max-width: 768px) {
+  .toast,
+  .notification {
+    left: 16px !important;
+    right: 16px !important;
+    max-width: none !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ===== MOBILE PROCESSING BANNER ===== */
+@media (max-width: 768px) {
+  #processingBanner {
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 80px !important;
+    max-width: none !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* ===== VERY SMALL SCREENS (480px and below) ===== */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 13px !important;
+    max-width: 120px;
+  }
+  
+  #sidebar {
+    padding: 10px 12px !important;
+    gap: 6px !important;
+  }
+  
+  .tab-btn {
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+  }
+  
+  #tabContentArea {
+    padding: 12px !important;
+  }
+  
+  .section-card,
+  .card,
+  .email-form-card {
+    padding: 14px !important;
+  }
+  
+  .stats-grid,
+  #statsCards {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .form-nav-btn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  
+  .form-nav-btn .icon {
+    display: none !important;
+  }
+}
+
+/* ===== ONBOARDING TUTORIAL STYLES ===== */
+
+/* Tutorial overlay - removed dark background */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9990;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.tutorial-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Highlighted element - simple border without dark overlay */
+.tutorial-highlight {
+  position: relative;
+  z-index: 9995 !important;
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 4px;
+  border-radius: 8px;
+  animation: tutorial-pulse-simple 1.5s infinite;
+}
+
+/* Special handling for dropdown menus during tutorial */
+#actionDropdownMenu.tutorial-highlight,
+#headerDropdownMenu.tutorial-highlight {
+  display: block !important;
+}
+
+/* Special handling for tab buttons during tutorial - just enhance visibility */
+#tabEditJDBtn.tutorial-highlight,
+#tabJobSearchBtn.tutorial-highlight,
+#tabEmailWriterBtn.tutorial-highlight,
+#tabDashboardBtn.tutorial-highlight,
+#tabResumeBtn.tutorial-highlight {
+  outline-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2) !important;
+  transform: scale(1.02);
+}
+
+@keyframes tutorial-pulse-simple {
+  0%, 100% { outline-width: 3px; outline-offset: 4px; }
+  50% { outline-width: 4px; outline-offset: 6px; }
+}
+
+/* Tutorial tooltip card */
+.tutorial-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  min-width: 320px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .tutorial-tooltip {
+  background: #1e1e1e;
+  border: 1px solid #3f3f46;
+}
+
+.tutorial-tooltip.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Tooltip arrow */
+.tutorial-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: white;
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+[data-theme="dark"] .tutorial-tooltip::before {
+  background: #1e1e1e;
+  border: 1px solid #3f3f46;
+}
+
+.tutorial-tooltip.arrow-top::before {
+  top: -8px;
+  left: 50%;
+  margin-left: -8px;
+  border-top: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
+}
+
+.tutorial-tooltip.arrow-bottom::before {
+  bottom: -8px;
+  left: 50%;
+  margin-left: -8px;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.tutorial-tooltip.arrow-left::before {
+  left: -8px;
+  top: 50%;
+  margin-top: -8px;
+  border-bottom: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
+}
+
+.tutorial-tooltip.arrow-right::before {
+  right: -8px;
+  top: 50%;
+  margin-top: -8px;
+  border-top: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+}
+
+/* Tooltip header with step indicator */
+.tutorial-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+.tutorial-step-badge {
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tutorial-step-badge .step-icon {
+  font-size: 16px;
+}
+
+.tutorial-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tutorial-close-btn:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Tooltip body */
+.tutorial-body {
+  padding: 20px 24px;
+}
+
+.tutorial-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.tutorial-title .title-icon {
+  font-size: 24px;
+}
+
+.tutorial-description {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.tutorial-tip {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  border-radius: 10px;
+  border-left: 4px solid var(--accent);
+}
+
+.tutorial-tip p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.tutorial-tip strong {
+  color: var(--accent);
+}
+
+/* Tooltip footer with navigation */
+.tutorial-footer {
+  padding: 16px 24px 20px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tutorial-progress {
+  display: -webkit-flex;
+  display: flex;
+  gap: 6px;
+}
+
+.tutorial-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.3s ease;
+}
+
+.tutorial-progress-dot.active {
+  background: var(--accent);
+  width: 24px;
+  border-radius: 4px;
+}
+
+.tutorial-progress-dot.completed {
+  background: var(--success);
+}
+
+.tutorial-nav {
+  display: -webkit-flex;
+  display: flex;
+  gap: 10px;
+}
+
+.tutorial-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.tutorial-btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.tutorial-btn-secondary:hover {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--text-secondary);
+}
+
+.tutorial-btn-primary {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.tutorial-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.tutorial-btn-skip {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+.tutorial-btn-skip:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* Welcome modal for tutorial */
+.tutorial-welcome-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  z-index: 10000;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+  max-width: 520px;
+  width: 90%;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .tutorial-welcome-modal {
+  background: #1e1e1e;
+  border: 1px solid #3f3f46;
+}
+
+.tutorial-welcome-modal.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.tutorial-welcome-header {
+  text-align: center;
+  padding: 32px 32px 0;
+}
+
+.tutorial-welcome-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.tutorial-welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px 0;
+}
+
+.tutorial-welcome-subtitle {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin: 0;
+}
+
+.tutorial-welcome-body {
+  padding: 24px 32px;
+}
+
+.tutorial-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tutorial-feature-list li {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tutorial-feature-list li:last-child {
+  border-bottom: none;
+}
+
+.tutorial-feature-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.tutorial-feature-text {
+  flex: 1;
+}
+
+.tutorial-feature-text strong {
+  display: block;
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.tutorial-feature-text span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.tutorial-welcome-footer {
+  padding: 20px 32px 32px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutorial-start-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tutorial-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+}
+
+.tutorial-skip-link {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+  padding: 8px;
+}
+
+.tutorial-skip-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* Tutorial trigger button (shown in header) */
+.tutorial-trigger-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.tutorial-trigger-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(99, 102, 241, 0.5);
+}
+
+.tutorial-trigger-btn .btn-icon {
+  font-size: 18px;
+}
+
+/* Mobile responsive for tutorial */
+@media (max-width: 768px) {
+  .tutorial-tooltip {
+    max-width: 90%;
+    min-width: 280px;
+    left: 5% !important;
+    right: 5% !important;
+  }
+  
+  .tutorial-welcome-modal {
+    width: 95%;
+    max-width: none;
+  }
+  
+  .tutorial-welcome-header,
+  .tutorial-welcome-body,
+  .tutorial-welcome-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .tutorial-trigger-btn {
+    bottom: 16px;
+    left: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
   }
 }
 

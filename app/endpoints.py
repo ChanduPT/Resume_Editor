@@ -21,6 +21,7 @@ from app.database import (
 )
 from app.auth import get_current_user, get_current_user_optional
 from app.create_resume import create_resume
+from app.create_pdf import create_resume_pdf_bytes
 from app.job_processing import (
     process_resume_parallel, job_progress, send_progress,
     extract_jd_keywords, generate_resume_content,
@@ -769,6 +770,76 @@ async def download_resume(
         filename = f"{job.company_name}_{job.job_title}_Resume_{format}.docx".replace(" ", "_").replace("/", "_")
         return Response(content=docx_content, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', headers={"Content-Disposition": f"attachment; filename={filename}"})
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def create_resume_from_template(request: Request):
+    """Generate a Word document from resume template data (no authentication required for preview)"""
+    try:
+        data = await request.json()
+        resume_data = data.get("resume_data", data)
+        format_type = data.get("format", "classic")
+        
+        # Validate resume data
+        if not resume_data or not resume_data.get("name"):
+            raise HTTPException(status_code=400, detail="Resume data with name is required")
+        
+        # Validate format
+        if format_type not in ["classic", "modern"]:
+            format_type = "classic"
+        
+        # Generate the document
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
+            tmp_path = tmp_file.name
+        
+        create_resume(resume_data, tmp_path, format=format_type)
+        
+        with open(tmp_path, 'rb') as f:
+            docx_content = f.read()
+        os.unlink(tmp_path)
+        
+        # Generate filename from name
+        name = resume_data.get("name", "Resume").replace(" ", "_").replace("/", "_")
+        filename = f"{name}_Resume.docx"
+        
+        return Response(
+            content=docx_content, 
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating resume from template: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def create_resume_pdf_endpoint(request: Request):
+    """Generate a PDF document from resume template data"""
+    try:
+        data = await request.json()
+        resume_data = data.get("resume_data", data)
+        
+        # Validate resume data
+        if not resume_data or not resume_data.get("name"):
+            raise HTTPException(status_code=400, detail="Resume data with name is required")
+        
+        # Generate the PDF
+        pdf_content = create_resume_pdf_bytes(resume_data)
+        
+        # Generate filename from name
+        name = resume_data.get("name", "Resume").replace(" ", "_").replace("/", "_")
+        filename = f"{name}_Resume.pdf"
+        
+        return Response(
+            content=pdf_content, 
+            media_type='application/pdf', 
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating PDF resume: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1607,7 +1678,7 @@ async def email_generate(request: Request, current_user: User = Depends(get_curr
         # Validate inputs
         if email_type not in ["custom", "job_application", "reply", "followup", "thankyou", 
                                "networking", "salary_negotiation", "resignation", "referral_request",
-                               "decline_offer", "feedback_request", "interview_scheduling"]:
+                               "decline_offer", "feedback_request", "interview_scheduling", "cover_letter"]:
             raise HTTPException(status_code=400, detail=f"Invalid email_type: {email_type}")
         
         if tone not in ["professional", "enthusiastic", "formal", "conversational", "friendly", "assertive"]:

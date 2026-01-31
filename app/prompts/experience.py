@@ -243,7 +243,7 @@ PRIORITY:
 - Realistic, seniority-appropriate complexity > over-engineering.
 
 BULLET WRITING RULES:
-- Each role must contain 6-8 bullets.
+- Each role must contain 7-10 bullets.
 - CRITICAL: Each bullet MUST contain exactly 24-30 words. Count words before finalizing each bullet.
 - Use only ONE connector per bullet ("using", "to", "for", "with", "enabling" etc , based on context)
 - Use Past tense throughout bullets generation.
