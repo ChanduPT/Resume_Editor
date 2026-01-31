@@ -24,7 +24,7 @@ from app.database import init_db
 from app.auth import register_user, login_user, reset_password, update_profile
 from app.endpoints import (
     generate_resume_json, get_job_status, get_job_keywords, get_job_result, update_job_resume,
-    download_resume, download_job_description,
+    download_resume, download_job_description, create_resume_from_template, create_resume_pdf_endpoint,
     get_user_jobs, get_user_stats,
     save_resume_template, get_resume_template,
     delete_job, cleanup_stale_jobs, parse_resume_document,
@@ -178,6 +178,8 @@ app.put("/api/jobs/{request_id}/update")(update_job_resume)
 app.get("/api/jobs/{request_id}/download")(download_resume)
 app.get("/api/jobs/{request_id}/download-jd")(download_job_description)
 app.delete("/api/jobs/{request_id}")(delete_job)
+app.post("/create_resume")(create_resume_from_template)
+app.post("/create_resume_pdf")(create_resume_pdf_endpoint)
 
 # Manual cleanup endpoint (for debugging)
 @app.post("/api/admin/cleanup-stale-jobs")

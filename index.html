@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=55.0">
+<link rel="stylesheet" href="/static/css/main.css?v=74.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -37,19 +37,19 @@
     </div>
     <div class="view-modal-footer">
       <button id="viewModalEditBtn" class="view-modal-btn primary" style="display: none;" onclick="toggleEditMode()">
-        <span class="btn-icon">✏️</span>
+        <span class="btn-icon"></span>
         <span id="editBtnText">Edit</span>
       </button>
       <button id="viewModalSaveBtn" class="view-modal-btn primary" style="display: none; background: #4a5568; border: none;" onclick="saveResumeChanges()" onmouseover="this.style.background='#2d3748'" onmouseout="this.style.background='#4a5568'">
-        <span class="btn-icon">💾</span>
+        <span class="btn-icon"></span>
         <span>Save Changes</span>
       </button>
       <button id="viewModalDownloadResume" class="view-modal-btn success" style="display: none;">
-        <span class="btn-icon">📄</span>
+        <span class="btn-icon"></span>
         <span>Download Resume</span>
       </button>
       <button id="viewModalDownloadJD" class="view-modal-btn success" style="display: none;">
-        <span class="btn-icon">📋</span>
+        <span class="btn-icon"></span>
         <span>Download JD</span>
       </button>
       <button class="view-modal-btn cancel" onclick="closeViewModal()">Close</button>
@@ -62,7 +62,6 @@
   <div class="view-modal-content" style="max-width: 480px;">
     <div class="view-modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border); position: relative;">
       <h2 style="margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text);">
-        <span>📄</span>
         <span>Choose Resume Format</span>
       </h2>
       <button class="view-modal-close" onclick="closeFormatModal()" style="position: absolute; top: 18px; right: 20px; background: transparent; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'; this.style.color='var(--text)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">✕</button>
@@ -75,7 +74,6 @@
           <input type="radio" name="downloadFormat" value="classic" checked style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;">
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <span style="font-size: 16px;">📋</span>
               <h3 style="margin: 0; color: var(--text); font-size: 15px; font-weight: 600;">Classic</h3>
             </div>
             <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Traditional Times New Roman with underlined headers</p>
@@ -86,7 +84,6 @@
           <input type="radio" name="downloadFormat" value="modern" style="margin-top: 3px; width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;">
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <span style="font-size: 16px;">✨</span>
               <h3 style="margin: 0; color: var(--text); font-size: 15px; font-weight: 600;">Modern</h3>
             </div>
             <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Contemporary Calibri with bold headers</p>
@@ -97,7 +94,7 @@
     <div class="view-modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);">
       <button class="view-modal-btn cancel" onclick="closeFormatModal()" style="padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">Cancel</button>
       <button class="view-modal-btn primary" onclick="confirmFormatDownload()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: #4F46E5; color: #ffffff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#4338CA'" onmouseout="this.style.background='#4F46E5'">
-        <span>⬇️</span>
+        <span>Download</span>
         <span>Download Resume</span>
       </button>
     </div>
@@ -109,7 +106,6 @@
   <div class="view-modal-content" style="max-width: 480px;">
     <div class="view-modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border); position: relative;">
       <h2 style="margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: var(--text);">
-        <span>👤</span>
         <span>Edit Profile</span>
       </h2>
       <button class="view-modal-close" onclick="closeProfileModal()" style="position: absolute; top: 18px; right: 20px; background: transparent; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'; this.style.color='var(--text)'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)'">✕</button>
@@ -135,7 +131,6 @@
     <div class="view-modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);">
       <button class="view-modal-btn cancel" onclick="closeProfileModal()" style="padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">Cancel</button>
       <button class="view-modal-btn primary" onclick="saveProfile()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: #4F46E5; color: #ffffff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#4338CA'" onmouseout="this.style.background='#4F46E5'">
-        <span>💾</span>
         <span>Save Changes</span>
       </button>
     </div>
@@ -150,7 +145,7 @@
     
     <div class="view-modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 28px 32px; border-radius: 12px 12px 0 0;">
       <div>
-        <h2 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.5px;">🎯 Review & Customize Keywords</h2>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.5px;">Review & Customize Keywords</h2>
         <p style="margin: 6px 0 0 0; font-size: 14px; opacity: 0.9;">Click keywords to edit or remove them • Add new ones to match your experience</p>
       </div>
     </div>
@@ -160,7 +155,7 @@
       <div class="keyword-section" style="margin-bottom: 28px; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
           <h3 style="margin: 0; color: var(--text); display: flex; align-items: center; gap: 10px; font-size: 18px;">
-            <span style="font-size: 24px;">💻</span>
+            <span style="font-size: 24px;"></span>
             <span>Technical Keywords</span>
             <span id="technicalCount" class="keyword-count" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 16px; padding: 4px 12px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(102,126,234,0.3);">0</span>
           </h3>
@@ -206,7 +201,7 @@
 
       <div style="margin-top: 24px; padding: 16px 20px; background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1)); border-radius: 12px; border-left: 4px solid #667eea;">
         <p style="margin: 0; font-size: 14px; color: var(--text); line-height: 1.6;">
-          <span style="font-size: 18px;">💡</span> <strong>Pro Tip:</strong> Click any keyword to edit it inline. Add relevant skills and phrases that match both your experience and the job requirements for better ATS optimization.
+          <strong>Pro Tip:</strong> Click any keyword to edit it inline. Add relevant skills and phrases that match both your experience and the job requirements for better ATS optimization.
         </p>
       </div>
 
@@ -217,14 +212,12 @@
           <span id="totalKeywordsCount" style="font-weight: 600; color: var(--text);">0</span> keywords total
         </div>
         <button onclick="regenerateKeywords()" style="padding: 8px 16px; background: transparent; color: var(--primary); border: 2px solid var(--primary); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary)';">
-          <span style="font-size: 16px;">🔄</span>
           <span>Regenerate Keywords</span>
         </button>
       </div>
       <div style="display: flex; gap: 12px;">
         <button class="view-modal-btn cancel" onclick="closeKeywordReviewModal()" style="padding: 12px 24px; font-size: 15px; border: 2px solid var(--border); background: transparent; color: var(--text); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--border)';" onmouseout="this.style.background='transparent';">Cancel</button>
         <button class="view-modal-btn primary" onclick="continueToGeneration()" style="padding: 12px 28px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102,126,234,0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(102,126,234,0.4)'">
-          <span style="font-size: 18px;">✨</span>
           <span>Generate Resume</span>
         </button>
       </div>
@@ -236,16 +229,16 @@
 <div id="helpModal" class="view-modal" style="display: none;">
   <div class="view-modal-content" style="max-width: 1200px;">
     <div class="view-modal-header">
-      <h2>📚 How to Use Resume Builder Pro</h2>
+      <h2>How to Use Resume Builder Pro</h2>
       <button class="view-modal-close" onclick="closeHelpModal()">✕</button>
     </div>
     <div class="view-modal-body" style="max-height: 70vh; overflow-y: auto;">
       <div style="padding: 20px; color: var(--text-primary);">
         
         <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
-          <h3 style="margin-top: 0; color: var(--primary);">🎯 Welcome to Resume Builder Pro!</h3>
+          <h3 style="margin-top: 0; color: var(--primary);">Welcome to Resume Builder Pro!</h3>
           <p style="line-height: 1.6;">An AI-powered platform that helps you create perfectly tailored resumes for every job application. Our intelligent system analyzes job descriptions and optimizes your resume to match exactly what employers are looking for.</p>
-          <p style="line-height: 1.6; margin-top: 10px;"><strong>✨ New Features:</strong> View & edit generated resumes, manage technical skills, track all applications in your personal dashboard!</p>
+          <p style="line-height: 1.6; margin-top: 10px;"><strong>New Features:</strong> View & edit generated resumes, manage technical skills, track all applications in your personal dashboard!</p>
         </div>
 
         <div style="margin-bottom: 30px;">
@@ -254,9 +247,9 @@
             Choose Your Generation Mode
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
-            <p><strong>📝 Complete JD Mode:</strong> Generate a resume entirely from a job description. Best when starting from scratch.</p>
-            <p><strong>🔄 Resume + JD Mode:</strong> Apply targeted edits to your existing resume based on a job description. Best for tailoring an existing resume.</p>
-            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>Tip: Use Resume + JD mode for better results when you have an existing resume!</em></p>
+            <p><strong>Complete JD Mode:</strong> Generate a resume entirely from a job description. Best when starting from scratch.</p>
+            <p><strong>Resume + JD Mode:</strong> Apply targeted edits to your existing resume based on a job description. Best for tailoring an existing resume.</p>
+            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;"><em>Tip: Use Resume + JD mode for better results when you have an existing resume!</em></p>
           </div>
         </div>
 
@@ -266,9 +259,9 @@
             Choose Resume Format
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
-            <p><strong>📄 Classic Format:</strong> Traditional layout with Times New Roman and underlined headers.</p>
-            <p><strong>✨ Modern Format:</strong> Contemporary design with Calibri and bold headers.</p>
-            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>Tip: Choose Classic if you're unsure about company culture!</em></p>
+            <p><strong>Classic Format:</strong> Traditional layout with Times New Roman and underlined headers.</p>
+            <p><strong>Modern Format:</strong> Contemporary design with Calibri and bold headers.</p>
+            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;"><em>Tip: Choose Classic if you're unsure about company culture!</em></p>
           </div>
         </div>
 
@@ -280,9 +273,9 @@
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
             <p>Paste the complete job description including:</p>
             <ul style="line-height: 1.8;">
-              <li>📋 Job responsibilities and requirements</li>
-              <li>🔧 Required skills and technologies</li>
-              <li>🎓 Qualifications and experience needed</li>
+              <li><strong>Job responsibilities and requirements</strong></li>
+              <li><strong>Required skills and technologies</strong></li>
+              <li><strong>Qualifications and experience needed</strong></li>
             </ul>
             <p style="margin-top: 10px;"><strong>Company Name:</strong> Enter the company name</p>
             <p><strong>Job Title:</strong> Enter the exact position title</p>
@@ -297,13 +290,13 @@
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
             <p>If using <strong>Resume + JD Mode</strong>, fill in your resume sections:</p>
             <ul style="line-height: 1.8;">
-              <li>👤 <strong>Personal Info:</strong> Name, email, phone, LinkedIn, location</li>
-              <li>📝 <strong>Summary:</strong> Professional summary (50+ characters)</li>
-              <li>💻 <strong>Technical Skills:</strong> Add categories (e.g., Languages, Frameworks) and skills</li>
-              <li>💼 <strong>Experience:</strong> Add roles with bullet points describing achievements</li>
-              <li>🎓 <strong>Education:</strong> Add degrees and institutions</li>
-              <li>🚀 <strong>Projects:</strong> Optional - showcase your work</li>
-              <li>📜 <strong>Certifications:</strong> Optional - add relevant certifications</li>
+              <li><strong>Personal Info:</strong> Name, email, phone, LinkedIn, location</li>
+              <li><strong>Summary:</strong> Professional summary (50+ characters)</li>
+              <li><strong>Technical Skills:</strong> Add categories (e.g., Languages, Frameworks) and skills</li>
+              <li><strong>Experience:</strong> Add roles with bullet points describing achievements</li>
+              <li><strong>Education:</strong> Add degrees and institutions</li>
+              <li><strong>Projects:</strong> Optional - showcase your work</li>
+              <li><strong>Certifications:</strong> Optional - add relevant certifications</li>
             </ul>
             <p style="margin-top: 10px; padding: 10px; background: var(--warning-bg); border-radius: 4px; border-left: 4px solid #f59e0b;">
               ⚠️ <strong>Important:</strong> All required fields must be filled (minimum 50 characters for summary and job description).
@@ -317,14 +310,14 @@
             Generate Your Resume
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
-            <p>Click <strong>"🚀 Generate Resume"</strong> to start processing.</p>
-            <p style="margin-top: 10px;">⏱️ Generation takes <strong>30-90 seconds</strong>. You'll see:</p>
+            <p>Click <strong>"Generate Resume"</strong> to start processing.</p>
+            <p style="margin-top: 10px;">Generation takes <strong>30-90 seconds</strong>. You'll see:</p>
             <ul style="line-height: 1.8;">
               <li>✅ Green notification when ready</li>
-              <li>📊 Progress in the dashboard</li>
-              <li>🔔 Real-time status updates</li>
+              <li>Progress in the dashboard</li>
+              <li>Real-time status updates</li>
             </ul>
-            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;">💡 <em>You can generate up to 2 resumes simultaneously! Additional requests will queue automatically.</em></p>
+            <p style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px;"><em>You can generate up to 2 resumes simultaneously! Additional requests will queue automatically.</em></p>
           </div>
         </div>
 
@@ -334,131 +327,106 @@
             View, Edit & Download Your Resume
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
-            <p><strong>🎉 Your resume is ready!</strong> Access it from the dashboard with these powerful options:</p>
+            <p><strong>Your resume is ready!</strong> Access it from the dashboard with these powerful options:</p>
             
-            <p style="margin-top: 15px;"><strong>📋 Dashboard Actions (⋮ Menu):</strong></p>
+            <p style="margin-top: 15px;"><strong>Dashboard Actions (Menu):</strong></p>
             <ul style="line-height: 1.8;">
-              <li>👁️ <strong>View Resume:</strong> Opens an interactive preview modal</li>
-              <li>👁️ <strong>View Job Description:</strong> Review the original JD you submitted</li>
-              <li>� <strong>Download Resume:</strong> Get your DOCX file instantly</li>
-              <li>� <strong>Download JD:</strong> Save the job description as text</li>
-              <li>🗑️ <strong>Delete:</strong> Remove entries you no longer need</li>
+              <li><strong>View Resume:</strong> Opens an interactive preview modal</li>
+              <li><strong>View Job Description:</strong> Review the original JD you submitted</li>
+              <li><strong>Download Resume:</strong> Get your DOCX file instantly</li>
+              <li><strong>Download JD:</strong> Save the job description as text</li>
+              <li><strong>Delete:</strong> Remove entries you no longer need</li>
             </ul>
             
-            <p style="margin-top: 20px;"><strong>✏️ Edit Mode (NEW!):</strong></p>
+            <p style="margin-top: 20px;"><strong>Edit Mode:</strong></p>
             <p style="margin-top: 10px;">Click the <strong>"Edit"</strong> button in the view modal to unlock powerful editing:</p>
             <ul style="line-height: 1.8;">
-              <li>✅ <strong>All Text Fields:</strong> Click any text to edit (name, email, phone, LinkedIn, summary, etc.)</li>
-              <li>💼 <strong>Experience Bullets:</strong> Modify job descriptions and achievements</li>
-              <li>🎓 <strong>Education & Certifications:</strong> Update degrees, schools, dates</li>
-              <li>🚀 <strong>Projects:</strong> Edit project descriptions and details</li>
+              <li><strong>All Text Fields:</strong> Click any text to edit (name, email, phone, LinkedIn, summary, etc.)</li>
+              <li><strong>Experience Bullets:</strong> Modify job descriptions and achievements</li>
+              <li><strong>Education & Certifications:</strong> Update degrees, schools, dates</li>
+              <li><strong>Projects:</strong> Edit project descriptions and details</li>
             </ul>
             
-            <p style="margin-top: 20px;"><strong>🔧 Advanced Technical Skills Editing:</strong></p>
+            <p style="margin-top: 20px;"><strong>Advanced Technical Skills Editing:</strong></p>
             <ul style="line-height: 1.8;">
-              <li>📝 <strong>Edit Category Names:</strong> Click skill category names (e.g., "Programming Languages") to rename them</li>
-              <li>💡 <strong>Edit Skills:</strong> Click skill values to add/remove/modify skills</li>
-              <li>➕ <strong>Add Categories:</strong> Click "Add Category" button to create new skill groups</li>
-              <li>🗑️ <strong>Remove Categories:</strong> Delete unwanted skill categories with one click</li>
+              <li><strong>Edit Category Names:</strong> Click skill category names (e.g., "Programming Languages") to rename them</li>
+              <li><strong>Edit Skills:</strong> Click skill values to add/remove/modify skills</li>
+              <li><strong>Add Categories:</strong> Click "Add Category" button to create new skill groups</li>
+              <li><strong>Remove Categories:</strong> Delete unwanted skill categories with one click</li>
             </ul>
             
             <p style="margin-top: 15px; padding: 12px; background: var(--success-bg); border-radius: 6px; border-left: 4px solid #10b981;">
-              💾 <strong>Auto-Save:</strong> Click "Save Changes" to persist all edits to the database. Changes are permanent and will reflect in future downloads!
+              <strong>Auto-Save:</strong> Click "Save Changes" to persist all edits to the database. Changes are permanent and will reflect in future downloads!
             </p>
             
             <p style="margin-top: 15px; padding: 12px; background: var(--bg); border-radius: 6px;">
-              📥 <strong>Download Anytime:</strong> Both Resume and Job Description can be downloaded from the view modal or dashboard menu.
+              <strong>Download Anytime:</strong> Both Resume and Job Description can be downloaded from the view modal or dashboard menu.
             </p>
           </div>
         </div>
 
         <div style="margin-bottom: 30px;">
           <h3 style="color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-            ⚙️ Additional Features
+            Additional Features
           </h3>
           <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-top: 10px;">
             
-            <p><strong>📂 Import/Export JSON:</strong> Reuse your resume data across applications</p>
+            <p><strong>Import/Export JSON:</strong> Reuse your resume data across applications</p>
             <ul style="line-height: 1.8;">
-              <li>💾 <strong>Download JSON:</strong> Export your resume data to save locally</li>
-              <li>📂 <strong>Upload JSON:</strong> Import previously saved data instantly</li>
-              <li>🔄 <strong>Version Control:</strong> Maintain different resume versions for different roles</li>
+              <li><strong>Download JSON:</strong> Export your resume data to save locally</li>
+              <li><strong>Upload JSON:</strong> Import previously saved data instantly</li>
+              <li><strong>Version Control:</strong> Maintain different resume versions for different roles</li>
             </ul>
             
-            <p style="margin-top: 20px;"><strong>🔍 Dashboard Search & Filter:</strong></p>
+            <p style="margin-top: 20px;"><strong>Dashboard Search & Filter:</strong></p>
             <ul style="line-height: 1.8;">
-              <li>🔎 <strong>Search:</strong> Find resumes by company name or job title</li>
-              <li>📊 <strong>Filter by Status:</strong> View All, Completed, Processing, or Failed jobs</li>
-              <li>📅 <strong>Sort by Date:</strong> Most recent resumes appear first</li>
-              <li>🔄 <strong>Real-time Updates:</strong> Dashboard refreshes automatically</li>
+              <li><strong>Search:</strong> Find resumes by company name or job title</li>
+              <li><strong>Filter by Status:</strong> View All, Completed, Processing, or Failed jobs</li>
+              <li><strong>Sort by Date:</strong> Most recent resumes appear first</li>
+              <li><strong>Real-time Updates:</strong> Dashboard refreshes automatically</li>
             </ul>
             
-            <p style="margin-top: 20px;"><strong>👤 User Account Management:</strong></p>
+            <p style="margin-top: 20px;"><strong>User Account Management:</strong></p>
             <ul style="line-height: 1.8;">
-              <li>🔐 <strong>Secure Login:</strong> Your resumes are private and secure</li>
-              <li>👥 <strong>Multi-User:</strong> Each user has isolated resume history</li>
-              <li>🚪 <strong>Logout:</strong> End session securely anytime</li>
-              <li>📊 <strong>Job Limits:</strong> Up to 2 concurrent generations per user</li>
+              <li><strong>Secure Login:</strong> Your resumes are private and secure</li>
+              <li><strong>Multi-User:</strong> Each user has isolated resume history</li>
+              <li><strong>Logout:</strong> End session securely anytime</li>
+              <li><strong>Job Limits:</strong> Up to 2 concurrent generations per user</li>
             </ul>
             
-            <p style="margin-top: 20px;"><strong>🎨 Customization:</strong></p>
+            <p style="margin-top: 20px;"><strong>Customization:</strong></p>
             <ul style="line-height: 1.8;">
-              <li>🌙 <strong>Dark Mode:</strong> Toggle between light/dark themes</li>
-              <li>💫 <strong>Smooth Animations:</strong> Polished UI with transitions</li>
-              <li>📱 <strong>Responsive:</strong> Works on desktop, tablet, and mobile</li>
+              <li><strong>Dark Mode:</strong> Toggle between light/dark themes</li>
+              <li><strong>Smooth Animations:</strong> Polished UI with transitions</li>
+              <li><strong>Responsive:</strong> Works on desktop, tablet, and mobile</li>
             </ul>
             
-            <p style="margin-top: 20px;"><strong>🔔 Notifications & Feedback:</strong></p>
+            <p style="margin-top: 20px;"><strong>Notifications & Feedback:</strong></p>
             <ul style="line-height: 1.8;">
               <li>✅ <strong>Success Messages:</strong> Confirmation for all actions</li>
               <li>❌ <strong>Error Alerts:</strong> Clear explanations when issues occur</li>
-              <li>⏱️ <strong>Progress Indicators:</strong> Visual feedback during generation</li>
-              <li>🎯 <strong>Status Badges:</strong> Color-coded job statuses</li>
+              <li><strong>Progress Indicators:</strong> Visual feedback during generation</li>
+              <li><strong>Status Badges:</strong> Color-coded job statuses</li>
             </ul>
           </div>
         </div>
 
-        <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); padding: 20px; border-radius: 8px; color: white; margin-top: 30px;">
-          <h3 style="margin-top: 0; color: white;">💡 Pro Tips for Best Results</h3>
-          <ul style="line-height: 2;">
-            <li>🎯 <strong>Use Resume + JD Mode:</strong> Better results when you have existing resume data</li>
-            <li>📝 <strong>Complete Job Descriptions:</strong> Paste entire job postings for best AI matching</li>
-            <li>💪 <strong>Action Verbs:</strong> Use Led, Developed, Achieved, Implemented, Increased in bullets</li>
-            <li>📊 <strong>Quantify Everything:</strong> Add numbers, percentages, and metrics (e.g., "Increased sales by 40%")</li>
-            <li>🔄 <strong>Try Multiple Times:</strong> Each generation varies - regenerate if not satisfied</li>
-            <li>✏️ <strong>Edit Mode is Powerful:</strong> Fine-tune AI content, rename skill categories, add new sections</li>
-            <li>💾 <strong>Save Best Versions:</strong> Export winning resumes as JSON to reuse structure</li>
-            <li>🔍 <strong>Review Before Download:</strong> Use view mode to check everything before downloading DOCX</li>
-            <li>🎨 <strong>Customize Skills:</strong> Add niche technologies and tools employers mention</li>
-            <li>� <strong>Track Applications:</strong> Use dashboard to remember which companies you've applied to</li>
-            <li>⚡ <strong>Concurrent Jobs:</strong> Generate 2 resumes at once for different applications</li>
-            <li>🛡️ <strong>Fill Required Fields:</strong> Summary and JD need 50+ characters to pass validation</li>
-          </ul>
-        </div>
-
         <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-top: 30px; border: 2px solid var(--border);">
-          <h3 style="color: var(--primary); margin-top: 0;">⚠️ Important Notes</h3>
+          <h3 style="color: var(--primary); margin-top: 0;">Important Notes</h3>
           <ul style="line-height: 1.8;">
-            <li>⏱️ <strong>Generation Time:</strong> Expect 30-90 seconds per resume</li>
-            <li>🔢 <strong>Concurrent Limits:</strong> Maximum 2 active jobs per user (additional requests queue automatically)</li>
-            <li>✅ <strong>Validation Required:</strong> Summary and Job Description must be 50+ characters</li>
-            <li>💾 <strong>Changes Are Permanent:</strong> Edit mode saves directly to database - no undo!</li>
-            <li>📱 <strong>Browser Required:</strong> Works best in Chrome, Firefox, Safari, or Edge</li>
-            <li>🔒 <strong>Private & Secure:</strong> Your data is isolated per user account</li>
+            <li><strong>Generation Time:</strong> Expect 30-90 seconds per resume</li>
+            <li><strong>Concurrent Limits:</strong> Maximum 2 active jobs per user (additional requests queue automatically)</li>
+            <li><strong>Validation Required:</strong> Summary and Job Description must be 50+ characters</li>
+            <li><strong>Changes Are Permanent:</strong> Edit mode saves directly to database - no undo!</li>
+            <li><strong>Browser Required:</strong> Works best in Chrome, Firefox, Safari, or Edge</li>
+            <li><strong>Private & Secure:</strong> Your data is isolated per user account</li>
           </ul>
-        </div>
-
-        <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 2px solid var(--border);">
-          <p style="color: var(--text-secondary); font-size: 16px;">
-            📖 Need more help? Check the <strong>README.md</strong> file for technical details, API configuration, and troubleshooting.<br>
-            ❓ Questions? Re-open this guide anytime by clicking the <strong>❓ Help</strong> button in the header!
-          </p>
         </div>
 
       </div>
     </div>
     <div class="view-modal-footer">
-      <button class="view-modal-btn success" onclick="closeHelpModal()">Got it! Let's Start</button>
+      <button class="view-modal-btn success" onclick="closeHelpModal()">Let's Start</button>
     </div>
   </div>
 </div>
@@ -470,25 +438,25 @@
     <div id="headerDropdownMenu" class="header-dropdown-menu" style="display: none;">
       <div id="mobileUserInfo" style="display: none; padding: 12px 16px; border-bottom: 1px solid var(--border); margin-bottom: 4px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 20px;">👤</span>
           <span id="mobileUserName" style="font-size: 14px; font-weight: 600; color: var(--text);"></span>
         </div>
       </div>
       <div id="mobileResumeActions" style="display: none;">
-        <button onclick="saveResumeTemplate(); toggleHeaderMenu()">💾 Save Resume</button>
-        <button onclick="triggerResumeUpload(); toggleHeaderMenu()">📤 Upload Resume</button>
-        <button onclick="downloadJSON(); toggleHeaderMenu()">📥 Download JSON</button>
-        <button onclick="downloadWordDoc(); toggleHeaderMenu()">📄 Download Word</button>
-        <button onclick="clearAll(); toggleHeaderMenu()" style="color: #e74c3c;">🗑️ Clear All</button>
+        <button onclick="saveResumeTemplate(); toggleHeaderMenu()">Save Resume</button>
+        <button onclick="triggerResumeUpload(); toggleHeaderMenu()">Upload Resume</button>
+        <button onclick="downloadJSON(); toggleHeaderMenu()">Download JSON</button>
+        <button onclick="downloadWordDoc(); toggleHeaderMenu()">Download Word</button>
+        <button onclick="clearAll(); toggleHeaderMenu()" style="color: #e74c3c;">Clear All</button>
         <div style="border-top: 1px solid var(--border); margin: 4px 0;"></div>
       </div>
-      <button id="headerProfileBtn" onclick="openProfileModal(); toggleHeaderMenu()" style="display: none;">👤 Profile</button>
-      <button onclick="showHelpModal(); toggleHeaderMenu()">❓ Help</button>
-      <button id="headerToggleTheme" onclick="toggleThemeManual(); toggleHeaderMenu()">🌙 Night</button>
-      <button id="headerLogoutBtn" onclick="handleMainLogout()" style="display: none;">🚪 Logout</button>
+      <button id="headerProfileBtn" onclick="openProfileModal(); toggleHeaderMenu()" style="display: none;">Profile</button>
+      <button onclick="showHelpModal(); toggleHeaderMenu()">Help</button>
+      <button id="headerTutorialBtn" onclick="showTutorialWelcome(); toggleHeaderMenu()" style="display: none;">Tutorial</button>
+      <button id="headerToggleTheme" onclick="toggleThemeManual(); toggleHeaderMenu()">Night Mode</button>
+      <button id="headerLogoutBtn" onclick="handleMainLogout()" style="display: none;">Logout</button>
     </div>
     <!-- Hidden original theme button to maintain functionality -->
-    <button id="toggleTheme" style="display: none;">🌙 Dark</button>
+    <button id="toggleTheme" style="display: none;">Dark Mode</button>
   </div>
 </header>
 
@@ -505,21 +473,21 @@
         
         <div class="brand-features">
           <div class="feature-item">
-            <div class="feature-icon">✨</div>
+            <div class="feature-icon"></div>
             <div class="feature-text">
               <h3>Smart Tracking</h3>
               <p>Track all your resume versions in one place</p>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon">🎯</div>
+            <div class="feature-icon"></div>
             <div class="feature-text">
               <h3>AI Optimization</h3>
               <p>Tailor resumes to match job descriptions</p>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon">📄</div>
+            <div class="feature-icon"></div>
             <div class="feature-text">
               <h3>Instant Downloads</h3>
               <p>Export professional resumes anytime</p>
@@ -664,15 +632,32 @@
         <input type="file" id="uploadJSON" accept=".json" style="display: none;">
         <input type="file" id="uploadResume" accept=".pdf,.docx" style="display: none;">
         
-        <!-- Action Buttons - Top Right -->
-        <div class="top-action-buttons">
-          <button id="actionMenuToggle" onclick="toggleActionMenu()" title="Actions" style="font-size: 20px; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">☰</button>
-          <div id="actionDropdownMenu" class="action-dropdown-menu" style="display: none;">
-            <button onclick="saveResumeTemplate(); toggleActionMenu()">💾 Save Resume</button>
-            <button onclick="triggerResumeUpload(); toggleActionMenu()">📤 Upload Resume</button>
-            <button onclick="downloadJSON(); toggleActionMenu()">📥 Download JSON</button>
-            <button onclick="downloadWordDoc(); toggleActionMenu()">📄 Download Word</button>
-            <button onclick="clearAll(); toggleActionMenu()" style="color: #e74c3c;">🗑️ Clear All</button>
+        <!-- Resume Builder Header -->
+        <div class="resume-builder-header">
+          <div class="resume-builder-title">
+            <h2>My Resume</h2>
+            <p>Edit your resume information below</p>
+          </div>
+          <div class="resume-builder-actions">
+            <button class="rb-action-btn" onclick="saveResumeTemplate()">
+              Save
+            </button>
+            <button class="rb-action-btn" onclick="triggerResumeUpload()">
+              Upload
+            </button>
+            <div class="rb-download-dropdown">
+              <button class="rb-action-btn" onclick="toggleResumeDownloadMenu()">
+                Download <span class="dropdown-arrow">▾</span>
+              </button>
+              <div id="resumeDownloadMenu" class="rb-dropdown-menu">
+                <button onclick="downloadWordDoc(); toggleResumeDownloadMenu();">Word Document</button>
+                <button onclick="downloadPDF(); toggleResumeDownloadMenu();">PDF Document</button>
+                <button onclick="downloadJSON(); toggleResumeDownloadMenu();">JSON File</button>
+              </div>
+            </div>
+            <button class="rb-action-btn danger" onclick="confirmClearAll()">
+              Clear
+            </button>
           </div>
         </div>
 
@@ -682,32 +667,25 @@
             <!-- Side Navigation -->
             <div class="form-nav">
               <button type="button" class="form-nav-btn active" onclick="showFormSection('basic')">
-                <span class="icon">📝</span>
-                <span>Basic Info</span>
+                <span class="nav-text">Basic Info</span>
               </button>
               <button type="button" class="form-nav-btn" onclick="showFormSection('contact')">
-                <span class="icon">📞</span>
-                <span>Contact</span>
+                <span class="nav-text">Contact</span>
               </button>
               <button type="button" class="form-nav-btn" onclick="showFormSection('skills')">
-                <span class="icon">🛠️</span>
-                <span>Skills</span>
+                <span class="nav-text">Skills</span>
               </button>
               <button type="button" class="form-nav-btn" onclick="showFormSection('experience')">
-                <span class="icon">💼</span>
-                <span>Experience</span>
+                <span class="nav-text">Experience</span>
               </button>
               <button type="button" class="form-nav-btn" onclick="showFormSection('education')">
-                <span class="icon">🎓</span>
-                <span>Education</span>
+                <span class="nav-text">Education</span>
               </button>
               <button type="button" class="form-nav-btn" onclick="showFormSection('projects')">
-                <span class="icon">🚀</span>
-                <span>Projects</span>
+                <span class="nav-text">Projects</span>
               </button>
               <button type="button" class="form-nav-btn" onclick="showFormSection('certifications')">
-                <span class="icon">🏆</span>
-                <span>Certifications</span>
+                <span class="nav-text">Certifications</span>
               </button>
             </div>
 
@@ -715,62 +693,107 @@
             <div class="form-sections">
               <!-- Basic Information Section -->
               <div id="section-basic" class="form-section-panel active">
-                <h3><span>📝</span> Basic Information</h3>
-                <label>Name</label>
-                <input name="name" placeholder="e.g., Gachibowli Diwakar" required="">
-                
-                <label style="margin-top: 12px;">Summary</label>
-                <textarea name="summary" rows="10" placeholder="Professional summary ..." required=""></textarea>
+                <h3>Basic Information</h3>
+                <div class="form-field">
+                  <label>Full Name</label>
+                  <input name="name" placeholder="e.g., John Doe" required>
+                </div>
+                <div class="form-field">
+                  <label>Professional Summary</label>
+                  <textarea name="summary" rows="8" placeholder="Write a compelling summary of your professional background, key skills, and career objectives..."></textarea>
+                </div>
               </div>
 
               <!-- Contact Information Section -->
               <div id="section-contact" class="form-section-panel">
-                <h3><span>📞</span> Contact Information</h3>
-                <div id="contactList"><div class="entry"><input placeholder="Label (e.g., phone, email, linkedin)" class="contact-key" value="">
-    <input placeholder="Value" class="contact-value" value=""></div></div>
-                <button type="button" class="sub-btn" onclick="addContact()">+ Add Contact Field</button>
+                <h3>Contact Information</h3>
+                <div id="contactList">
+                  <div class="contact-entry">
+                    <input placeholder="Label (e.g., Email, Phone)" class="contact-key" value="">
+                    <input placeholder="Value" class="contact-value" value="">
+                    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
+                  </div>
+                </div>
+                <button type="button" class="add-entry-btn" onclick="addContact()">
+                  <span>+</span> Add Contact
+                </button>
               </div>
 
               <!-- Technical Skills Section -->
               <div id="section-skills" class="form-section-panel">
-                <h3><span>🛠️</span> Technical Skills</h3>
-                <div id="skillsList"><div class="entry"><input placeholder="Category" class="skill-key" value="">
-    <input placeholder="Values (comma-separated)" class="skill-value" value=""></div></div>
-                <button type="button" class="sub-btn" onclick="addSkill()">+ Add Skill</button>
+                <h3>Technical Skills</h3>
+                <div id="skillsList">
+                  <div class="skill-entry">
+                    <input placeholder="Category (e.g., Languages)" class="skill-key" value="">
+                    <input placeholder="Skills (comma-separated)" class="skill-value" value="">
+                    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
+                  </div>
+                </div>
+                <button type="button" class="add-entry-btn" onclick="addSkill()">
+                  <span>+</span> Add Skill Category
+                </button>
               </div>
 
               <!-- Experience Section -->
               <div id="section-experience" class="form-section-panel">
-                <h3><span>💼</span> Experience</h3>
-                <div id="experienceList"><div class="entry"><input placeholder="Company" class="exp-company" value="">
-  <input placeholder="Role" class="exp-role" value="">
-  <input placeholder="Period" class="exp-period" value="">
-  <div class="bullets"><div class="bullet"><input placeholder="Achievement..." class="exp-point" value="">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button></div></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button></div></div>
-                <button type="button" class="sub-btn" onclick="addExperience()">+ Add Experience</button>
+                <h3>Work Experience</h3>
+                <div id="experienceList">
+                  <div class="experience-entry">
+                    <div class="experience-header-inputs">
+                      <input placeholder="Company Name" class="exp-company" value="">
+                      <input placeholder="Job Title" class="exp-role" value="">
+                      <input placeholder="Duration (e.g., Jan 2020 - Present)" class="exp-period" value="">
+                    </div>
+                    <div class="experience-bullets">
+                      <label>Key Achievements & Responsibilities</label>
+                      <div class="bullets">
+                        <div class="bullet-item">
+                          <input placeholder="Describe an achievement or responsibility..." class="exp-point" value="">
+                          <button type="button" class="bullet-remove-btn" onclick="this.parentElement.remove()">✕</button>
+                        </div>
+                      </div>
+                      <button type="button" class="add-bullet-btn" onclick="addBullet(this)">+ Add Point</button>
+                    </div>
+                    <button type="button" class="remove-entry-btn" onclick="this.parentElement.remove()">Remove Experience</button>
+                  </div>
+                </div>
+                <button type="button" class="add-entry-btn" onclick="addExperience()">
+                  <span>+</span> Add Experience
+                </button>
               </div>
 
               <!-- Education Section -->
               <div id="section-education" class="form-section-panel">
-                <h3><span>🎓</span> Education</h3>
-                <div id="educationList"><div class="entry"><input placeholder="Degree" class="edu-degree" value="">
-    <input placeholder="Institution" class="edu-inst" value="">
-    <input placeholder="Year" class="edu-year" value=""></div></div>
-                <button type="button" class="sub-btn" onclick="addEducation()">+ Add Education</button>
+                <h3>Education</h3>
+                <div id="educationList">
+                  <div class="education-entry">
+                    <input placeholder="Degree (e.g., Bachelor of Science)" class="edu-degree" value="">
+                    <input placeholder="Institution" class="edu-inst" value="">
+                    <input placeholder="Year (e.g., 2020)" class="edu-year" value="">
+                    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
+                  </div>
+                </div>
+                <button type="button" class="add-entry-btn" onclick="addEducation()">
+                  <span>+</span> Add Education
+                </button>
               </div>
 
               <!-- Projects Section -->
               <div id="section-projects" class="form-section-panel">
-                <h3><span>🚀</span> Projects</h3>
+                <h3>Projects</h3>
                 <div id="projectsList"></div>
-                <button type="button" class="sub-btn" onclick="addProject()">+ Add Project</button>
+                <button type="button" class="add-entry-btn" onclick="addProject()">
+                  <span>+</span> Add Project
+                </button>
               </div>
 
               <!-- Certifications Section -->
               <div id="section-certifications" class="form-section-panel">
-                <h3><span>🏆</span> Certifications</h3>
+                <h3>Certifications</h3>
                 <div id="certificationsList"></div>
-                <button type="button" class="sub-btn" onclick="addCertification()">+ Add Certification</button>
+                <button type="button" class="add-entry-btn" onclick="addCertification()">
+                  <span>+</span> Add Certification
+                </button>
               </div>
             </div>
           </div>
@@ -778,47 +801,6 @@
 
         <!-- Scroll to Top Button -->
         <button id="scrollToTop" onclick="scrollToTop()">↑</button>
-        
-        <!-- Action Bar (shown in View Resume tab) -->
-        <div class="action-bar" id="actionBar">
-          <input type="file" id="uploadJSON" accept=".json">
-          
-          <!-- Save Template Button -->
-          <button class="action-btn primary" onclick="saveResumeTemplate()">
-            <span class="icon">💾</span>
-            <span>Save Resume</span>
-          </button>
-          
-          <!-- Upload Button -->
-          <button class="action-btn" onclick="triggerUpload()">
-            <span class="icon">📂</span>
-            <span>Upload Resume</span>
-          </button>
-          
-          <!-- Download Group with Dropdown -->
-          <div class="download-group">
-            <div class="download-options" id="downloadOptions">
-              <button class="download-option" onclick="downloadJSON(); toggleDownloadMenu();">
-                <span class="icon">📄</span>
-                <span>Download JSON</span>
-              </button>
-              <button class="download-option" onclick="downloadWordDoc(); toggleDownloadMenu();">
-                <span class="icon">📝</span>
-                <span>Download Word</span>
-              </button>
-            </div>
-            <button class="action-btn" onclick="toggleDownloadMenu()">
-              <span class="icon">⬇️</span>
-              <span>Download</span>
-            </button>
-          </div>
-          
-          <!-- Clear All Button -->
-          <button class="action-btn danger" onclick="clearAll()">
-            <span class="icon">🧹</span>
-            <span>Clear All</span>
-          </button>
-        </div>
         
         <!-- Status Modal Popup -->
         <div id="statusModal" class="modal" style="display:none;z-index:3000;">
@@ -905,7 +887,7 @@
               </div>
               
               <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
-                <span class="btn-icon">🚀</span>
+                <span class="btn-icon"></span>
                 <span class="btn-text">Generate Resume</span>
               </button>
             </div>
@@ -923,38 +905,36 @@
       <div id="jobSearchTabPanel" style="display: none;">
         <div class="job-search-container">
           <div style="text-align: center; margin-bottom: 16px;">
-            <h2 style="margin-bottom: 8px;">🔍 Find Your Next Job</h2>
+            <h2 style="margin-bottom: 8px;">Find Your Next Job</h2>
             <p style="color: var(--text-secondary); margin: 0;">Search thousands of jobs from top companies</p>
           </div>
           
           <!-- All-in-One Search Row -->
           <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
             
-            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="search-field-row">
               
               <!-- Job Title -->
-              <div style="flex: 1.5; min-width: 180px; position: relative;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Job Title *</label>
+              <div class="search-field search-field-xl">
+                <label>Job Title *</label>
                 <input type="text" id="jobSearchTitle" placeholder="e.g., Data Engineer" required
-                  style="width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; box-sizing: border-box;"
                   onfocus="this.style.borderColor='var(--primary)'" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)">
                 <div class="job-title-suggestions" id="jobTitleSuggestions" style="display: none;"></div>
               </div>
               
               <!-- Location -->
-              <div style="flex: 1; min-width: 140px; position: relative;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Location</label>
+              <div class="search-field search-field-lg">
+                <label>Location</label>
                 <input type="text" id="jobSearchLocationCustom" placeholder="City or 'remote'" 
-                  style="width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; box-sizing: border-box;"
                   onfocus="this.style.borderColor='var(--primary)'; showLocationSuggestions(this.value)" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)"
                   oninput="showLocationSuggestions(this.value)">
                 <div class="location-suggestions" id="locationSuggestions" style="display: none;"></div>
               </div>
               
               <!-- Job Type -->
-              <div style="flex: 0.9; min-width: 130px;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Job Type</label>
-                <select id="jobTypeDisplay" style="width: 100%; padding: 10px 8px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; box-sizing: border-box;">
+              <div class="search-field search-field-md">
+                <label>Job Type</label>
+                <select id="jobTypeDisplay">
                   <option value="FULLTIME,PARTTIME,CONTRACTOR,remote">All</option>
                   <option value="FULLTIME">Full-time</option>
                   <option value="PARTTIME">Part-time</option>
@@ -964,9 +944,9 @@
               </div>
               
               <!-- Date Posted -->
-              <div style="flex: 0.8; min-width: 110px;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Date Posted</label>
-                <select id="jobSearchDate" style="width: 100%; padding: 10px 8px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; box-sizing: border-box;">
+              <div class="search-field search-field-sm">
+                <label>Date Posted</label>
+                <select id="jobSearchDate">
                   <option value="all">Any Time</option>
                   <option value="today">Today</option>
                   <option value="3days">Last 3 Days</option>
@@ -976,9 +956,9 @@
               </div>
               
               <!-- API Source -->
-              <div style="flex: 0.9; min-width: 130px;">
-                <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--text-secondary);">Source</label>
-                <select id="jobSearchSource" style="width: 100%; padding: 10px 8px; border: 2px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; box-sizing: border-box;">
+              <div class="search-field search-field-md">
+                <label>Source</label>
+                <select id="jobSearchSource">
                   <option value="jsearch">All Jobs</option>
                   <option value="workday">Workday</option>
                   <option value="lever">Lever</option>
@@ -989,9 +969,9 @@
               </div>
               
               <!-- Search Button -->
-              <div style="flex: 0 0 auto;">
+              <div class="search-field search-field-auto">
                 <button id="searchJobsBtn" class="primary-btn" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; white-space: nowrap; height: 42px;">
-                  🔍 Search
+                  Search
                 </button>
               </div>
               
@@ -1000,7 +980,7 @@
             <!-- Greenhouse Companies Button (shown when greenhouse selected) -->
             <div id="greenhouseToggleRow" style="display: none; margin-top: 12px; text-align: center;">
               <button id="showCompanySelectionBtn" style="padding: 8px 20px; background: var(--card-bg); border: 2px solid var(--primary); color: var(--primary); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='var(--card-bg)'; this.style.color='var(--primary)'">
-                🏢 Select Companies (<span id="selectedCompanyCount">20</span>)
+                Select Companies (<span id="selectedCompanyCount">20</span>)
               </button>
             </div>
 
@@ -1022,7 +1002,7 @@
           <!-- Greenhouse Company Selection (shows when greenhouse source is selected) -->
           <div id="greenhouseCompanySection" style="display: none; background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 2px solid var(--primary); box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h3 style="margin-bottom: 8px; color: var(--primary); font-size: 20px;">🏢 Select Greenhouse Companies</h3>
+              <h3 style="margin-bottom: 8px; color: var(--primary); font-size: 20px;">Select Greenhouse Companies</h3>
               <p style="color: var(--text-secondary); font-size: 14px;">Choose which companies to search - All job type filters above will apply to these searches</p>
             </div>
             
@@ -1106,7 +1086,7 @@
           <!-- Cache Stats Section (hidden by default) -->
           <div class="cache-stats-section" style="margin-top: 30px;">
             <button id="viewCacheStatsBtn" class="secondary-btn" style="display: none;">
-              📊 View Cache Statistics
+              View Cache Statistics
             </button>
             <div id="cacheStatsDisplay" style="display: none; margin-top: 20px; padding: 20px; background: var(--card); border-radius: var(--radius-lg);"></div>
           </div>
@@ -1116,29 +1096,31 @@
       <!-- Email Writer Tab Panel -->
       <div id="emailWriterTabPanel" style="display: none;">
         <div class="email-writer-container">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <p style="color: var(--text-secondary); margin: 0;">Generate professional emails for any career situation</p>
+          <div class="email-header" style="text-align: center; margin-bottom: 28px;">
+            <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">Email Writer</h2>
+            <p style="color: var(--text-secondary); margin: 0; font-size: 15px;">Generate professional emails for any career situation</p>
           </div>
 
           <!-- Email Mode Selector -->
           <div class="email-mode-selector">
             <select id="emailTemplateSelector" onchange="handleEmailTemplateChange(this.value)" class="email-template-select">
               <option value="">Quick Templates</option>
-              <option value="job_application">💼 Job Application</option>
-              <option value="reply">↩️ Reply to Recruiter</option>
-              <option value="followup">📬 Follow-up</option>
-              <option value="thankyou">🙏 Thank You</option>
-              <option value="networking">🤝 Networking</option>
-              <option value="salary_negotiation">💰 Salary Negotiation</option>
-              <option value="resignation">👋 Resignation</option>
-              <option value="referral_request">🔗 Request Referral</option>
-              <option value="decline_offer">❌ Decline Offer</option>
-              <option value="feedback_request">📊 Request Feedback</option>
-              <option value="interview_scheduling">📅 Schedule Interview</option>
+              <option value="cover_letter">Cover Letter</option>
+              <option value="job_application">Job Application</option>
+              <option value="reply">Reply to Recruiter</option>
+              <option value="followup">Follow-up</option>
+              <option value="thankyou">Thank You</option>
+              <option value="networking">Networking</option>
+              <option value="salary_negotiation">Salary Negotiation</option>
+              <option value="resignation">Resignation</option>
+              <option value="referral_request">Request Referral</option>
+              <option value="decline_offer">Decline Offer</option>
+              <option value="feedback_request">Request Feedback</option>
+              <option value="interview_scheduling">Schedule Interview</option>
             </select>
             
             <button class="email-custom-btn" onclick="showCustomEmailMode()">
-              ✨ Custom Email (Any Type)
+              Custom Email
             </button>
           </div>
 
@@ -1153,13 +1135,12 @@
           </div>
 
           <!-- Email History -->
-          <div class="email-history" style="margin-top: 40px;">
-            <h3 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-              <span>📜</span> 
-              <span>Recent Emails (This Session)</span>
-              <span style="font-size: 14px; color: var(--text-secondary); font-weight: normal;">(Cleared on logout)</span>
+          <div class="email-history-section">
+            <h3>
+              <span>Recent Emails</span>
+              <span class="subtitle">(Session only)</span>
             </h3>
-            <div id="emailHistoryList" style="display: grid; gap: 12px;">
+            <div id="emailHistoryList" class="email-history-list">
               <!-- History items will be added here -->
             </div>
           </div>
@@ -1186,8 +1167,8 @@
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="font-size: 13px; color: var(--text-secondary);">Show:</span>
               <select id="pageSizeSelect" onchange="changePageSize()" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
               </select>
@@ -1196,11 +1177,11 @@
           
           <!-- Filter Section -->
           <div style="padding: 0 24px 16px 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-            <input type="text" id="filterCompany" placeholder="🔍 Filter by Company" 
+            <input type="text" id="filterCompany" placeholder="Filter by Company" 
               oninput="filterDashboardTable()" 
               style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; flex: 1; min-width: 150px;">
             
-            <input type="text" id="filterJobTitle" placeholder="🔍 Filter by Job Title" 
+            <input type="text" id="filterJobTitle" placeholder="Filter by Job Title" 
               oninput="filterDashboardTable()" 
               style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; flex: 1; min-width: 150px;">
             
@@ -1246,6 +1227,12 @@
               </tbody>
             </table>
           </div>
+          
+          <!-- Mobile Cards View (hidden on desktop) -->
+          <div class="mobile-resume-cards" id="mobileResumeCards" style="display: none;">
+            <!-- Mobile cards will be rendered here -->
+          </div>
+          
           <div class="pagination-container" id="paginationContainer">
             <!-- Pagination will be loaded here -->
           </div>
@@ -1327,7 +1314,7 @@
         <span class="faq-icon">▼</span>
       </button>
       <div class="faq-answer">
-        Yes! Use the floating "Download JSON" button (💾) to save your resume data as a JSON file. Later, use "Upload JSON" (📂) to reload all your information instantly. This lets you maintain multiple resume versions for different roles.
+        Yes! Use the floating "Download JSON" button to save your resume data as a JSON file. Later, use "Upload JSON" to reload all your information instantly. This lets you maintain multiple resume versions for different roles.
       </div>
     </div>
 
@@ -1436,6 +1423,19 @@
   // Track active resume generation requests
   const activeRequests = new Map();
   
+  /* ---------- API & DASHBOARD CONFIG (declared early to avoid TDZ) ---------- */
+  const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5001'
+    : '';
+  let dashboardCredentials = null;
+  let dashboardPollIntervals = {};
+  let currentUsername = null;
+  let currentPassword = null;
+  let dashboardPageSize = 10;
+  let currentPage = 1;
+  let totalJobs = 0;
+  let allDashboardJobs = [];
+  
   /* ---------- THEME TOGGLE ---------- */
   function toggleThemeManual() {
     const dark = document.body.getAttribute('data-theme') === 'dark';
@@ -1447,10 +1447,10 @@
     const themeBtn = document.getElementById('toggleTheme');
     const headerToggleTheme = document.getElementById('headerToggleTheme');
     if (themeBtn) {
-      themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
+      themeBtn.textContent = dark ? 'Night Mode' : 'Day Mode';
     }
     if (headerToggleTheme) {
-      headerToggleTheme.textContent = dark ? '🌙 Night' : '☀️ Day';
+      headerToggleTheme.textContent = dark ? 'Night Mode' : 'Day Mode';
     }
   }
   
@@ -1670,6 +1670,63 @@
   }
 
   /* ---------- FORM SECTION NAVIGATION ---------- */
+  
+  // New accordion toggle function
+  function toggleResumeSection(sectionId) {
+    const body = document.getElementById(`body-${sectionId}`);
+    const card = document.getElementById(`card-${sectionId}`);
+    const header = card.querySelector('.section-card-header');
+    const icon = header.querySelector('.section-toggle-icon');
+    
+    if (body.classList.contains('active')) {
+      // Close this section
+      body.classList.remove('active');
+      icon.style.transform = 'rotate(0deg)';
+    } else {
+      // Open this section
+      body.classList.add('active');
+      icon.style.transform = 'rotate(180deg)';
+    }
+  }
+  
+  // Function to expand all sections
+  function expandAllSections() {
+    document.querySelectorAll('.section-card-body').forEach(body => {
+      body.classList.add('active');
+    });
+    document.querySelectorAll('.section-toggle-icon').forEach(icon => {
+      icon.style.transform = 'rotate(180deg)';
+    });
+  }
+  
+  // Function to collapse all sections
+  function collapseAllSections() {
+    document.querySelectorAll('.section-card-body').forEach(body => {
+      body.classList.remove('active');
+    });
+    document.querySelectorAll('.section-toggle-icon').forEach(icon => {
+      icon.style.transform = 'rotate(0deg)';
+    });
+  }
+  
+  // Scroll to top function
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Show/hide scroll to top button
+  window.addEventListener('scroll', function() {
+    const scrollBtn = document.getElementById('scrollToTop');
+    if (scrollBtn) {
+      if (window.scrollY > 300) {
+        scrollBtn.classList.add('visible');
+      } else {
+        scrollBtn.classList.remove('visible');
+      }
+    }
+  });
+  
+  // Legacy function for old nav
   function showFormSection(sectionId) {
     // Hide all sections
     document.querySelectorAll('.form-section-panel').forEach(panel => {
@@ -1747,7 +1804,7 @@
   /* ---------- FORM BUILDERS ---------- */
   function addContact(k='',v=''){
     const d=document.createElement('div');
-    d.className='entry';
+    d.className='contact-entry';
     // Determine placeholder based on key
     let valuePlaceholder = 'Value';
     if (k === 'Phone') valuePlaceholder = '+1 999 999 9999';
@@ -1758,52 +1815,74 @@
 
     d.innerHTML=`<input placeholder="Label (Phone, Email, LinkedIn, Portfolio)" class="contact-key" value="${k}" ${k ? 'readonly' : ''}>
     <input placeholder="${valuePlaceholder}" class="contact-value" value="${v}">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
+    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('contactList').appendChild(d);
   }
-  function addSkill(k='',v=''){const d=document.createElement('div');
-    d.className='entry';d.innerHTML=`<input placeholder="Category" class="skill-key" value="${k}">
-    <input placeholder="Values (comma-separated)" class="skill-value" value="${v}">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
-    document.getElementById('skillsList').appendChild(d);}
-  function addExperience(exp=null){const d=document.createElement('div');
-  d.className='entry';d.innerHTML=`<input placeholder="Company" class="exp-company" value="${exp?.company||''}">
-  <input placeholder="Role" class="exp-role" value="${exp?.role||''}">
-  <input placeholder="Period" class="exp-period" value="${exp?.period||''}">
-  <div class="bullets"></div><button type="button" class="sub-btn" onclick="addBullet(this)">+ Add Bullet</button>
-  <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Experience</button>`;
-  document.getElementById('experienceList').appendChild(d);
-  const bulletsDiv = d.querySelector('.bullets');
-  let pts = Array.isArray(exp?.points) ? exp.points : [''];
-  // If no points, add one empty bullet
-  if (!pts.length) pts = [''];
-  // Pass the bulletsDiv directly to addBullet for correct population
-  pts.forEach(p => addBullet(bulletsDiv, p));
+  
+  function addSkill(k='',v=''){
+    const d=document.createElement('div');
+    d.className='skill-entry';
+    d.innerHTML=`<input placeholder="Category (e.g., Languages)" class="skill-key" value="${k}">
+    <input placeholder="Skills (comma-separated)" class="skill-value" value="${v}">
+    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
+    document.getElementById('skillsList').appendChild(d);
   }
-  function addBullet(btn,text=''){const b=document.createElement('div');b.className='bullet';
-    b.innerHTML=`<input placeholder="Achievement..." class="exp-point" value="${text||''}">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
-    // If btn is a .bullets container, append directly; else fallback to previous logic
+  
+  function addExperience(exp=null){
+    const d=document.createElement('div');
+    d.className='experience-entry';
+    d.innerHTML=`<div class="experience-header-inputs">
+      <input placeholder="Company Name" class="exp-company" value="${exp?.company||''}">
+      <input placeholder="Job Title" class="exp-role" value="${exp?.role||''}">
+      <input placeholder="Duration (e.g., Jan 2020 - Present)" class="exp-period" value="${exp?.period||''}">
+    </div>
+    <div class="experience-bullets">
+      <label>Key Achievements & Responsibilities</label>
+      <div class="bullets"></div>
+      <button type="button" class="add-bullet-btn" onclick="addBullet(this)">+ Add Point</button>
+    </div>
+    <button type="button" class="remove-entry-btn" onclick="this.parentElement.remove()">Remove Experience</button>`;
+    document.getElementById('experienceList').appendChild(d);
+    const bulletsDiv = d.querySelector('.bullets');
+    let pts = Array.isArray(exp?.points) ? exp.points : [''];
+    if (!pts.length) pts = [''];
+    pts.forEach(p => addBullet(bulletsDiv, p));
+  }
+  
+  function addBullet(btn,text=''){
+    const b=document.createElement('div');
+    b.className='bullet-item';
+    b.innerHTML=`<input placeholder="Describe an achievement or responsibility..." class="exp-point" value="${text||''}">
+    <button type="button" class="bullet-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     if (btn && btn.classList && btn.classList.contains('bullets')) {
       btn.appendChild(b);
     } else if (btn && btn.parentElement && btn.parentElement.querySelector('.bullets')) {
       btn.parentElement.querySelector('.bullets').appendChild(b);
     }
-}
-  function addEducation(e=null){const d=document.createElement('div');
-    d.className='entry';d.innerHTML=`<input placeholder="Degree" class="edu-degree" value="${e?.degree||''}">
+  }
+  
+  function addEducation(e=null){
+    const d=document.createElement('div');
+    d.className='education-entry';
+    d.innerHTML=`<input placeholder="Degree (e.g., Bachelor of Science)" class="edu-degree" value="${e?.degree||''}">
     <input placeholder="Institution" class="edu-inst" value="${e?.institution||''}">
-    <input placeholder="Year" class="edu-year" value="${e?.year||''}">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Education</button>`;
-    document.getElementById('educationList').appendChild(d);}
+    <input placeholder="Year (e.g., 2020)" class="edu-year" value="${e?.year||''}">
+    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
+    document.getElementById('educationList').appendChild(d);
+  }
 
   function addProject(proj=null){
     const d=document.createElement('div');
-    d.className='entry';
-    d.innerHTML=`<input placeholder="Project Title" class="proj-title" value="${proj?.title||''}">
-    <div class="bullets"></div>
-    <button type="button" class="sub-btn" onclick="addProjectBullet(this)">+ Add Bullet</button>
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Project</button>`;
+    d.className='experience-entry';
+    d.innerHTML=`<div class="experience-header-inputs" style="grid-template-columns: 1fr;">
+      <input placeholder="Project Title" class="proj-title" value="${proj?.title||''}">
+    </div>
+    <div class="experience-bullets">
+      <label>Project Details</label>
+      <div class="bullets"></div>
+      <button type="button" class="add-bullet-btn" onclick="addProjectBullet(this)">+ Add Detail</button>
+    </div>
+    <button type="button" class="remove-entry-btn" onclick="this.parentElement.remove()">Remove Project</button>`;
     document.getElementById('projectsList').appendChild(d);
     const bulletsDiv = d.querySelector('.bullets');
     let pts = Array.isArray(proj?.bullets) ? proj.bullets : [''];
@@ -1813,9 +1892,9 @@
 
   function addProjectBullet(btn, text=''){
     const b=document.createElement('div');
-    b.className='bullet';
+    b.className='bullet-item';
     b.innerHTML=`<input placeholder="Project detail..." class="proj-point" value="${text||''}">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑</button>`;
+    <button type="button" class="bullet-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     if (btn && btn.classList && btn.classList.contains('bullets')) {
       btn.appendChild(b);
     } else if (btn && btn.parentElement && btn.parentElement.querySelector('.bullets')) {
@@ -1825,11 +1904,11 @@
 
   function addCertification(cert=null){
     const d=document.createElement('div');
-    d.className='entry';
+    d.className='education-entry';
     d.innerHTML=`<input placeholder="Certification Name" class="cert-name" value="${cert?.name||''}">
     <input placeholder="Issuing Organization" class="cert-org" value="${cert?.organization||''}">
     <input placeholder="Year" class="cert-year" value="${cert?.year||''}">
-    <button class="remove-btn" onclick="this.parentElement.remove()">🗑 Remove Certification</button>`;
+    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('certificationsList').appendChild(d);
   }
 
@@ -1838,16 +1917,17 @@
     const f=document.getElementById('resumeForm');
     const resume_data = {name:f.name.value,contact:{},summary:f.summary.value,
       technical_skills:{},experience:[],education:[],projects:[],certifications:[]};
-    document.querySelectorAll('#contactList .entry').forEach(x=>{
+    // Support both old (.entry) and new (.contact-entry) classes
+    document.querySelectorAll('#contactList .contact-entry, #contactList .entry').forEach(x=>{
       const k=x.querySelector('.contact-key').value.trim(),v=x.querySelector('.contact-value').value.trim();if(k&&v)resume_data.contact[k.toLowerCase()]=v;});
-    document.querySelectorAll('#skillsList .entry').forEach(x=>{
+    document.querySelectorAll('#skillsList .skill-entry, #skillsList .entry').forEach(x=>{
       const k=x.querySelector('.skill-key').value.trim(),v=x.querySelector('.skill-value').value.trim();
       if(k&&v){
         // Convert comma-separated string to array
         resume_data.technical_skills[k]=v.split(',').map(s=>s.trim()).filter(Boolean);
       }
     });
-    document.querySelectorAll('#experienceList .entry').forEach(x=>{
+    document.querySelectorAll('#experienceList .experience-entry, #experienceList .entry').forEach(x=>{
       const expEntry = {
         company:x.querySelector('.exp-company').value.trim(),
         role:x.querySelector('.exp-role').value.trim(),
@@ -1859,7 +1939,7 @@
         resume_data.experience.push(expEntry);
       }
     });
-    document.querySelectorAll('#educationList .entry').forEach(x=>{
+    document.querySelectorAll('#educationList .education-entry, #educationList .entry').forEach(x=>{
       const eduEntry = {
         degree:x.querySelector('.edu-degree').value.trim(),
         institution:x.querySelector('.edu-inst').value.trim(),
@@ -1870,7 +1950,7 @@
         resume_data.education.push(eduEntry);
       }
     });
-    document.querySelectorAll('#projectsList .entry').forEach(x=>{
+    document.querySelectorAll('#projectsList .experience-entry, #projectsList .entry').forEach(x=>{
       const projEntry = {
         title:x.querySelector('.proj-title').value.trim(),
         bullets:Array.from(x.querySelectorAll('.proj-point')).map(i=>i.value.trim()).filter(Boolean)
@@ -1880,7 +1960,7 @@
         resume_data.projects.push(projEntry);
       }
     });
-    document.querySelectorAll('#certificationsList .entry').forEach(x=>{
+    document.querySelectorAll('#certificationsList .education-entry, #certificationsList .entry').forEach(x=>{
       const certEntry = {
         name:x.querySelector('.cert-name').value.trim(),
         organization:x.querySelector('.cert-org').value.trim(),
@@ -2210,28 +2290,28 @@
       if (data.contact.email) {
         html += `<div class="contact-item-inline" data-contact-type="email" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
         html += `<span contenteditable="${isEditMode}" data-field="contact.email" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.email}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('email')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Email">🗑️</button>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('email')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Email">Delete</button>`;
         html += `</div>`;
       }
       
       if (data.contact.phone) {
         html += `<div class="contact-item-inline" data-contact-type="phone" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
         html += `<span contenteditable="${isEditMode}" data-field="contact.phone" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.phone}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('phone')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Phone">🗑️</button>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('phone')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Phone">Delete</button>`;
         html += `</div>`;
       }
       
       if (data.contact.linkedin) {
         html += `<div class="contact-item-inline" data-contact-type="linkedin" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">🔗 ${data.contact.linkedin}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('linkedin')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete LinkedIn">🗑️</button>`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.linkedin}</span>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('linkedin')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete LinkedIn">Delete</button>`;
         html += `</div>`;
       }
       
       if (data.contact.location) {
         html += `<div class="contact-item-inline" data-contact-type="location" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
         html += `<span contenteditable="${isEditMode}" data-field="contact.location" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">� ${data.contact.location}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('location')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Location">🗑️</button>`;
+        if (isEditMode) html += `<button onclick="deleteContactItem('location')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Location">Delete</button>`;
         html += `</div>`;
       }
       
@@ -2242,7 +2322,7 @@
           html += `<div class="contact-item-inline" data-contact-type="${key}" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
           html += `<strong style="color: var(--text-secondary); margin-right: 4px;">${displayLabel}:</strong>`;
           html += `<span contenteditable="${isEditMode}" data-field="contact.${key}" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${value}</span>`;
-          if (isEditMode) html += `<button onclick="deleteContactItem('${key}')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete ${displayLabel}">🗑️</button>`;
+          if (isEditMode) html += `<button onclick="deleteContactItem('${key}')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete ${displayLabel}">Delete</button>`;
           html += `</div>`;
         }
       }
@@ -2256,7 +2336,7 @@
     }
     
     if (data.technical_skills) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Technical Skills ${isEditMode ? '<button onclick="addSkillCategory()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">➕ Add Category</button>' : ''}</h3>`;
+      html += `<h3 style="color: var(--primary); margin-top: 20px;">Technical Skills ${isEditMode ? '<button onclick="addSkillCategory()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Category</button>' : ''}</h3>`;
       html += '<div id="technicalSkillsContainer">';
       let skillIndex = 0;
       for (const [category, skills] of Object.entries(data.technical_skills)) {
@@ -2267,7 +2347,7 @@
           html += `<span contenteditable="${isEditMode}" data-field="technical_skills.${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${skills.join(', ')}</span>`;
           html += `</p>`;
           if (isEditMode) {
-            html += `<button onclick="removeSkillCategory('${category}')" style="padding: 4px 8px; font-size: 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">🗑️</button>`;
+            html += `<button onclick="removeSkillCategory('${category}')" style="padding: 4px 8px; font-size: 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>`;
           }
           html += `</div>`;
           skillIndex++;
@@ -2453,7 +2533,7 @@
       // Send update to server
       const resultDiv = document.getElementById('result');
       if (resultDiv) {
-        resultDiv.textContent = '💾 Saving changes...';
+        resultDiv.textContent = 'Saving changes...';
         resultDiv.style.display = 'block';
       }
       
@@ -2496,7 +2576,7 @@
 
   async function copyJobDescription(requestId) {
     try {
-      showDashMessage('📋 Copying job description...', 'info');
+      showDashMessage('Copying job description...', 'info');
       
       const response = await fetch(`/api/jobs/${requestId}/download-jd`, {
         headers: {
@@ -2577,6 +2657,54 @@
 
   function closeViewModal() {
     document.getElementById('viewModal').style.display = 'none';
+  }
+
+  // Generate cover letter from a completed job in dashboard
+  async function generateCoverLetterFromJob(requestId, company, title) {
+    try {
+      showNotification('Loading job details for cover letter...', 'info');
+      
+      // Fetch the job description
+      const response = await fetch(`/api/jobs/${requestId}/download-jd`, {
+        headers: {
+          'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword)
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to load job description');
+      
+      const jobDescription = await response.text();
+      
+      // Switch to Email Writer tab
+      switchTab('emailwriter');
+      
+      // Wait for tab to be active, then render the cover letter form with pre-filled data
+      setTimeout(() => {
+        // Render cover letter form
+        renderTemplateForm('cover_letter');
+        
+        // Pre-fill the form fields after a short delay
+        setTimeout(() => {
+          const companyInput = document.getElementById('emailCompany');
+          const titleInput = document.getElementById('emailJobTitle');
+          const jdInput = document.getElementById('emailJD');
+          
+          if (companyInput) companyInput.value = company;
+          if (titleInput) titleInput.value = title;
+          if (jdInput) jdInput.value = jobDescription;
+          
+          // Reset template selector to show cover letter is selected
+          const selector = document.getElementById('emailTemplateSelector');
+          if (selector) selector.value = 'cover_letter';
+          
+          showNotification('✅ Cover letter form ready! Click "Generate Cover Letter" to create it.', 'success');
+        }, 100);
+      }, 200);
+      
+    } catch (error) {
+      console.error('Error preparing cover letter:', error);
+      showNotification('❌ Failed to load job details: ' + error.message, 'error');
+    }
   }
 
   // Close modal when clicking outside
@@ -2693,7 +2821,8 @@
       // New format: structured object
       Object.entries(contact).forEach(([k, v]) => addContact(k, v));
     }
-    if (document.querySelectorAll('#contactList .entry').length === 0) {
+    // Support both old (.entry) and new (.contact-entry) class names
+    if (document.querySelectorAll('#contactList .contact-entry, #contactList .entry').length === 0) {
       addContact(); // Add empty field if no contact data
     }
     
@@ -2744,7 +2873,7 @@
     const { resume_data } = buildJSON();
     const blob=new Blob([JSON.stringify(resume_data,null,2)],{type:"application/json"});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download="resume_data.json";a.click();URL.revokeObjectURL(a.href);showResult('💾 Resume JSON Downloaded');}
+    a.download="resume_data.json";a.click();URL.revokeObjectURL(a.href);showResult('Resume JSON Downloaded');}
 
   async function downloadWordDoc() {
     try {
@@ -2759,7 +2888,7 @@
       }
       
       // Show loading message
-      showResult('⏳ Generating Word document...');
+      showResult('Generating Word document...');
       
       const response = await fetch('/create_resume', {
         method: 'POST',
@@ -2794,6 +2923,58 @@
       
     } catch (error) {
       console.error('Word generation failed:', error);
+      showResult(`❌ Error: ${error.message}`);
+    }
+  }
+
+  async function downloadPDF() {
+    try {
+      console.log('Generating PDF document from current resume data...');
+      
+      const { resume_data } = buildJSON();
+      
+      // Validate resume data
+      if (!resume_data.name || resume_data.name.trim() === '') {
+        showNotification('⚠️ Please enter your name before generating a PDF document.', 'warning');
+        return;
+      }
+      
+      // Show loading message
+      showResult('Generating PDF document...');
+      
+      const response = await fetch('/create_resume_pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ resume_data })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Failed to generate document' }));
+        throw new Error(error.detail || 'Failed to generate PDF document');
+      }
+      
+      // Get the blob from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${resume_data.name.replace(/\s+/g, '_')}_Resume.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showResult('✅ PDF document downloaded!');
+      console.log('PDF document generated successfully');
+      
+    } catch (error) {
+      console.error('PDF generation failed:', error);
       showResult(`❌ Error: ${error.message}`);
     }
   }
@@ -3101,7 +3282,7 @@
     
     // Show queue status if there are more items
     if (keywordReviewQueue.length > 0) {
-      showToast(`📋 ${keywordReviewQueue.length} more keyword review(s) in queue`, 'info');
+      showToast(`${keywordReviewQueue.length} more keyword review(s) in queue`, 'info');
     }
     
     // Debug logging
@@ -3574,14 +3755,14 @@
       console.log(`[REGENERATE][${uiRequestId}] Starting keyword regeneration for backend request:`, backendRequestId);
       
       // Update progress in UI
-      updateRequestProgress(uiRequestId, 20, '🔄 Regenerating keywords...');
-      showToast('🔄 Regenerating keywords...', 'info');
+      updateRequestProgress(uiRequestId, 20, 'Regenerating keywords...');
+      showToast('Regenerating keywords...', 'info');
       
       // Disable the regenerate button to prevent multiple clicks
       const regenerateBtn = document.querySelector('#keywordReviewModal button[onclick="regenerateKeywords()"]');
       if (regenerateBtn) {
         regenerateBtn.disabled = true;
-        regenerateBtn.textContent = '⏳ Regenerating...';
+        regenerateBtn.textContent = 'Regenerating...';
       }
       
       const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -3615,28 +3796,28 @@
       // Update the modal with new keywords
       updateKeywordReviewModal(result.keywords);
       
-      updateRequestProgress(uiRequestId, 25, '✨ Keywords regenerated - Review updated');
-      showToast('✨ Keywords regenerated successfully!', 'success');
+      updateRequestProgress(uiRequestId, 25, 'Keywords regenerated - Review updated');
+      showToast('Keywords regenerated successfully!', 'success');
       
       // Re-enable the button
       if (regenerateBtn) {
         regenerateBtn.disabled = false;
-        regenerateBtn.textContent = '🔄 Regenerate Keywords';
+        regenerateBtn.textContent = 'Regenerate Keywords';
       }
       
     } catch (error) {
       console.error('[REGENERATE] Error:', error);
-      showToast('❌ Failed to regenerate keywords: ' + error.message, 'error');
+      showToast('Failed to regenerate keywords: ' + error.message, 'error');
       
       // Re-enable the button on error
       const regenerateBtn = document.querySelector('#keywordReviewModal button[onclick="regenerateKeywords()"]');
       if (regenerateBtn) {
         regenerateBtn.disabled = false;
-        regenerateBtn.textContent = '🔄 Regenerate Keywords';
+        regenerateBtn.textContent = 'Regenerate Keywords';
       }
       
       // Reset progress
-      updateRequestProgress(uiRequestId, 25, '⚠️ Regeneration failed - Review original keywords');
+      updateRequestProgress(uiRequestId, 25, 'Regeneration failed - Review original keywords');
     }
   }
   
@@ -3794,8 +3975,35 @@
   }
   
 
+  // Toggle resume download menu
+  function toggleResumeDownloadMenu() {
+    const menu = document.getElementById('resumeDownloadMenu');
+    if (menu) {
+      menu.classList.toggle('show');
+    }
+  }
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.rb-download-dropdown')) {
+      const menu = document.getElementById('resumeDownloadMenu');
+      if (menu) menu.classList.remove('show');
+    }
+  });
+  
+  // Confirm before clearing all
+  async function confirmClearAll() {
+    const confirmed = await customConfirm(
+      'Clear All Data',
+      'Are you sure you want to clear all resume data? This action cannot be undone.'
+    );
+    if (confirmed) {
+      clearAll();
+    }
+  }
+
   function clearAll(){
-    // Reset form without confirmation since it's reversible
+    // Reset form
     document.getElementById('resumeForm').reset();
     document.getElementById('contactList').innerHTML='';
     document.getElementById('skillsList').innerHTML='';
@@ -3960,12 +4168,11 @@
     resumeFormContainer.classList.remove('active');
     jobDescTabPanel.classList.remove('active');
     jobSearchTabPanel.style.display = 'none';
+    jobSearchTabPanel.style.visibility = 'hidden'; // Safari fix
     emailWriterTabPanel.style.display = 'none';
+    emailWriterTabPanel.style.visibility = 'hidden'; // Safari fix
     dashboardTabPanel.classList.remove('active');
 
-    // Get action bar
-    const actionBar = document.getElementById('actionBar');
-    
     // Force hide job description elements when not in JD tab
     const jdTextarea = document.getElementById('jobDescriptionTab');
     const jdContainer = document.querySelector('.jd-textarea-container');
@@ -3974,28 +4181,28 @@
     if (tab === 'resume') {
       tabResumeBtn.classList.add('active');
       resumeFormContainer.classList.add('active');
-      actionBar.style.display = 'flex'; // Show in View Resume
+      resumeFormContainer.style.visibility = 'visible'; // Safari fix
       // Hide JD elements
       if (jdTextarea) jdTextarea.style.display = 'none';
       if (jdContainer) jdContainer.style.display = 'none';
     } else if (tab === 'jd') {
       tabEditJDBtn.classList.add('active');
       jobDescTabPanel.classList.add('active');
-      actionBar.style.display = 'none'; // Hide in Generate Resume
+      jobDescTabPanel.style.visibility = 'visible'; // Safari fix
       // Show JD elements
       if (jdTextarea) jdTextarea.style.display = 'block';
       if (jdContainer) jdContainer.style.display = 'flex';
     } else if (tab === 'jobsearch') {
       tabJobSearchBtn.classList.add('active');
       jobSearchTabPanel.style.display = 'block';
-      actionBar.style.display = 'none'; // Hide in Job Search
+      jobSearchTabPanel.style.visibility = 'visible'; // Safari fix
       // Hide JD elements
       if (jdTextarea) jdTextarea.style.display = 'none';
       if (jdContainer) jdContainer.style.display = 'none';
     } else if (tab === 'emailwriter') {
       tabEmailWriterBtn.classList.add('active');
       emailWriterTabPanel.style.display = 'block';
-      actionBar.style.display = 'none'; // Hide in Email Writer
+      emailWriterTabPanel.style.visibility = 'visible'; // Safari fix
       // Hide JD elements
       if (jdTextarea) jdTextarea.style.display = 'none';
       if (jdContainer) jdContainer.style.display = 'none';
@@ -4008,7 +4215,7 @@
     } else if (tab === 'dashboard') {
       tabDashboardBtn.classList.add('active');
       dashboardTabPanel.classList.add('active');
-      actionBar.style.display = 'none'; // Hide in Dashboard
+      dashboardTabPanel.style.visibility = 'visible'; // Safari fix
       // Hide JD elements
       if (jdTextarea) jdTextarea.style.display = 'none';
       if (jdContainer) jdContainer.style.display = 'none';
@@ -4261,18 +4468,8 @@
   });
 
   /* ---------- DASHBOARD FUNCTIONALITY ---------- */
-  const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5001'
-    : '';
-
-  let dashboardCredentials = null;
-  let dashboardPollIntervals = {};
-  let currentUsername = null;
-  let currentPassword = null;
-  let dashboardPageSize = 20; // Default page size
-  let currentPage = 1; // Current page number
-  let totalJobs = 0; // Total number of jobs
-  let allDashboardJobs = []; // Store all jobs for filtering
+  // Note: All dashboard variables (API_BASE_URL, dashboardCredentials, currentPage, etc.)
+  // are declared at the top of the script to avoid temporal dead zone issues
 
   // Format UTC datetime to local timezone
   function formatLocalDateTime(utcDateString) {
@@ -4919,19 +5116,15 @@
           <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${requestId}')">⋮</button>
           <div class="kebab-dropdown" id="kebab-${requestId}">
             <button class="primary" onclick="viewResumeContent('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
-              <span class="menu-icon">�️</span>
               <span>View Resume</span>
             </button>
             <button class="secondary" onclick="viewJobDescription('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
-              <span class="menu-icon">📋</span>
               <span>View Job Description</span>
             </button>
             <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
-              <span class="menu-icon">📥</span>
               <span>Download Resume</span>
             </button>
             <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${requestId}'); closeKebabMenu('${requestId}'); }">
-              <span class="menu-icon">🗑️</span>
               <span>Delete</span>
             </button>
           </div>
@@ -4942,13 +5135,13 @@
                   style="padding: 8px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);"
                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
                   onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.2)'">
-            📝 Review Keywords
+            Review Keywords
           </button>
         `;
       } else if (data.status === 'failed') {
         actionsCell.innerHTML = `
           <div style="color: var(--danger); font-size: 0.85em; padding: 6px; background: #fed7d7; border-radius: 4px;" title="${data.error_message || 'Generation failed'}">
-            ❌ Error
+            Error
           </div>
         `;
       }
@@ -4995,32 +5188,32 @@
 
       if (data.count === 0) {
         const noResultsMsg = isFiltered 
-          ? '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">🔍 No resumes match your search</p><p style="margin: 8px 0 0 0;">Try different search terms or clear filters</p></td></tr>'
-          : '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">📄 No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
+          ? '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">No resumes match your search</p><p style="margin: 8px 0 0 0;">Try different search terms or clear filters</p></td></tr>'
+          : '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
         tbody.innerHTML = noResultsMsg;
         return;
       }
 
       tbody.innerHTML = data.jobs.map(job => {
         const applicationStatus = job.application_status || 'resume_generated';
-        const jobLinkHtml = job.job_link ? `<a href="${job.job_link}" target="_blank" title="View Job Posting" style="color: var(--accent); text-decoration: none;">🔗</a>` : '';
+        const jobLinkHtml = job.job_link ? `<a href="${job.job_link}" target="_blank" title="View Job Posting" style="color: var(--accent); text-decoration: none;">Link</a>` : '';
         
         // Determine status display: show resume generation status or application status
         let statusHtml = '';
         if (job.status === 'processing' || job.status === 'pending') {
           statusHtml = `<span class="status-badge status-${job.status}" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">${job.status}</span>`;
         } else if (job.status === 'awaiting_feedback') {
-          statusHtml = `<span class="status-badge status-awaiting_feedback" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">⏸ Awaiting Review</span>`;
+          statusHtml = `<span class="status-badge status-awaiting_feedback" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">Awaiting Review</span>`;
         } else if (job.status === 'failed') {
           statusHtml = `<span class="status-badge status-failed" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">❌ Failed</span>`;
         } else if (job.status === 'completed') {
           // Show application status dropdown for completed resumes
           statusHtml = `<select class="application-status-dropdown" data-job-id="${job.job_id}" onchange="updateApplicationStatus(${job.job_id}, this.value)" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--background); color: var(--text-primary); font-size: 0.85em; cursor: pointer;">
-              <option value="resume_generated" ${applicationStatus === 'resume_generated' ? 'selected' : ''}>📝 Resume Generated</option>
+              <option value="resume_generated" ${applicationStatus === 'resume_generated' ? 'selected' : ''}>Resume Generated</option>
               <option value="applied" ${applicationStatus === 'applied' ? 'selected' : ''}>✅ Applied</option>
-              <option value="screening" ${applicationStatus === 'screening' ? 'selected' : ''}>🔍 Screening</option>
-              <option value="interview" ${applicationStatus === 'interview' ? 'selected' : ''}>💼 Interview</option>
-              <option value="offer" ${applicationStatus === 'offer' ? 'selected' : ''}>🎉 Offer</option>
+              <option value="screening" ${applicationStatus === 'screening' ? 'selected' : ''}>Screening</option>
+              <option value="interview" ${applicationStatus === 'interview' ? 'selected' : ''}>Interview</option>
+              <option value="offer" ${applicationStatus === 'offer' ? 'selected' : ''}>Offer</option>
               <option value="rejected" ${applicationStatus === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
             </select>`;
         }
@@ -5042,52 +5235,53 @@
               <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${job.request_id}')">⋮</button>
               <div class="kebab-dropdown" id="kebab-${job.request_id}">
                 <button class="primary" onclick="viewResumeContent('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">👁️</span>
                   <span>View Resume</span>
                 </button>
                 <button class="secondary" onclick="viewJobDescription('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📋</span>
                   <span>View Job Description</span>
                 </button>
+                <button class="secondary" onclick="generateCoverLetterFromJob('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
+                  <span>Cover Letter</span>
+                </button>
                 <button class="secondary" onclick="copyJobDescription('${job.request_id}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📄</span>
                   <span>Copy JD</span>
                 </button>
                 <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
-                  <span class="menu-icon">📥</span>
                   <span>Download Resume</span>
                 </button>
                 <button class="danger" onclick="customConfirm(&quot;Delete this resume?&quot;, &quot;Confirm Delete&quot;).then(confirmed => { if(confirmed) { deleteResume(&quot;${job.request_id}&quot;); closeKebabMenu(&quot;${job.request_id}&quot;); } })">
-                  <span class="menu-icon">🗑️</span>
                   <span>Delete</span>
                 </button>
               </div>
             ` : job.status === 'processing' || job.status === 'pending' ? `
               <button class="sub-btn" style="padding: 6px 12px; font-size: 0.9em; margin-right: 4px;" onclick="checkDashboardStatus('${job.request_id}')">
-                🔄 Refresh
+                Refresh
               </button>
               <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="customConfirm(&quot;Cancel this job?&quot;, &quot;Confirm Cancel&quot;).then(confirmed => { if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
-                ✕ Cancel
+                Cancel
               </button>
             ` : job.status === 'awaiting_feedback' ? `
               <button onclick="resumeKeywordReview('${job.request_id}', '${job.company_name}')" 
                       style="padding: 8px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2); margin-right: 4px;"
                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
                       onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.2)'">
-                📝 Review Keywords
+                Review Keywords
               </button>
               <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="customConfirm(&quot;Cancel this job?&quot;, &quot;Confirm Cancel&quot;).then(confirmed => { if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
-                ✕ Cancel
+                Cancel
               </button>
             ` : `
               <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="console.log('[DELETE BTN] Clicked for:', '${job.request_id}'); customConfirm(&quot;Delete this failed job?&quot;, &quot;Confirm Delete&quot;).then(confirmed => { console.log('[DELETE BTN] Confirmed:', confirmed); if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
-                🗑️ Delete
+                Delete
               </button>
             `}
           </td>
         </tr>
         `;
       }).join('');
+
+      // Render mobile cards for responsive view
+      renderMobileResumeCards(data.jobs);
 
       // Start polling for active jobs
       data.jobs.forEach(job => {
@@ -5102,6 +5296,94 @@
     } catch (error) {
       console.error('Failed to load history:', error);
     }
+  }
+
+  // Render mobile-friendly cards for dashboard
+  function renderMobileResumeCards(jobs) {
+    const container = document.getElementById('mobileResumeCards');
+    if (!container) return;
+    
+    if (!jobs || jobs.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+          <p style="font-size: 1.1em; margin: 0;">No resumes yet</p>
+          <p style="margin: 8px 0 0 0; font-size: 14px;">Start creating your first resume!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = jobs.map(job => {
+      const applicationStatus = job.application_status || 'resume_generated';
+      
+      // Status badge HTML
+      let statusHtml = '';
+      if (job.status === 'processing' || job.status === 'pending') {
+        statusHtml = `<span class="status-badge status-${job.status}">${job.status}</span>`;
+      } else if (job.status === 'awaiting_feedback') {
+        statusHtml = `<span class="status-badge status-awaiting_feedback">Review</span>`;
+      } else if (job.status === 'failed') {
+        statusHtml = `<span class="status-badge status-failed">❌ Failed</span>`;
+      } else if (job.status === 'completed') {
+        const statusLabels = {
+          'resume_generated': 'Generated',
+          'applied': '✅ Applied',
+          'screening': 'Screening',
+          'interview': 'Interview',
+          'offer': 'Offer',
+          'rejected': '❌ Rejected'
+        };
+        statusHtml = `<span class="status-badge status-completed">${statusLabels[applicationStatus] || 'Generated'}</span>`;
+      }
+      
+      // Date formatting
+      const dateStr = job.application_date || job.last_status_update || job.created_at;
+      const formattedDate = dateStr ? formatLocalDateTime(dateStr) : '';
+      
+      // Action buttons based on status
+      let actionsHtml = '';
+      if (job.status === 'completed') {
+        actionsHtml = `
+          <button class="primary-btn" onclick="viewResumeContent('${job.request_id}', '${job.company_name}', '${job.job_title}')">View</button>
+          <button class="secondary-btn" onclick="generateCoverLetterFromJob('${job.request_id}', '${job.company_name}', '${job.job_title}')">Cover Letter</button>
+          <button class="secondary-btn" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}')">Download</button>
+        `;
+      } else if (job.status === 'processing' || job.status === 'pending') {
+        actionsHtml = `
+          <button class="secondary-btn" onclick="checkDashboardStatus('${job.request_id}')">Refresh</button>
+          <button class="danger-btn" style="background: var(--danger); color: white; border: none;" onclick="customConfirm('Cancel this job?', 'Confirm Cancel').then(confirmed => { if(confirmed) deleteResume('${job.request_id}'); })">Cancel</button>
+        `;
+      } else if (job.status === 'awaiting_feedback') {
+        actionsHtml = `
+          <button class="primary-btn" onclick="resumeKeywordReview('${job.request_id}', '${job.company_name}')">Review</button>
+          <button class="danger-btn" style="background: var(--danger); color: white; border: none;" onclick="customConfirm('Cancel?', 'Confirm').then(confirmed => { if(confirmed) deleteResume('${job.request_id}'); })">Cancel</button>
+        `;
+      } else {
+        actionsHtml = `
+          <button class="danger-btn" style="background: var(--danger); color: white; border: none; width: 100%;" onclick="customConfirm('Delete?', 'Confirm').then(confirmed => { if(confirmed) deleteResume('${job.request_id}'); })">Delete</button>
+        `;
+      }
+      
+      return `
+        <div class="mobile-resume-card" data-request-id="${job.request_id}" data-job-id="${job.job_id}">
+          <div class="mobile-card-header">
+            <div>
+              <div class="mobile-card-company">${job.company_name}${job.job_link ? ` <a href="${job.job_link}" target="_blank" style="color: var(--accent);">Link</a>` : ''}</div>
+              <div class="mobile-card-jobtitle">${job.job_title}</div>
+            </div>
+            <div class="mobile-card-status">
+              ${statusHtml}
+            </div>
+          </div>
+          <div class="mobile-card-meta">
+            <span>${formattedDate}</span>
+          </div>
+          <div class="mobile-card-actions">
+            ${actionsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // Download Resume as DOCX (on-the-fly generation)
@@ -5630,7 +5912,7 @@
       // Clear resume history table
       const resumeHistoryBody = document.getElementById('resumeHistoryBody');
       if (resumeHistoryBody) {
-        resumeHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">📄 Loading...</p></td></tr>';
+        resumeHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">Loading...</p></td></tr>';
       }
       
       // Reset pagination
@@ -5666,6 +5948,9 @@
       
       // Auto-load saved resume template
       await loadResumeTemplate();
+      
+      // Initialize tutorial system after login
+      initTutorial();
       
     } catch (error) {
       console.error('Login failed:', error);
@@ -5759,7 +6044,7 @@
     // Clear resume history table
     const resumeHistoryBody = document.getElementById('resumeHistoryBody');
     if (resumeHistoryBody) {
-      resumeHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">📄 No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
+      resumeHistoryBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-secondary);"><p style="font-size: 1.2em; margin: 0;">No resumes yet</p><p style="margin: 8px 0 0 0;">Start creating your first resume!</p></td></tr>';
     }
     
     // Clear result count
@@ -5860,28 +6145,26 @@
   // Show custom email mode (default)
   function showCustomEmailMode() {
     const formHTML = `
-      <div class="email-form custom-mode" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
-        <h3 style="margin-bottom: 8px;">✨ Describe the email you need</h3>
-        <p class="help-text" style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
+      <div class="email-form-card">
+        <h3>Describe the email you need</h3>
+        <p class="help-text">
           Examples: "Email to my manager about taking time off for interview", 
           "Message to alumni requesting coffee chat", "Follow-up after networking event"
         </p>
         
-        <textarea id="customEmailRequest" 
+        <textarea id="customEmailRequest" class="email-input" 
                   placeholder="What email do you need? Be specific about your situation..." 
                   rows="4" 
-                  required
-                  style="width: 100%; box-sizing: border-box; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
+                  required></textarea>
         
-        <textarea id="additionalContext" 
+        <textarea id="additionalContext" class="email-input"
                   placeholder="Additional context (optional): names, dates, specific details..." 
-                  rows="3"
-                  style="width: 100%; box-sizing: border-box; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 16px; resize: vertical;"></textarea>
+                  rows="3"></textarea>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px;">
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
-            <select id="emailTone" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+        <div class="email-form-row">
+          <div class="email-form-group">
+            <label>Tone</label>
+            <select id="emailTone">
               <option value="professional">Professional</option>
               <option value="enthusiastic">Enthusiastic</option>
               <option value="formal">Formal</option>
@@ -5891,9 +6174,9 @@
             </select>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
-            <select id="emailLength" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+          <div class="email-form-group">
+            <label>Length</label>
+            <select id="emailLength">
               <option value="short">Short (0-100 words)</option>
               <option value="medium" selected>Medium (100-150 words)</option>
               <option value="long">Long (150-250 words)</option>
@@ -5901,13 +6184,13 @@
           </div>
         </div>
         
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; cursor: pointer;">
-          <input type="checkbox" id="includeResume" style="width: 18px; height: 18px; cursor: pointer;"> 
-          <span style="font-size: 14px; user-select: none;">Include my resume context (if relevant)</span>
+        <label class="email-checkbox-wrapper">
+          <input type="checkbox" id="includeResume"> 
+          <span>Include my resume context (if relevant)</span>
         </label>
         
-        <button onclick="generateEmail('custom')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
-          ✨ Generate Email
+        <button onclick="generateEmail('custom')" class="email-generate-btn">
+          Generate Email
         </button>
       </div>
     `;
@@ -5927,29 +6210,65 @@
   function renderTemplateForm(type) {
     let formHTML = '';
     
-    if (type === 'job_application') {
+    if (type === 'cover_letter') {
       formHTML = `
-        <div class="email-form" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
-          <h3 style="margin-bottom: 16px;">💼 Job Application Email</h3>
-          <input type="text" id="emailCompany" placeholder="Company Name *" required
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
-          <input type="text" id="emailJobTitle" placeholder="Job Title *" required
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
-          <textarea id="emailJD" placeholder="Paste Job Description *" rows="8" required
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+        <div class="email-form-card">
+          <h3>Cover Letter Generator</h3>
+          <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">Create a personalized cover letter tailored to the job description</p>
+          <input type="text" id="emailCompany" class="email-input" placeholder="Company Name *" required>
+          <input type="text" id="emailJobTitle" class="email-input" placeholder="Job Title *" required>
+          <textarea id="emailJD" class="email-input" placeholder="Paste Job Description *" rows="10" required></textarea>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
-            <div class="form-group">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
-              <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+          <div class="email-form-row">
+            <div class="email-form-group">
+              <label>Tone</label>
+              <select id="emailTone">
+                <option value="professional">Professional</option>
+                <option value="enthusiastic">Enthusiastic</option>
+                <option value="formal">Formal</option>
+                <option value="conversational">Conversational</option>
+              </select>
+            </div>
+            <div class="email-form-group">
+              <label>Length</label>
+              <select id="emailLength">
+                <option value="short">Short (~150 words)</option>
+                <option value="medium" selected>Medium (~250 words)</option>
+                <option value="long">Long (~350 words)</option>
+              </select>
+            </div>
+          </div>
+          
+          <label class="email-checkbox-wrapper">
+            <input type="checkbox" id="includeResume" checked> 
+            <span>Use My Resume Data</span>
+          </label>
+          
+          <button onclick="generateEmail('cover_letter')" class="email-generate-btn">
+            Generate Cover Letter
+          </button>
+        </div>
+      `;
+    } else if (type === 'job_application') {
+      formHTML = `
+        <div class="email-form-card">
+          <h3>Job Application Email</h3>
+          <input type="text" id="emailCompany" class="email-input" placeholder="Company Name *" required>
+          <input type="text" id="emailJobTitle" class="email-input" placeholder="Job Title *" required>
+          <textarea id="emailJD" class="email-input" placeholder="Paste Job Description *" rows="8" required></textarea>
+          
+          <div class="email-form-row">
+            <div class="email-form-group">
+              <label>Tone</label>
+              <select id="emailTone">
                 <option value="professional">Professional</option>
                 <option value="enthusiastic">Enthusiastic</option>
                 <option value="formal">Formal</option>
               </select>
             </div>
-            <div class="form-group">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
-              <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+            <div class="email-form-group">
+              <label>Length</label>
+              <select id="emailLength">
                 <option value="short">Short</option>
                 <option value="medium" selected>Medium</option>
                 <option value="long">Long</option>
@@ -5957,73 +6276,68 @@
             </div>
           </div>
           
-          <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; cursor: pointer;">
-            <input type="checkbox" id="includeResume" checked style="width: 18px; height: 18px; cursor: pointer;"> 
-            <span style="font-size: 14px; user-select: none;">Include Resume Summary</span>
+          <label class="email-checkbox-wrapper">
+            <input type="checkbox" id="includeResume" checked> 
+            <span>Include Resume Summary</span>
           </label>
           
-          <button onclick="generateEmail('job_application')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
-            ✨ Generate Application Email
+          <button onclick="generateEmail('job_application')" class="email-generate-btn">
+            Generate Application Email
           </button>
         </div>
       `;
     } else if (type === 'reply') {
       formHTML = `
-        <div class="email-form" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
-          <h3 style="margin-bottom: 16px;">↩️ Reply to Recruiter</h3>
-          <textarea id="recruiterEmail" placeholder="Paste Recruiter's Email *" rows="10" required
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
-          <textarea id="additionalContext" placeholder="Additional Context (optional)" rows="4"
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+        <div class="email-form-card">
+          <h3>Reply to Recruiter</h3>
+          <textarea id="recruiterEmail" class="email-input" placeholder="Paste Recruiter's Email *" rows="10" required></textarea>
+          <textarea id="additionalContext" class="email-input" placeholder="Additional Context (optional)" rows="4"></textarea>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-            <div class="form-group">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
-              <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+          <div class="email-form-row">
+            <div class="email-form-group">
+              <label>Tone</label>
+              <select id="emailTone">
                 <option value="professional">Professional</option>
                 <option value="enthusiastic">Enthusiastic</option>
                 <option value="conversational">Conversational</option>
               </select>
             </div>
-            <div class="form-group">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
-              <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+            <div class="email-form-group">
+              <label>Length</label>
+              <select id="emailLength">
                 <option value="short" selected>Short</option>
                 <option value="medium">Medium</option>
               </select>
             </div>
           </div>
           
-          <button onclick="generateEmail('reply')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
-            ✨ Generate Reply
+          <button onclick="generateEmail('reply')" class="email-generate-btn">
+                        Generate Reply
           </button>
         </div>
       `;
     } else {
       // Generic template for other types
       formHTML = `
-        <div class="email-form" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
-          <h3 style="margin-bottom: 16px;">${getTemplateTitle(type)}</h3>
-          <input type="text" id="emailCompany" placeholder="Company Name" 
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
-          <input type="text" id="emailJobTitle" placeholder="Job Title"
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px;">
-          <textarea id="additionalContext" placeholder="Additional Context" rows="6"
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; margin-bottom: 12px; resize: vertical;"></textarea>
+        <div class="email-form-card">
+          <h3>${getTemplateTitle(type)}</h3>
+          <input type="text" id="emailCompany" class="email-input" placeholder="Company Name">
+          <input type="text" id="emailJobTitle" class="email-input" placeholder="Job Title">
+          <textarea id="additionalContext" class="email-input" placeholder="Additional Context" rows="6"></textarea>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-            <div class="form-group">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Tone:</label>
-              <select id="emailTone" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+          <div class="email-form-row">
+            <div class="email-form-group">
+              <label>Tone</label>
+              <select id="emailTone">
                 <option value="professional">Professional</option>
                 <option value="enthusiastic">Enthusiastic</option>
                 <option value="formal">Formal</option>
                 <option value="conversational">Conversational</option>
               </select>
             </div>
-            <div class="form-group">
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
-              <select id="emailLength" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+            <div class="email-form-group">
+              <label>Length</label>
+              <select id="emailLength">
                 <option value="short">Short</option>
                 <option value="medium" selected>Medium</option>
                 <option value="long">Long</option>
@@ -6031,8 +6345,8 @@
             </div>
           </div>
           
-          <button onclick="generateEmail('${type}')" class="primary-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border-radius: 8px;">
-            ✨ Generate Email
+          <button onclick="generateEmail('${type}')" class="email-generate-btn">
+            Generate Email
           </button>
         </div>
       `;
@@ -6043,15 +6357,16 @@
   
   function getTemplateTitle(type) {
     const titles = {
-      'followup': '📬 Follow-up Email',
-      'thankyou': '🙏 Thank You Email',
-      'networking': '🤝 Networking Email',
-      'salary_negotiation': '💰 Salary Negotiation',
-      'resignation': '👋 Resignation Email',
-      'referral_request': '🔗 Request Referral',
-      'decline_offer': '❌ Decline Offer',
-      'feedback_request': '📊 Request Feedback',
-      'interview_scheduling': '📅 Schedule Interview'
+      'cover_letter': 'Cover Letter',
+      'followup': 'Follow-up Email',
+      'thankyou': 'Thank You Email',
+      'networking': 'Networking Email',
+      'salary_negotiation': 'Salary Negotiation',
+      'resignation': 'Resignation Email',
+      'referral_request': 'Request Referral',
+      'decline_offer': 'Decline Offer',
+      'feedback_request': 'Request Feedback',
+      'interview_scheduling': 'Schedule Interview'
     };
     return titles[type] || 'Email';
   }
@@ -6059,7 +6374,7 @@
   // Generate email function
   async function generateEmail(type) {
     const outputArea = document.getElementById('emailOutputArea');
-    outputArea.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="display: inline-block; width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 16px; color: var(--text-secondary);">Generating your email...</p></div>';
+    outputArea.innerHTML = '<div class="email-loading"><div class="spinner"></div><p>Generating your email...</p></div>';
     
     let payload = { 
       email_type: type,
@@ -6086,6 +6401,17 @@
       if (!payload.company || !payload.job_title || !payload.jd) {
         outputArea.innerHTML = '';
         showNotification('Please fill in all required fields (Company, Job Title, Job Description)', 'warning');
+        return;
+      }
+    } else if (type === 'cover_letter') {
+      payload.company = document.getElementById('emailCompany')?.value || '';
+      payload.job_title = document.getElementById('emailJobTitle')?.value || '';
+      payload.jd = document.getElementById('emailJD')?.value || '';
+      payload.include_resume = document.getElementById('includeResume')?.checked || false;
+      
+      if (!payload.company || !payload.job_title || !payload.jd) {
+        outputArea.innerHTML = '';
+        showNotification('Please fill in Company, Job Title, and Job Description', 'warning');
         return;
       }
     } else if (type === 'reply') {
@@ -6132,36 +6458,32 @@
       
     } catch (error) {
       console.error('Error generating email:', error);
-      outputArea.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--danger);"><p>❌ Error: ${error.message}</p></div>`;
+      outputArea.innerHTML = `<div class="email-error"><p>Error: ${error.message}</p></div>`;
     }
   }
   
   // Display generated email
   function displayGeneratedEmail(result) {
     const outputHTML = `
-      <div class="generated-email" style="background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">
-        <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-          <span>📧</span> Generated Email
-        </h3>
+      <div class="email-output-card">
+        <h3>Generated Email</h3>
         
-        <div class="email-field" style="margin-bottom: 16px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-secondary);">Subject:</label>
-          <input type="text" id="emailSubject" value="${result.subject.replace(/"/g, '&quot;')}"
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; font-weight: 600;">
+        <div class="email-field-group">
+          <label>Subject</label>
+          <input type="text" id="emailSubject" value="${result.subject.replace(/"/g, '&quot;')}">
         </div>
         
-        <div class="email-field" style="margin-bottom: 20px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-secondary);">Body:</label>
-          <textarea id="emailBody" rows="15"
-            style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; font-family: inherit; resize: vertical;">${result.body}</textarea>
+        <div class="email-field-group">
+          <label>Body</label>
+          <textarea id="emailBody" rows="12">${result.body}</textarea>
         </div>
         
-        <div class="email-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <button onclick="copyEmail()" class="primary-btn" style="flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 120px;">
-            📋 Copy Email
+        <div class="email-action-buttons">
+          <button onclick="copyEmail()" class="btn-primary">
+            Copy Email
           </button>
-          <button onclick="regenerateEmailWithFeedback()" class="secondary-btn" style="flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; min-width: 120px;">
-            🔄 Regenerate
+          <button onclick="regenerateEmailWithFeedback()" class="btn-secondary">
+            Regenerate
           </button>
         </div>
       </div>
@@ -6177,10 +6499,10 @@
     const fullEmail = `Subject: ${subject}\n\n${body}`;
     
     navigator.clipboard.writeText(fullEmail).then(() => {
-      showToast('✅ Email copied to clipboard!', 'success');
+      showToast('Email copied to clipboard!', 'success');
     }).catch(err => {
       console.error('Failed to copy:', err);
-      showToast('❌ Failed to copy email', 'error');
+      showToast('Failed to copy email', 'error');
     });
   }
   
@@ -6297,21 +6619,8 @@
   
   // Helper functions
   function getEmailTypeIcon(type) {
-    const icons = {
-      'custom': '✨',
-      'job_application': '💼',
-      'reply': '↩️',
-      'followup': '📬',
-      'thankyou': '🙏',
-      'networking': '🤝',
-      'salary_negotiation': '💰',
-      'resignation': '👋',
-      'referral_request': '🔗',
-      'decline_offer': '❌',
-      'feedback_request': '📊',
-      'interview_scheduling': '📅'
-    };
-    return icons[type] || '📧';
+    // Return empty string for minimal/clean UI
+    return '';
   }
   
   function getEmailTypeName(type) {
@@ -6482,7 +6791,7 @@
     } finally {
       document.getElementById('jobSearchLoading').style.display = 'none';
       searchJobsBtn.disabled = false;
-      searchJobsBtn.textContent = '🔍 Search Jobs';
+      searchJobsBtn.textContent = 'Search Jobs';
     }
   }
 
@@ -6505,7 +6814,7 @@
         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
           <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-1 13v-2h2v2H9zm0-4V7h2v4H9z"/>
         </svg>
-        <span><strong>⚡ Cached Results</strong> - Loaded from cache (${cacheHits} hits) • Faster & resource-efficient</span>
+        <span><strong>Cached Results</strong> - Loaded from cache (${cacheHits} hits) • Faster & resource-efficient</span>
       </div>
     ` : '';
     
@@ -6580,7 +6889,7 @@
       console.log('[USE_FOR_RESUME] Only snippet available, attempting to fetch full description from:', jobUrl);
       
       try {
-        showResult('🔄 Fetching full job description...', 'info');
+        showResult('Fetching full job description...', 'info');
         
         const response = await fetch('/api/scrape-job', {
           method: 'POST',
@@ -6636,7 +6945,7 @@
     
     const popularSearchesHTML = stats.popular_searches.length > 0 ? `
       <div style="margin-top: 20px;">
-        <h4 style="margin-bottom: 10px;">🔥 Most Popular Searches</h4>
+        <h4 style="margin-bottom: 10px;">Most Popular Searches</h4>
         <div style="display: grid; gap: 10px;">
           ${stats.popular_searches.map(search => `
             <div style="padding: 10px; background: var(--bg); border-radius: var(--radius-md); display: flex; justify-content: space-between;">
@@ -6649,7 +6958,7 @@
     ` : '<p style="margin-top: 20px; color: var(--text-secondary);">No popular searches yet</p>';
     
     display.innerHTML = `
-      <h3 style="margin-bottom: 20px;">📊 Cache Statistics</h3>
+      <h3 style="margin-bottom: 20px;">Cache Statistics</h3>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
         <div class="stat-card">
@@ -6677,7 +6986,7 @@
       
       <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
         <button onclick="clearExpiredCache()" class="secondary-btn" style="margin-right: 10px;">
-          🗑️ Clear Expired Cache
+          Clear Expired Cache
         </button>
         <button onclick="clearAllCache()" class="secondary-btn" style="background: var(--danger, #dc3545); color: white;">
           ⚠️ Clear All Cache
@@ -6763,10 +7072,10 @@
     const display = document.getElementById('cacheStatsDisplay');
     if (display.style.display === 'none') {
       loadCacheStats();
-      this.textContent = '📊 Hide Cache Statistics';
+      this.textContent = 'Hide Cache Statistics';
     } else {
       display.style.display = 'none';
-      this.textContent = '📊 View Cache Statistics';
+      this.textContent = 'View Cache Statistics';
     }
   });
 
@@ -6932,7 +7241,7 @@
       filterInfo.push(dateLabels[datePosted] || datePosted);
     }
     if (filterInfo.length > 0) {
-      showNotification(`🔍 Searching ${selectedCompanies.length} companies with filters: ${filterInfo.join(' | ')}`, 'info');
+      showNotification(`Searching ${selectedCompanies.length} companies with filters: ${filterInfo.join(' | ')}`, 'info');
     }
     
     // Show loading
@@ -6940,7 +7249,7 @@
     document.getElementById('jobSearchResults').innerHTML = '';
     const searchBtn = document.getElementById('searchJobsBtn');
     searchBtn.disabled = true;
-    searchBtn.textContent = '⏳ Searching...';
+    searchBtn.textContent = 'Searching...';
     
     try {
       const searchParams = {
@@ -6980,7 +7289,7 @@
     } finally {
       document.getElementById('jobSearchLoading').style.display = 'none';
       searchBtn.disabled = false;
-      searchBtn.textContent = '🔍 Search Jobs';
+      searchBtn.textContent = 'Search Jobs';
     }
   }
   
@@ -7003,7 +7312,6 @@
     // Create Greenhouse info banner
     const greenhouseInfo = `
       <div class="cache-info-banner" style="background: var(--primary-light, #e3f2fd); color: var(--primary-dark, #1565c0); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-        <span>🏢</span>
         <span><strong>Greenhouse Results</strong> - High-quality jobs from ${companiesSearched.length} tech companies: ${companiesSearched.slice(0,3).join(', ')}${companiesSearched.length > 3 ? ` +${companiesSearched.length-3} more` : ''}</span>
       </div>
     `;
@@ -7080,4 +7388,459 @@
 </div>
 
 <script src="/static/js/main.js?v=23.0"></script>
+
+<!-- Tutorial/Onboarding System -->
+<div class="tutorial-overlay" id="tutorialOverlay"></div>
+
+<div class="tutorial-tooltip" id="tutorialTooltip">
+  <div class="tutorial-header">
+    <div class="tutorial-step-badge">
+      <span class="step-icon">📚</span>
+      <span id="tutorialStepText">Step 1 of 10</span>
+    </div>
+    <button class="tutorial-close-btn" onclick="endTutorial()">✕</button>
+  </div>
+  <div class="tutorial-body">
+    <h3 class="tutorial-title" id="tutorialTitle">
+      <span class="title-icon" id="tutorialTitleIcon"></span>
+      <span id="tutorialTitleText">Welcome!</span>
+    </h3>
+    <p class="tutorial-description" id="tutorialDescription">
+      Let's get started with Resume Builder Pro.
+    </p>
+    <div class="tutorial-tip" id="tutorialTip" style="display: none;">
+      <p id="tutorialTipText"></p>
+    </div>
+  </div>
+  <div class="tutorial-footer">
+    <div class="tutorial-progress" id="tutorialProgress"></div>
+    <div class="tutorial-nav">
+      <button class="tutorial-btn tutorial-btn-secondary" id="tutorialPrevBtn" onclick="prevTutorialStep()">
+        ← Back
+      </button>
+      <button class="tutorial-btn tutorial-btn-primary" id="tutorialNextBtn" onclick="nextTutorialStep()">
+        Next →
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tutorial-welcome-modal" id="tutorialWelcomeModal">
+  <div class="tutorial-welcome-header">
+    <span class="tutorial-welcome-icon">�</span>
+    <h2 class="tutorial-welcome-title">Welcome! Let's Get Started</h2>
+    <p class="tutorial-welcome-subtitle">Follow these simple steps to build your perfect resume</p>
+  </div>
+  <div class="tutorial-welcome-body">
+    <ul class="tutorial-feature-list">
+      <li>
+        <span class="tutorial-feature-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">1</span>
+        <div class="tutorial-feature-text">
+          <strong>Upload Your Resume First!</strong>
+          <span>This is required - upload PDF or Word to parse your info</span>
+        </div>
+      </li>
+      <li>
+        <span class="tutorial-feature-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">2</span>
+        <div class="tutorial-feature-text">
+          <strong>Generate Tailored Resumes</strong>
+          <span>Paste a job description, AI optimizes your resume</span>
+        </div>
+      </li>
+      <li>
+        <span class="tutorial-feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">3</span>
+        <div class="tutorial-feature-text">
+          <strong>Search & Apply for Jobs</strong>
+          <span>Find jobs and generate resumes in one click</span>
+        </div>
+      </li>
+      <li>
+        <span class="tutorial-feature-icon" style="background: linear-gradient(135deg, #ec4899, #db2777); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">4</span>
+        <div class="tutorial-feature-text">
+          <strong>Write Professional Emails</strong>
+          <span>AI-generated follow-ups and cover letters</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="tutorial-welcome-footer">
+    <button class="tutorial-start-btn" onclick="startTutorial()">
+      <span>Take the Tour (1 min)</span>
+    </button>
+    <button class="tutorial-skip-link" onclick="skipTutorialAndUpload()">
+      Skip & Upload Resume Now →
+    </button>
+  </div>
+</div>
+
+<!-- Tutorial now accessible from header menu -->
+
+<script>
+// ===== ONBOARDING TUTORIAL SYSTEM =====
+
+const tutorialSteps = [
+  {
+    target: '.resume-builder-actions',
+    title: 'Step 1: Upload Your Resume',
+    titleIcon: '',
+    description: 'Click the "Upload" button to upload your PDF or Word resume. This is the first and most important step!',
+    tip: 'Your resume will be automatically parsed and all fields will be filled in. You can edit any section after uploading.',
+    position: 'bottom',
+    beforeShow: function() {
+      switchTab('resume');
+    }
+  },
+  {
+    target: '.form-nav',
+    title: 'Step 2: Review Your Resume',
+    titleIcon: '',
+    description: 'After uploading, use this navigation to review and edit each section: Basic Info, Contact, Skills, Experience, Education, Projects, and Certifications.',
+    tip: 'Make sure all your information is correct before generating tailored resumes.',
+    position: 'right',
+    beforeShow: function() {
+      switchTab('resume');
+      // Close the action menu
+      var menu = document.getElementById('actionDropdownMenu');
+      if (menu) menu.style.display = 'none';
+    }
+  },
+  {
+    target: '#tabEditJDBtn',
+    title: 'Step 3: Generate Tailored Resumes',
+    titleIcon: '',
+    description: 'Click this tab to create AI-optimized resumes. Paste a job description and our AI will tailor your resume to match!',
+    tip: 'You must upload your resume first (Step 1) before you can generate tailored versions.',
+    position: 'right'
+  },
+  {
+    target: '#tabJobSearchBtn',
+    title: 'Step 4: Search for Jobs',
+    titleIcon: '',
+    description: 'Search for jobs from multiple platforms. When you find a match, you can generate a resume for that job with one click!',
+    tip: 'Use specific job titles and locations to find the best matches.',
+    position: 'right'
+  },
+  {
+    target: '#tabEmailWriterBtn',
+    title: 'Step 5: Write Emails',
+    titleIcon: '',
+    description: 'Generate professional emails for applications, follow-ups, and networking using AI.',
+    tip: 'Perfect for thank-you notes after interviews!',
+    position: 'right'
+  },
+  {
+    target: '#tabDashboardBtn',
+    title: 'Step 6: Track Everything',
+    titleIcon: '',
+    description: 'View all your generated resumes, saved jobs, and application history in your dashboard.',
+    tip: 'Check your dashboard to download previously generated resumes.',
+    position: 'bottom'
+  },
+  {
+    target: '#menuToggleBtn',
+    title: "You're Ready!",
+    titleIcon: '',
+    description: "That's it! Click the menu button anytime to access Tutorial and other options. Now go upload your resume and get started!",
+    tip: 'Remember: Upload Resume -> Generate Tailored Versions -> Apply for Jobs. Good luck!',
+    position: 'bottom',
+    beforeShow: function() {
+      switchTab('resume');
+      // Open the header menu to show tutorial option
+      setTimeout(function() {
+        var menu = document.getElementById('headerDropdownMenu');
+        if (menu) menu.style.display = 'block';
+      }, 200);
+    },
+    afterHide: function() {
+      var menu = document.getElementById('headerDropdownMenu');
+      if (menu) menu.style.display = 'none';
+    }
+  }
+];
+
+let currentTutorialStep = 0;
+let tutorialActive = false;
+
+function initTutorial() {
+  // Only initialize tutorial if user is logged in (mainApp is visible)
+  const mainApp = document.getElementById('mainApp');
+  if (!mainApp || mainApp.style.display === 'none') {
+    return; // Don't show tutorial on login page
+  }
+  
+  // Show the Tutorial button in header when logged in
+  const headerTutorialBtn = document.getElementById('headerTutorialBtn');
+  if (headerTutorialBtn) {
+    headerTutorialBtn.style.display = 'block';
+  }
+  
+  // Check if user has seen the tutorial before
+  const hasSeenTutorial = localStorage.getItem('resumeBuilderTutorialSeen');
+  
+  if (!hasSeenTutorial) {
+    // Show welcome modal after a short delay for first-time users
+    setTimeout(function() {
+      showTutorialWelcome();
+    }, 1000);
+  }
+  
+  // Render progress dots
+  renderProgressDots();
+}
+
+function renderProgressDots() {
+  const progressContainer = document.getElementById('tutorialProgress');
+  progressContainer.innerHTML = '';
+  
+  for (let i = 0; i < tutorialSteps.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'tutorial-progress-dot';
+    if (i === currentTutorialStep) dot.classList.add('active');
+    if (i < currentTutorialStep) dot.classList.add('completed');
+    progressContainer.appendChild(dot);
+  }
+}
+
+function showTutorialWelcome() {
+  // Only show if logged in
+  const mainApp = document.getElementById('mainApp');
+  if (!mainApp || mainApp.style.display === 'none') {
+    return;
+  }
+  document.getElementById('tutorialOverlay').classList.add('active');
+  document.getElementById('tutorialWelcomeModal').classList.add('active');
+}
+
+function hideTutorialWelcome() {
+  document.getElementById('tutorialWelcomeModal').classList.remove('active');
+}
+
+function startTutorial() {
+  hideTutorialWelcome();
+  tutorialActive = true;
+  currentTutorialStep = 0;
+  showTutorialStep(0);
+}
+
+function skipTutorial() {
+  hideTutorialWelcome();
+  document.getElementById('tutorialOverlay').classList.remove('active');
+  localStorage.setItem('resumeBuilderTutorialSeen', 'true');
+}
+
+function showTutorialStep(stepIndex) {
+  const step = tutorialSteps[stepIndex];
+  
+  // Execute beforeShow callback if exists
+  if (step.beforeShow) {
+    step.beforeShow();
+    // Give the DOM time to update
+    setTimeout(function() { positionTooltip(step); }, 300);
+  } else {
+    positionTooltip(step);
+  }
+}
+
+function positionTooltip(step) {
+  // Remove previous highlight
+  document.querySelectorAll('.tutorial-highlight').forEach(function(el) {
+    el.classList.remove('tutorial-highlight');
+  });
+  
+  const targetElement = document.querySelector(step.target);
+  const tooltip = document.getElementById('tutorialTooltip');
+  const overlay = document.getElementById('tutorialOverlay');
+  
+  if (!targetElement) {
+    console.warn('Tutorial target not found:', step.target);
+    nextTutorialStep();
+    return;
+  }
+  
+  // Highlight target element
+  targetElement.classList.add('tutorial-highlight');
+  
+  // Scroll target into view
+  targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  // Update tooltip content
+  document.getElementById('tutorialStepText').textContent = 'Step ' + (currentTutorialStep + 1) + ' of ' + tutorialSteps.length;
+  document.getElementById('tutorialTitleIcon').textContent = step.titleIcon;
+  document.getElementById('tutorialTitleText').textContent = step.title;
+  document.getElementById('tutorialDescription').textContent = step.description;
+  
+  // Show/hide tip
+  const tipElement = document.getElementById('tutorialTip');
+  if (step.tip) {
+    tipElement.style.display = 'block';
+    document.getElementById('tutorialTipText').innerHTML = '<strong>Pro Tip:</strong> ' + step.tip;
+  } else {
+    tipElement.style.display = 'none';
+  }
+  
+  // Update navigation buttons
+  document.getElementById('tutorialPrevBtn').style.display = currentTutorialStep === 0 ? 'none' : 'inline-flex';
+  
+  const nextBtn = document.getElementById('tutorialNextBtn');
+  if (currentTutorialStep === tutorialSteps.length - 1) {
+    nextBtn.textContent = 'Finish ✓';
+  } else {
+    nextBtn.innerHTML = 'Next →';
+  }
+  
+  // Render progress dots
+  renderProgressDots();
+  
+  // Position tooltip
+  setTimeout(function() {
+    const targetRect = targetElement.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const padding = 16;
+    
+    let top, left;
+    let arrowClass = 'arrow-top';
+    
+    // Remove existing arrow classes
+    tooltip.classList.remove('arrow-top', 'arrow-bottom', 'arrow-left', 'arrow-right');
+    
+    switch (step.position) {
+      case 'bottom':
+        top = targetRect.bottom + padding;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        arrowClass = 'arrow-top';
+        break;
+      case 'top':
+        top = targetRect.top - tooltipRect.height - padding;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        arrowClass = 'arrow-bottom';
+        break;
+      case 'left':
+        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.left - tooltipRect.width - padding;
+        arrowClass = 'arrow-right';
+        break;
+      case 'right':
+        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.right + padding;
+        arrowClass = 'arrow-left';
+        break;
+      default:
+        top = targetRect.bottom + padding;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+    }
+    
+    // Keep tooltip within viewport
+    if (left < padding) left = padding;
+    if (left + tooltipRect.width > window.innerWidth - padding) {
+      left = window.innerWidth - tooltipRect.width - padding;
+    }
+    if (top < padding) top = padding;
+    if (top + tooltipRect.height > window.innerHeight - padding) {
+      top = window.innerHeight - tooltipRect.height - padding;
+    }
+    
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+    tooltip.classList.add(arrowClass);
+    
+    // Show overlay and tooltip
+    overlay.classList.add('active');
+    tooltip.classList.add('active');
+  }, 100);
+}
+
+function nextTutorialStep() {
+  // Call afterHide on current step if exists
+  var currentStep = tutorialSteps[currentTutorialStep];
+  if (currentStep && currentStep.afterHide) {
+    currentStep.afterHide();
+  }
+  
+  if (currentTutorialStep < tutorialSteps.length - 1) {
+    currentTutorialStep++;
+    showTutorialStep(currentTutorialStep);
+  } else {
+    endTutorial();
+  }
+}
+
+function prevTutorialStep() {
+  // Call afterHide on current step if exists
+  var currentStep = tutorialSteps[currentTutorialStep];
+  if (currentStep && currentStep.afterHide) {
+    currentStep.afterHide();
+  }
+  
+  if (currentTutorialStep > 0) {
+    currentTutorialStep--;
+    showTutorialStep(currentTutorialStep);
+  }
+}
+
+function endTutorial() {
+  tutorialActive = false;
+  
+  // Call afterHide on current step if exists
+  var currentStep = tutorialSteps[currentTutorialStep];
+  if (currentStep && currentStep.afterHide) {
+    currentStep.afterHide();
+  }
+  
+  // Close any open menus
+  var actionMenu = document.getElementById('actionDropdownMenu');
+  if (actionMenu) actionMenu.style.display = 'none';
+  var headerMenu = document.getElementById('headerDropdownMenu');
+  if (headerMenu) headerMenu.style.display = 'none';
+  
+  // Remove highlight
+  document.querySelectorAll('.tutorial-highlight').forEach(function(el) {
+    el.classList.remove('tutorial-highlight');
+  });
+  
+  // Hide tooltip and overlay
+  document.getElementById('tutorialTooltip').classList.remove('active');
+  document.getElementById('tutorialOverlay').classList.remove('active');
+  document.getElementById('tutorialWelcomeModal').classList.remove('active');
+  
+  // Mark tutorial as seen
+  localStorage.setItem('resumeBuilderTutorialSeen', 'true');
+  
+  // Switch back to View Resume tab
+  switchTab('resume');
+}
+
+function skipTutorialAndUpload() {
+  // Close tutorial modal
+  document.getElementById('tutorialWelcomeModal').classList.remove('active');
+  document.getElementById('tutorialOverlay').classList.remove('active');
+  
+  // Mark tutorial as seen
+  localStorage.setItem('resumeBuilderTutorialSeen', 'true');
+  
+  // Switch to resume tab and trigger upload
+  switchTab('resume');
+  
+  // Slight delay then trigger upload
+  setTimeout(function() {
+    triggerResumeUpload();
+  }, 300);
+}
+
+// Tutorial is initialized after login via initTutorial() call
+// No DOMContentLoaded initialization - tutorial only shows after authentication
+
+// Handle keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (!tutorialActive) return;
+  
+  if (e.key === 'ArrowRight' || e.key === 'Enter') {
+    nextTutorialStep();
+  } else if (e.key === 'ArrowLeft') {
+    prevTutorialStep();
+  } else if (e.key === 'Escape') {
+    endTutorial();
+  }
+});
+</script>
+
 </html>
