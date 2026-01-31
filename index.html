@@ -484,7 +484,7 @@
       </div>
       <button id="headerProfileBtn" onclick="openProfileModal(); toggleHeaderMenu()" style="display: none;">👤 Profile</button>
       <button onclick="showHelpModal(); toggleHeaderMenu()">❓ Help</button>
-      <button id="headerToggleTheme" onclick="toggleThemeManual(); toggleHeaderMenu()">🌙 Toggle Theme</button>
+      <button id="headerToggleTheme" onclick="toggleThemeManual(); toggleHeaderMenu()">🌙 Night</button>
       <button id="headerLogoutBtn" onclick="handleMainLogout()" style="display: none;">🚪 Logout</button>
     </div>
     <!-- Hidden original theme button to maintain functionality -->
@@ -1450,7 +1450,7 @@
       themeBtn.textContent = dark ? '🌙 Night' : '☀️ Day';
     }
     if (headerToggleTheme) {
-      headerToggleTheme.textContent = dark ? '🌙 Toggle Theme' : '☀️ Toggle Theme';
+      headerToggleTheme.textContent = dark ? '🌙 Night' : '☀️ Day';
     }
   }
   
@@ -5894,9 +5894,9 @@
           <div>
             <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Length:</label>
             <select id="emailLength" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
-              <option value="short">Short (100-150 words)</option>
-              <option value="medium" selected>Medium (200-300 words)</option>
-              <option value="long">Long (400-500 words)</option>
+              <option value="short">Short (0-100 words)</option>
+              <option value="medium" selected>Medium (100-150 words)</option>
+              <option value="long">Long (150-250 words)</option>
             </select>
           </div>
         </div>
