@@ -1053,9 +1053,9 @@
     color: white;
   }
 
-  .stat-label {
+  .brand-stats .stat-label {
     font-size: 13px;
-    opacity: 0.85;
+    color: rgba(255, 255, 255, 0.95);
     font-weight: 500;
   }
 
@@ -2277,6 +2277,297 @@
       padding: 7px 12px;
     }
   }
+
+/* ===================================
+   FORM INPUT LABEL STYLES (GLOBAL)
+   =================================== */
+
+.input-with-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-with-label label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.input-with-label input {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  width: 100%;
+}
+
+.input-with-label input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Education Entry - Global */
+.education-entry {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.education-entry .education-fields {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: 12px;
+  flex: 1;
+}
+
+.education-entry input {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  width: 100%;
+}
+
+.education-entry .entry-remove-btn {
+  margin-top: 24px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.education-entry .entry-remove-btn:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.education-entry input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Experience Header Inputs - Global */
+.experience-header-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.experience-header-inputs input {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.experience-header-inputs input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Experience Entry - Global */
+.experience-entry {
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+/* Contact & Skill Entries - Global */
+.entries-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 36px;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--bg-secondary, #f9fafb);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  margin-top: 12px;
+}
+
+.entry-header-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.entry-header-spacer {
+  width: 36px;
+}
+
+.contact-entry,
+.skill-entry {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  align-items: center;
+}
+
+.contact-entry:last-child,
+.skill-entry:last-child {
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.contact-entry input,
+.skill-entry input {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  width: 100%;
+}
+
+.contact-entry input:focus,
+.skill-entry input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.experience-bullets {
+  margin-top: 16px;
+}
+
+.experience-bullets label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.bullet-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bullet-item input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.bullet-item input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.bullet-remove-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bullet-remove-btn:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.add-bullet-btn {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.add-bullet-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.remove-entry-btn {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.remove-entry-btn:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.add-entry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  background: var(--accent-light);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-entry-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-style: solid;
+}
   
   @media (max-width: 850px) {
     #tabContainer {
@@ -2827,13 +3118,44 @@
   }
 
   /* Contact & Skill Entries */
+  .entries-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 36px;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--bg-secondary, #f9fafb);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    margin-top: 12px;
+  }
+
+  .entry-header-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .entry-header-spacer {
+    width: 36px;
+  }
+
   .contact-entry,
   .skill-entry {
     display: grid;
     grid-template-columns: 1fr 2fr auto;
     gap: 12px;
-    margin-top: 12px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: none;
     align-items: center;
+  }
+
+  .contact-entry:last-child,
+  .skill-entry:last-child {
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
   }
 
   .contact-entry input,
@@ -2842,8 +3164,9 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 14px;
-    background: var(--bg);
+    background: var(--card);
     color: var(--text);
+    width: 100%;
   }
 
   .contact-entry input:focus,
@@ -2865,6 +3188,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   .entry-remove-btn:hover {
@@ -2918,6 +3242,46 @@
     gap: 12px;
   }
 
+  .experience-header-inputs .input-with-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .input-with-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .input-with-label label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .input-with-label input {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .input-with-label input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+
+  .experience-header-inputs .input-with-label label,
+  .education-entry .input-with-label label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
   .experience-header-inputs input {
     padding: 12px 14px;
     border: 1px solid var(--border);
@@ -2925,6 +3289,19 @@
     font-size: 14px;
     background: var(--card);
     color: var(--text);
+  }
+
+  .education-entry .education-fields {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .education-entry .input-with-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .experience-header-inputs input:focus {
@@ -3022,11 +3399,21 @@
 
   /* Education Entry */
   .education-entry {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto auto;
+    display: flex;
     gap: 12px;
     margin-top: 12px;
-    align-items: center;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .education-entry .education-fields {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 12px;
+    flex: 1;
   }
 
   .education-entry input {
@@ -3034,8 +3421,27 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 14px;
-    background: var(--bg);
+    background: var(--card);
     color: var(--text);
+    width: 100%;
+  }
+
+  .education-entry .entry-remove-btn {
+    margin-top: 24px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .education-entry .entry-remove-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
   }
 
   .education-entry input:focus {
@@ -5877,8 +6283,13 @@ textarea.email-input {
   /* Contact & Skill entries - stack on mobile */
   .contact-entry,
   .skill-entry {
-    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
     gap: 10px !important;
+  }
+
+  .contact-entry .input-with-label,
+  .skill-entry .input-with-label {
+    width: 100% !important;
   }
   
   .contact-entry input,
@@ -5886,6 +6297,13 @@ textarea.email-input {
     padding: 14px !important;
     font-size: 16px !important;
     border-radius: 10px !important;
+  }
+
+  .contact-entry > .entry-remove-btn,
+  .skill-entry > .entry-remove-btn {
+    margin-top: 0 !important;
+    width: 100% !important;
+    height: 44px !important;
   }
   
   .entry-remove-btn {
@@ -5941,6 +6359,11 @@ textarea.email-input {
   
   /* Education entry - mobile */
   .education-entry {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .education-entry .education-fields {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
   }
@@ -5949,6 +6372,11 @@ textarea.email-input {
     padding: 14px !important;
     font-size: 16px !important;
     border-radius: 10px !important;
+  }
+
+  .education-entry .entry-remove-btn {
+    margin-top: 0 !important;
+    width: 100% !important;
   }
   
   /* Add entry button - mobile */
@@ -6626,6 +7054,40 @@ textarea.email-input {
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
+}
+
+.tutorial-welcome-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  font-size: 18px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.tutorial-welcome-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text);
+}
+
+[data-theme="dark"] .tutorial-welcome-close {
+  background: rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .tutorial-welcome-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 [data-theme="dark"] .tutorial-welcome-modal {

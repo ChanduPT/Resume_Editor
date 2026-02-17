@@ -345,7 +345,7 @@ def chat_completion(prompt: str, model: Optional[str] = None) -> str:
         # Set max_output_tokens to handle large resumes with multiple experiences
         generation_config = {
             "temperature": 0.2,
-            "max_output_tokens": 8192,
+            "max_output_tokens": 32768,
         }
         gmodel = genai.GenerativeModel(model_name, generation_config=generation_config)
         response = gmodel.generate_content(prompt)
