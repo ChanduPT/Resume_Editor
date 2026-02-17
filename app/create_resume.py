@@ -199,8 +199,6 @@ def create_resume_classic(data, file_name):
         raise ValueError("Professional summary is required to generate resume")
     if not data.get("experience") or len(data.get("experience", [])) == 0:
         raise ValueError("At least one experience entry is required to generate resume")
-    if not data.get("education") or len(data.get("education", [])) == 0:
-        raise ValueError("At least one education entry is required to generate resume")
     
     doc = Document()
 
@@ -361,27 +359,28 @@ def create_resume_classic(data, file_name):
                         set_paragraph_format(bullet_para, font_size=10, spacing=1.0, alignment=WD_ALIGN_PARAGRAPH.JUSTIFY)
 
     # --- Education ---
-    heading = doc.add_heading("EDUCATION", level=1)
-    set_paragraph_format(heading, font_size=11)
-    for run in heading.runs:
-        run.font.color.rgb = RGBColor(0, 0, 0)  # Set to black
-    
-    # Add horizontal line directly to the heading
-    pPr = heading._element.get_or_add_pPr()
-    pBdr = OxmlElement('w:pBdr')
-    bottom = OxmlElement('w:bottom')
-    bottom.set(qn('w:val'), 'single')
-    bottom.set(qn('w:sz'), '6')
-    bottom.set(qn('w:space'), '1')
-    bottom.set(qn('w:color'), 'auto')
-    pBdr.append(bottom)
-    pPr.append(pBdr)
-    
-    for edu in data["education"]:
-        edu_para = doc.add_paragraph()
-        run = edu_para.add_run(f"{edu['degree']}, {edu['institution']} ({edu['year']})")
-        #run.bold = True
-        set_paragraph_format(edu_para, font_size=10, spacing=1.0)
+    if data.get("education") and len(data["education"]) > 0:
+        heading = doc.add_heading("EDUCATION", level=1)
+        set_paragraph_format(heading, font_size=11)
+        for run in heading.runs:
+            run.font.color.rgb = RGBColor(0, 0, 0)  # Set to black
+        
+        # Add horizontal line directly to the heading
+        pPr = heading._element.get_or_add_pPr()
+        pBdr = OxmlElement('w:pBdr')
+        bottom = OxmlElement('w:bottom')
+        bottom.set(qn('w:val'), 'single')
+        bottom.set(qn('w:sz'), '6')
+        bottom.set(qn('w:space'), '1')
+        bottom.set(qn('w:color'), 'auto')
+        pBdr.append(bottom)
+        pPr.append(pBdr)
+        
+        for edu in data["education"]:
+            edu_para = doc.add_paragraph()
+            run = edu_para.add_run(f"{edu['degree']}, {edu['institution']} ({edu['year']})")
+            #run.bold = True
+            set_paragraph_format(edu_para, font_size=10, spacing=1.0)
 
     # --- Certifications ---
     if data.get("certifications") and len(data["certifications"]) > 0:
@@ -443,8 +442,6 @@ def create_resume_modern(data, file_name):
         raise ValueError("Professional summary is required to generate resume")
     if not data.get("experience") or len(data.get("experience", [])) == 0:
         raise ValueError("At least one experience entry is required to generate resume")
-    if not data.get("education") or len(data.get("education", [])) == 0:
-        raise ValueError("At least one education entry is required to generate resume")
     
     doc = Document()
 
@@ -631,27 +628,28 @@ def create_resume_modern(data, file_name):
                             run.font.name = "Calibri"
 
     # --- EDUCATION ---
-    heading = doc.add_paragraph()
-    run = heading.add_run("EDUCATION")
-    run.bold = True
-    run.font.size = Pt(11)
-    run.font.name = "Calibri"
-    heading.paragraph_format.space_before = Pt(8)
-    heading.paragraph_format.space_after = Pt(4)
-    
-    for edu in data["education"]:
-        edu_para = doc.add_paragraph()
-        edu_para.paragraph_format.space_after = Pt(2)
-        
-        # Degree and Institution
-        run = edu_para.add_run(f"{edu['degree']}, {edu['institution']}")
-        run.font.size = Pt(10)
+    if data.get("education") and len(data["education"]) > 0:
+        heading = doc.add_paragraph()
+        run = heading.add_run("EDUCATION")
+        run.bold = True
+        run.font.size = Pt(11)
         run.font.name = "Calibri"
+        heading.paragraph_format.space_before = Pt(8)
+        heading.paragraph_format.space_after = Pt(4)
         
-        # Year
-        run = edu_para.add_run(f" ({edu['year']})")
-        run.font.size = Pt(10)
-        run.font.name = "Calibri"
+        for edu in data["education"]:
+            edu_para = doc.add_paragraph()
+            edu_para.paragraph_format.space_after = Pt(2)
+            
+            # Degree and Institution
+            run = edu_para.add_run(f"{edu['degree']}, {edu['institution']}")
+            run.font.size = Pt(10)
+            run.font.name = "Calibri"
+            
+            # Year
+            run = edu_para.add_run(f" ({edu['year']})")
+            run.font.size = Pt(10)
+            run.font.name = "Calibri"
 
     # --- CERTIFICATIONS ---
     if data.get("certifications") and len(data["certifications"]) > 0:
