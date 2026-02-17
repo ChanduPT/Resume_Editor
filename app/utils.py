@@ -345,7 +345,7 @@ def chat_completion(prompt: str, model: Optional[str] = None) -> str:
         # Set max_output_tokens to handle large resumes with multiple experiences
         generation_config = {
             "temperature": 0.2,
-            "max_output_tokens": 32768,
+            "max_output_tokens": 16384,
         }
         gmodel = genai.GenerativeModel(model_name, generation_config=generation_config)
         response = gmodel.generate_content(prompt)
@@ -413,8 +413,8 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
             ) from e
 
         genai.configure(api_key=api_key)
-        # model_name = "gemini-2.5-flash"
-        model_name = "gemini-3-flash-preview"
+        model_name = "gemini-2.5-flash"
+        #model_name = "gemini-3-flash-preview"
         
         # Configure generation with response schema if provided
         # Set max_output_tokens high enough to handle large resumes with multiple experiences
@@ -423,7 +423,7 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
         # Setting to 16384 tokens to prevent truncation
         generation_config = {
             "temperature": 0.2,
-            "max_output_tokens": 32768,
+            "max_output_tokens": 16384,
         }
         
         if response_schema:
