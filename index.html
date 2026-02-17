@@ -236,7 +236,7 @@
       <div style="padding: 20px; color: var(--text-primary);">
         
         <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
-          <h3 style="margin-top: 0; color: var(--primary);">Welcome to Resume Builder Pro!</h3>
+          <h3 style="margin-top: 0; color: var(--primary);">to Resume Builder Pro!</h3>
           <p style="line-height: 1.6;">An AI-powered platform that helps you create perfectly tailored resumes for every job application. Our intelligent system analyzes job descriptions and optimizes your resume to match exactly what employers are looking for.</p>
           <p style="line-height: 1.6; margin-top: 10px;"><strong>New Features:</strong> View & edit generated resumes, manage technical skills, track all applications in your personal dashboard!</p>
         </div>
@@ -473,21 +473,21 @@
         
         <div class="brand-features">
           <div class="feature-item">
-            <div class="feature-icon"></div>
+            <div class="feature-icon">📊</div>
             <div class="feature-text">
               <h3>Smart Tracking</h3>
               <p>Track all your resume versions in one place</p>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon"></div>
+            <div class="feature-icon">✨</div>
             <div class="feature-text">
               <h3>AI Optimization</h3>
               <p>Tailor resumes to match job descriptions</p>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon"></div>
+            <div class="feature-icon">⬇️</div>
             <div class="feature-text">
               <h3>Instant Downloads</h3>
               <p>Export professional resumes anytime</p>
@@ -497,8 +497,8 @@
 
         <div class="brand-stats">
           <div class="stat-item">
-            <div class="stat-number">1K+</div>
-            <div class="stat-label">Resumes Created</div>
+            <div class="stat-number">3K+</div>
+            <div class="stat-label">Resumes Generated</div>
           </div>
           <div class="stat-item">
             <div class="stat-number">95%</div>
@@ -707,10 +707,15 @@
               <!-- Contact Information Section -->
               <div id="section-contact" class="form-section-panel">
                 <h3>Contact Information</h3>
+                <div class="entries-header">
+                  <span class="entry-header-label">Label</span>
+                  <span class="entry-header-label">Value</span>
+                  <span class="entry-header-spacer"></span>
+                </div>
                 <div id="contactList">
                   <div class="contact-entry">
-                    <input placeholder="Label (e.g., Email, Phone)" class="contact-key" value="">
-                    <input placeholder="Value" class="contact-value" value="">
+                    <input placeholder="e.g., Email, Phone, LinkedIn" class="contact-key" value="">
+                    <input placeholder="Enter value" class="contact-value" value="">
                     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
                   </div>
                 </div>
@@ -722,9 +727,14 @@
               <!-- Technical Skills Section -->
               <div id="section-skills" class="form-section-panel">
                 <h3>Technical Skills</h3>
+                <div class="entries-header">
+                  <span class="entry-header-label">Category</span>
+                  <span class="entry-header-label">Skills</span>
+                  <span class="entry-header-spacer"></span>
+                </div>
                 <div id="skillsList">
                   <div class="skill-entry">
-                    <input placeholder="Category (e.g., Languages)" class="skill-key" value="">
+                    <input placeholder="e.g., Languages, Frameworks" class="skill-key" value="">
                     <input placeholder="Skills (comma-separated)" class="skill-value" value="">
                     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
                   </div>
@@ -740,9 +750,18 @@
                 <div id="experienceList">
                   <div class="experience-entry">
                     <div class="experience-header-inputs">
-                      <input placeholder="Company Name" class="exp-company" value="">
-                      <input placeholder="Job Title" class="exp-role" value="">
-                      <input placeholder="Duration (e.g., Jan 2020 - Present)" class="exp-period" value="">
+                      <div class="input-with-label">
+                        <label>Company</label>
+                        <input placeholder="Company Name" class="exp-company" value="">
+                      </div>
+                      <div class="input-with-label">
+                        <label>Job Title</label>
+                        <input placeholder="Job Title" class="exp-role" value="">
+                      </div>
+                      <div class="input-with-label">
+                        <label>Duration</label>
+                        <input placeholder="e.g., Jan 2020 - Present" class="exp-period" value="">
+                      </div>
                     </div>
                     <div class="experience-bullets">
                       <label>Key Achievements & Responsibilities</label>
@@ -767,9 +786,20 @@
                 <h3>Education</h3>
                 <div id="educationList">
                   <div class="education-entry">
-                    <input placeholder="Degree (e.g., Bachelor of Science)" class="edu-degree" value="">
-                    <input placeholder="Institution" class="edu-inst" value="">
-                    <input placeholder="Year (e.g., 2020)" class="edu-year" value="">
+                    <div class="education-fields">
+                      <div class="input-with-label">
+                        <label>Degree</label>
+                        <input placeholder="e.g., Bachelor of Science" class="edu-degree" value="">
+                      </div>
+                      <div class="input-with-label">
+                        <label>Institution</label>
+                        <input placeholder="e.g., University Name" class="edu-inst" value="">
+                      </div>
+                      <div class="input-with-label">
+                        <label>Year</label>
+                        <input placeholder="e.g., 2020" class="edu-year" value="">
+                      </div>
+                    </div>
                     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
                   </div>
                 </div>
@@ -1806,14 +1836,14 @@
     const d=document.createElement('div');
     d.className='contact-entry';
     // Determine placeholder based on key
-    let valuePlaceholder = 'Value';
+    let valuePlaceholder = 'Enter value';
     if (k === 'Phone') valuePlaceholder = '+1 999 999 9999';
     else if (k === 'Email') valuePlaceholder = 'abc@mail.com';
     else if (k === 'LinkedIn') valuePlaceholder = 'https://linkedin.com/in/yourprofile';
     else if (k === 'Portfolio') valuePlaceholder = 'https://yourportfolio.com';
     else if (v) valuePlaceholder = 'URL or value';
 
-    d.innerHTML=`<input placeholder="Label (Phone, Email, LinkedIn, Portfolio)" class="contact-key" value="${k}" ${k ? 'readonly' : ''}>
+    d.innerHTML=`<input placeholder="e.g., Email, Phone, LinkedIn" class="contact-key" value="${k}" ${k ? 'readonly' : ''}>
     <input placeholder="${valuePlaceholder}" class="contact-value" value="${v}">
     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('contactList').appendChild(d);
@@ -1822,7 +1852,7 @@
   function addSkill(k='',v=''){
     const d=document.createElement('div');
     d.className='skill-entry';
-    d.innerHTML=`<input placeholder="Category (e.g., Languages)" class="skill-key" value="${k}">
+    d.innerHTML=`<input placeholder="e.g., Languages, Frameworks" class="skill-key" value="${k}">
     <input placeholder="Skills (comma-separated)" class="skill-value" value="${v}">
     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('skillsList').appendChild(d);
@@ -1832,9 +1862,18 @@
     const d=document.createElement('div');
     d.className='experience-entry';
     d.innerHTML=`<div class="experience-header-inputs">
-      <input placeholder="Company Name" class="exp-company" value="${exp?.company||''}">
-      <input placeholder="Job Title" class="exp-role" value="${exp?.role||''}">
-      <input placeholder="Duration (e.g., Jan 2020 - Present)" class="exp-period" value="${exp?.period||''}">
+      <div class="input-with-label">
+        <label>Company</label>
+        <input placeholder="Company Name" class="exp-company" value="${exp?.company||''}">
+      </div>
+      <div class="input-with-label">
+        <label>Job Title</label>
+        <input placeholder="Job Title" class="exp-role" value="${exp?.role||''}">
+      </div>
+      <div class="input-with-label">
+        <label>Duration</label>
+        <input placeholder="e.g., Jan 2020 - Present" class="exp-period" value="${exp?.period||''}">
+      </div>
     </div>
     <div class="experience-bullets">
       <label>Key Achievements & Responsibilities</label>
@@ -1864,9 +1903,20 @@
   function addEducation(e=null){
     const d=document.createElement('div');
     d.className='education-entry';
-    d.innerHTML=`<input placeholder="Degree (e.g., Bachelor of Science)" class="edu-degree" value="${e?.degree||''}">
-    <input placeholder="Institution" class="edu-inst" value="${e?.institution||''}">
-    <input placeholder="Year (e.g., 2020)" class="edu-year" value="${e?.year||''}">
+    d.innerHTML=`<div class="education-fields">
+      <div class="input-with-label">
+        <label>Degree</label>
+        <input placeholder="e.g., Bachelor of Science" class="edu-degree" value="${e?.degree||''}">
+      </div>
+      <div class="input-with-label">
+        <label>Institution</label>
+        <input placeholder="e.g., University Name" class="edu-inst" value="${e?.institution||''}">
+      </div>
+      <div class="input-with-label">
+        <label>Year</label>
+        <input placeholder="e.g., 2020" class="edu-year" value="${e?.year||''}">
+      </div>
+    </div>
     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('educationList').appendChild(d);
   }
@@ -1875,7 +1925,10 @@
     const d=document.createElement('div');
     d.className='experience-entry';
     d.innerHTML=`<div class="experience-header-inputs" style="grid-template-columns: 1fr;">
-      <input placeholder="Project Title" class="proj-title" value="${proj?.title||''}">
+      <div class="input-with-label">
+        <label>Project Title</label>
+        <input placeholder="e.g., E-commerce Platform" class="proj-title" value="${proj?.title||''}">
+      </div>
     </div>
     <div class="experience-bullets">
       <label>Project Details</label>
@@ -1905,9 +1958,20 @@
   function addCertification(cert=null){
     const d=document.createElement('div');
     d.className='education-entry';
-    d.innerHTML=`<input placeholder="Certification Name" class="cert-name" value="${cert?.name||''}">
-    <input placeholder="Issuing Organization" class="cert-org" value="${cert?.organization||''}">
-    <input placeholder="Year" class="cert-year" value="${cert?.year||''}">
+    d.innerHTML=`<div class="education-fields">
+      <div class="input-with-label">
+        <label>Certification Name</label>
+        <input placeholder="e.g., AWS Solutions Architect" class="cert-name" value="${cert?.name||''}">
+      </div>
+      <div class="input-with-label">
+        <label>Issuing Organization</label>
+        <input placeholder="e.g., Amazon Web Services" class="cert-org" value="${cert?.organization||''}">
+      </div>
+      <div class="input-with-label">
+        <label>Year</label>
+        <input placeholder="e.g., 2023" class="cert-year" value="${cert?.year||''}">
+      </div>
+    </div>
     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('certificationsList').appendChild(d);
   }
@@ -2281,99 +2345,133 @@
     let html = '<div id="resumeContentWrapper" style="max-width: 1000px; margin: 0 auto; padding: 20px; font-size: 14px; line-height: 1.6; color: var(--text-primary);">';
     
     if (data.name) {
-      html += `<h2 contenteditable="${isEditMode}" data-field="name" style="margin-top: 0; color: var(--accent); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '4px' : '0'};">${data.name}</h2>`;
+      html += `<div style="margin-bottom: 15px;">`;
+      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Full Name</label>`;
+      html += `<div contenteditable="${isEditMode}" data-field="name" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--accent); font-size: 18px; font-weight: 600; outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.name}</div>`;
+      html += `</div>`;
     }
     
     if (data.contact) {
-      html += '<div id="contactItemsContainer" style="margin-bottom: 20px;">';
+      html += `<div style="margin-bottom: 20px;">`;
+      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Contact Information</label>`;
+      html += '<div id="contactItemsContainer" style="display: flex; flex-wrap: wrap; gap: 15px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">';
       
       if (data.contact.email) {
-        html += `<div class="contact-item-inline" data-contact-type="email" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.email" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.email}</span>`;
+        html += `<div class="contact-item-inline" data-contact-type="email" style="display: flex; flex-direction: column; gap: 4px;">`;
+        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Email</label>`;
+        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.email" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.email}</span>`;
         if (isEditMode) html += `<button onclick="deleteContactItem('email')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Email">Delete</button>`;
-        html += `</div>`;
+        html += `</div></div>`;
       }
       
       if (data.contact.phone) {
-        html += `<div class="contact-item-inline" data-contact-type="phone" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.phone" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.phone}</span>`;
+        html += `<div class="contact-item-inline" data-contact-type="phone" style="display: flex; flex-direction: column; gap: 4px;">`;
+        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Phone</label>`;
+        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.phone" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.phone}</span>`;
         if (isEditMode) html += `<button onclick="deleteContactItem('phone')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Phone">Delete</button>`;
-        html += `</div>`;
+        html += `</div></div>`;
       }
       
       if (data.contact.linkedin) {
-        html += `<div class="contact-item-inline" data-contact-type="linkedin" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${data.contact.linkedin}</span>`;
+        html += `<div class="contact-item-inline" data-contact-type="linkedin" style="display: flex; flex-direction: column; gap: 4px;">`;
+        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">LinkedIn</label>`;
+        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.linkedin}</span>`;
         if (isEditMode) html += `<button onclick="deleteContactItem('linkedin')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete LinkedIn">Delete</button>`;
-        html += `</div>`;
+        html += `</div></div>`;
       }
       
       if (data.contact.location) {
-        html += `<div class="contact-item-inline" data-contact-type="location" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.location" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">� ${data.contact.location}</span>`;
+        html += `<div class="contact-item-inline" data-contact-type="location" style="display: flex; flex-direction: column; gap: 4px;">`;
+        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Location</label>`;
+        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
+        html += `<span contenteditable="${isEditMode}" data-field="contact.location" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.location}</span>`;
         if (isEditMode) html += `<button onclick="deleteContactItem('location')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Location">Delete</button>`;
-        html += `</div>`;
+        html += `</div></div>`;
       }
       
       // Loop through any additional/dynamic contact fields (like github, portfolio, etc.)
       for (const [key, value] of Object.entries(data.contact)) {
         if (!['email', 'phone', 'linkedin', 'location'].includes(key)) {
           const displayLabel = key.charAt(0).toUpperCase() + key.slice(1);
-          html += `<div class="contact-item-inline" data-contact-type="${key}" style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; margin-bottom: 8px;">`;
-          html += `<strong style="color: var(--text-secondary); margin-right: 4px;">${displayLabel}:</strong>`;
-          html += `<span contenteditable="${isEditMode}" data-field="contact.${key}" style="color: var(--text-secondary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${value}</span>`;
+          html += `<div class="contact-item-inline" data-contact-type="${key}" style="display: flex; flex-direction: column; gap: 4px;">`;
+          html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">${displayLabel}</label>`;
+          html += `<div style="display: flex; align-items: center; gap: 6px;">`;
+          html += `<span contenteditable="${isEditMode}" data-field="contact.${key}" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${value}</span>`;
           if (isEditMode) html += `<button onclick="deleteContactItem('${key}')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete ${displayLabel}">Delete</button>`;
-          html += `</div>`;
+          html += `</div></div>`;
         }
       }
       
-      html += '</div>';
+      html += '</div></div>';
     }
     
     if (data.summary) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Professional Summary</h3>`;
-      html += `<p contenteditable="${isEditMode}" data-field="summary" style="color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '4px' : '0'};">${data.summary}</p>`;
+      html += `<div style="margin-top: 20px; margin-bottom: 15px;">`;
+      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Professional Summary</label>`;
+      html += `<div contenteditable="${isEditMode}" data-field="summary" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.summary}</div>`;
+      html += `</div>`;
     }
     
     if (data.technical_skills) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Technical Skills ${isEditMode ? '<button onclick="addSkillCategory()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Category</button>' : ''}</h3>`;
-      html += '<div id="technicalSkillsContainer">';
+      html += `<div style="margin-top: 20px; margin-bottom: 15px;">`;
+      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Technical Skills ${isEditMode ? '<button onclick="addSkillCategory()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Category</button>' : ''}</label>`;
+      html += '<div id="technicalSkillsContainer" style="padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">';
       let skillIndex = 0;
       for (const [category, skills] of Object.entries(data.technical_skills)) {
         if (Array.isArray(skills) && skills.length > 0) {
-          html += `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;" data-skill-category="${category}" data-skill-index="${skillIndex}">`;
-          html += `<p style="flex: 1; color: var(--text-primary); margin: 0;">`;
-          html += `<strong contenteditable="${isEditMode}" data-field="technical_skills_key.${skillIndex}" data-original-key="${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${category}</strong>: `;
-          html += `<span contenteditable="${isEditMode}" data-field="technical_skills.${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${skills.join(', ')}</span>`;
-          html += `</p>`;
+          html += `<div style="margin-bottom: 12px;" data-skill-category="${category}" data-skill-index="${skillIndex}">`;
+          html += `<label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;"><span contenteditable="${isEditMode}" data-field="technical_skills_key.${skillIndex}" data-original-key="${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${category}</span></label>`;
+          html += `<div style="display: flex; align-items: center; gap: 8px;">`;
+          html += `<div contenteditable="${isEditMode}" data-field="technical_skills.${category}" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${skills.join(', ')}</div>`;
           if (isEditMode) {
             html += `<button onclick="removeSkillCategory('${category}')" style="padding: 4px 8px; font-size: 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>`;
           }
-          html += `</div>`;
+          html += `</div></div>`;
           skillIndex++;
         }
       }
-      html += '</div>';
+      html += '</div></div>';
     }
     
     if (data.experience && data.experience.length > 0) {
       html += `<h3 style="color: var(--primary); margin-top: 20px;">Experience</h3>`;
       data.experience.forEach((exp, idx) => {
-        html += `<div style="margin-bottom: 15px;" data-exp-index="${idx}">`;
+        html += `<div style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);" data-exp-index="${idx}">`;
         const jobTitle = exp.job_title || exp.title || exp.role || 'Position';
         const company = exp.company || exp.organization || 'Company';
         const duration = exp.duration || exp.dates || exp.period || '';
         
-        html += `<h4 contenteditable="${isEditMode}" data-field="experience.${idx}.title" style="margin: 5px 0; color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${jobTitle}</h4>`;
-        html += `<p style="color: var(--text-secondary); margin: 3px 0;"><span contenteditable="${isEditMode}" data-field="experience.${idx}.company" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${company}</span>${duration ? ' | ' : ''}<span contenteditable="${isEditMode}" data-field="experience.${idx}.duration" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${duration}</span></p>`;
+        // Company field with label
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Company</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.company" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${company}</div>`;
+        html += `</div>`;
+        
+        // Job Title field with label
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Job Title</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.title" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${jobTitle}</div>`;
+        html += `</div>`;
+        
+        // Duration field with label
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Duration</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.duration" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${duration}</div>`;
+        html += `</div>`;
         
         const bullets = exp.bullets || exp.points || exp.responsibilities || [];
         if (bullets && bullets.length > 0) {
-          html += '<ul style="margin: 8px 0 8px 20px; color: var(--text-primary); padding-left: 0;">';
+          html += `<div style="margin-bottom: 8px;">`;
+          html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Key Achievements</label>`;
+          html += '<ul style="margin: 0; padding-left: 20px; color: var(--text-primary);">';
           bullets.forEach((bullet, bidx) => {
-            html += `<li contenteditable="${isEditMode}" data-field="experience.${idx}.bullets.${bidx}" style="margin-bottom: 4px; outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${bullet}</li>`;
+            html += `<li contenteditable="${isEditMode}" data-field="experience.${idx}.bullets.${bidx}" style="margin-bottom: 6px; padding: 4px; border-radius: 4px; outline: ${isEditMode ? '1px dashed var(--border)' : 'none'};">${bullet}</li>`;
           });
           html += '</ul>';
+          html += `</div>`;
         }
         html += `</div>`;
       });
@@ -2382,26 +2480,69 @@
     if (data.education && data.education.length > 0) {
       html += `<h3 style="color: var(--primary); margin-top: 20px;">Education</h3>`;
       data.education.forEach((edu, idx) => {
-        html += `<p contenteditable="${isEditMode}" data-field="education.${idx}" style="color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};"><strong>${edu.degree}</strong> - ${edu.institution} (${edu.year || edu.graduation_date})</p>`;
+        html += `<div style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">`;
+        
+        // Degree field with label
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Degree</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.degree" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${edu.degree || ''}</div>`;
+        html += `</div>`;
+        
+        // Institution field with label
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Institution</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.institution" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${edu.institution || ''}</div>`;
+        html += `</div>`;
+        
+        // Year field with label
+        html += `<div style="margin-bottom: 8px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Year</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.year" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${edu.year || edu.graduation_date || ''}</div>`;
+        html += `</div>`;
+        
+        html += `</div>`;
       });
     }
     
     if (data.certifications && data.certifications.length > 0) {
       html += `<h3 style="color: var(--primary); margin-top: 20px;">Certifications</h3>`;
-      html += '<ul style="color: var(--text-primary);">';
+      html += `<div style="padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">`;
       data.certifications.forEach((cert, idx) => {
-        html += `<li contenteditable="${isEditMode}" data-field="certifications.${idx}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${typeof cert === 'string' ? cert : cert.name}</li>`;
+        html += `<div style="margin-bottom: ${idx < data.certifications.length - 1 ? '12px' : '0'};">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Certification ${idx + 1}</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="certifications.${idx}" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${typeof cert === 'string' ? cert : cert.name}</div>`;
+        html += `</div>`;
       });
-      html += '</ul>';
+      html += `</div>`;
     }
     
     if (data.projects && data.projects.length > 0) {
       html += `<h3 style="color: var(--primary); margin-top: 20px;">Projects</h3>`;
       data.projects.forEach((proj, idx) => {
-        html += `<div style="margin-bottom: 15px;">`;
-        html += `<h4 contenteditable="${isEditMode}" data-field="projects.${idx}.name" style="margin: 5px 0; color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${proj.name}</h4>`;
-        if (proj.description) html += `<p contenteditable="${isEditMode}" data-field="projects.${idx}.description" style="color: var(--text-primary); outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${proj.description}</p>`;
-        if (proj.technologies) html += `<p style="color: var(--text-secondary);"><em>Technologies: <span contenteditable="${isEditMode}" data-field="projects.${idx}.technologies" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}</span></em></p>`;
+        html += `<div style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">`;
+        
+        // Project Name field with label
+        html += `<div style="margin-bottom: 12px;">`;
+        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Project Name</label>`;
+        html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.name" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${proj.name || ''}</div>`;
+        html += `</div>`;
+        
+        // Description field with label
+        if (proj.description) {
+          html += `<div style="margin-bottom: 12px;">`;
+          html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Description</label>`;
+          html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.description" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${proj.description}</div>`;
+          html += `</div>`;
+        }
+        
+        // Technologies field with label
+        if (proj.technologies) {
+          html += `<div style="margin-bottom: 8px;">`;
+          html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Technologies</label>`;
+          html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.technologies" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}</div>`;
+          html += `</div>`;
+        }
+        
         html += `</div>`;
       });
     }
@@ -7426,8 +7567,8 @@
 </div>
 
 <div class="tutorial-welcome-modal" id="tutorialWelcomeModal">
+  <button class="tutorial-welcome-close" onclick="hideTutorialWelcome()" title="Close">✕</button>
   <div class="tutorial-welcome-header">
-    <span class="tutorial-welcome-icon">�</span>
     <h2 class="tutorial-welcome-title">Welcome! Let's Get Started</h2>
     <p class="tutorial-welcome-subtitle">Follow these simple steps to build your perfect resume</p>
   </div>
@@ -7465,7 +7606,7 @@
   </div>
   <div class="tutorial-welcome-footer">
     <button class="tutorial-start-btn" onclick="startTutorial()">
-      <span>Take the Tour (1 min)</span>
+      <span>Take the Tour</span>
     </button>
     <button class="tutorial-skip-link" onclick="skipTutorialAndUpload()">
       Skip & Upload Resume Now →
