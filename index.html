@@ -32,6 +32,46 @@
       </div>
       <button class="view-modal-close" onclick="closeViewModal()">✕</button>
     </div>
+    
+    <!-- Resume Formatting Toolbar -->
+    <div class="resume-toolbar" id="resumeToolbar" style="display: none;">
+      <div class="resume-toolbar-left">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="toolbar-label">Format:</span>
+          <select id="resumeFormatSelect" class="toolbar-select" onchange="changeResumeFormat(this.value)">
+            <option value="classic">Classic (Times)</option>
+            <option value="modern" selected>Modern (Calibri)</option>
+          </select>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="toolbar-label">Font Size:</span>
+          <select id="resumeFontSizeSelect" class="toolbar-select" onchange="changeResumeFontSize(this.value)">
+            <option value="small">10pt</option>
+            <option value="medium" selected>11pt</option>
+            <option value="large">12pt</option>
+          </select>
+        </div>
+        
+        <button class="toolbar-btn" onclick="window.print()" title="Print Resume">
+          <span>🖨️</span>
+          <span>Print</span>
+        </button>
+        
+        <button class="toolbar-btn" onclick="exportToPDF()" title="Save as PDF">
+          <span>📄</span>
+          <span>Save PDF</span>
+        </button>
+      </div>
+      
+      <div class="resume-toolbar-right">
+        <button class="toolbar-btn" id="compactModeBtn" onclick="toggleCompactMode()" title="Toggle section spacing">
+          <span>📏</span>
+          <span>Compact</span>
+        </button>
+      </div>
+    </div>
+    
     <div class="view-modal-body" id="viewModalBody">
       <!-- Content will be loaded here -->
     </div>
@@ -2304,6 +2344,10 @@
       modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="parse-loading-spinner" style="margin: 0 auto;"></div><p style="margin-top: 20px;">Loading resume...</p></div>';
       modal.style.display = 'flex';
       
+      // Show toolbar
+      const toolbar = document.getElementById('resumeToolbar');
+      if (toolbar) toolbar.style.display = 'flex';
+      
       // Set up buttons
       downloadResumeBtn.onclick = () => downloadResumeDocx(requestId, company, title);
       downloadResumeBtn.style.display = 'inline-block';
@@ -2342,209 +2386,148 @@
 
   function renderResumeContent(data) {
     const modalBody = document.getElementById('viewModalBody');
-    let html = '<div id="resumeContentWrapper" style="max-width: 1000px; margin: 0 auto; padding: 20px; font-size: 14px; line-height: 1.6; color: var(--text-primary);">';
+    let html = '<div id="resumeContentWrapper" class="format-modern font-size-medium">';
     
+    // Header Section with Name and Contact
+    html += '<div class="resume-header">';
     if (data.name) {
-      html += `<div style="margin-bottom: 15px;">`;
-      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Full Name</label>`;
-      html += `<div contenteditable="${isEditMode}" data-field="name" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--accent); font-size: 18px; font-weight: 600; outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.name}</div>`;
-      html += `</div>`;
+      html += `<h1 contenteditable="${isEditMode}" data-field="name" class="resume-name">${data.name}</h1>`;
     }
     
     if (data.contact) {
-      html += `<div style="margin-bottom: 20px;">`;
-      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Contact Information</label>`;
-      html += '<div id="contactItemsContainer" style="display: flex; flex-wrap: wrap; gap: 15px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">';
+      const contactParts = [];
+      if (data.contact.email) contactParts.push(`<span contenteditable="${isEditMode}" data-field="contact.email">${data.contact.email}</span>`);
+      if (data.contact.phone) contactParts.push(`<span contenteditable="${isEditMode}" data-field="contact.phone">${data.contact.phone}</span>`);
+      if (data.contact.location) contactParts.push(`<span contenteditable="${isEditMode}" data-field="contact.location">${data.contact.location}</span>`);
+      if (data.contact.linkedin) contactParts.push(`<span contenteditable="${isEditMode}" data-field="contact.linkedin">${data.contact.linkedin}</span>`);
       
-      if (data.contact.email) {
-        html += `<div class="contact-item-inline" data-contact-type="email" style="display: flex; flex-direction: column; gap: 4px;">`;
-        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Email</label>`;
-        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.email" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.email}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('email')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Email">Delete</button>`;
-        html += `</div></div>`;
-      }
-      
-      if (data.contact.phone) {
-        html += `<div class="contact-item-inline" data-contact-type="phone" style="display: flex; flex-direction: column; gap: 4px;">`;
-        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Phone</label>`;
-        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.phone" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.phone}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('phone')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Phone">Delete</button>`;
-        html += `</div></div>`;
-      }
-      
-      if (data.contact.linkedin) {
-        html += `<div class="contact-item-inline" data-contact-type="linkedin" style="display: flex; flex-direction: column; gap: 4px;">`;
-        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">LinkedIn</label>`;
-        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.linkedin" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.linkedin}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('linkedin')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete LinkedIn">Delete</button>`;
-        html += `</div></div>`;
-      }
-      
-      if (data.contact.location) {
-        html += `<div class="contact-item-inline" data-contact-type="location" style="display: flex; flex-direction: column; gap: 4px;">`;
-        html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Location</label>`;
-        html += `<div style="display: flex; align-items: center; gap: 6px;">`;
-        html += `<span contenteditable="${isEditMode}" data-field="contact.location" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.contact.location}</span>`;
-        if (isEditMode) html += `<button onclick="deleteContactItem('location')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete Location">Delete</button>`;
-        html += `</div></div>`;
-      }
-      
-      // Loop through any additional/dynamic contact fields (like github, portfolio, etc.)
+      // Handle additional contact fields
       for (const [key, value] of Object.entries(data.contact)) {
         if (!['email', 'phone', 'linkedin', 'location'].includes(key)) {
-          const displayLabel = key.charAt(0).toUpperCase() + key.slice(1);
-          html += `<div class="contact-item-inline" data-contact-type="${key}" style="display: flex; flex-direction: column; gap: 4px;">`;
-          html += `<label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">${displayLabel}</label>`;
-          html += `<div style="display: flex; align-items: center; gap: 6px;">`;
-          html += `<span contenteditable="${isEditMode}" data-field="contact.${key}" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${value}</span>`;
-          if (isEditMode) html += `<button onclick="deleteContactItem('${key}')" style="padding: 2px 6px; font-size: 11px; background: #fee; color: #c00; border: 1px solid #fcc; border-radius: 3px; cursor: pointer;" title="Delete ${displayLabel}">Delete</button>`;
-          html += `</div></div>`;
+          contactParts.push(`<span contenteditable="${isEditMode}" data-field="contact.${key}">${value}</span>`);
         }
       }
       
-      html += '</div></div>';
+      if (contactParts.length > 0) {
+        html += `<div class="resume-contact-line">${contactParts.join(' • ')}</div>`;
+      }
     }
+    html += '</div>';
     
+    // Professional Summary
     if (data.summary) {
-      html += `<div style="margin-top: 20px; margin-bottom: 15px;">`;
-      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Professional Summary</label>`;
-      html += `<div contenteditable="${isEditMode}" data-field="summary" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${data.summary}</div>`;
-      html += `</div>`;
+      html += '<div class="resume-section">';
+      html += '<h2 class="resume-section-title">Professional Summary</h2>';
+      html += `<p contenteditable="${isEditMode}" data-field="summary" class="resume-summary">${data.summary}</p>`;
+      html += '</div>';
     }
     
+    // Technical Skills
     if (data.technical_skills) {
-      html += `<div style="margin-top: 20px; margin-bottom: 15px;">`;
-      html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Technical Skills ${isEditMode ? '<button onclick="addSkillCategory()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Category</button>' : ''}</label>`;
-      html += '<div id="technicalSkillsContainer" style="padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">';
+      html += '<div class="resume-section">';
+      html += '<h2 class="resume-section-title">Technical Skills</h2>';
+      html += '<div class="resume-skills-grid">';
+      
       let skillIndex = 0;
       for (const [category, skills] of Object.entries(data.technical_skills)) {
         if (Array.isArray(skills) && skills.length > 0) {
-          html += `<div style="margin-bottom: 12px;" data-skill-category="${category}" data-skill-index="${skillIndex}">`;
-          html += `<label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;"><span contenteditable="${isEditMode}" data-field="technical_skills_key.${skillIndex}" data-original-key="${category}" style="outline: ${isEditMode ? '1px dashed var(--border)' : 'none'}; padding: ${isEditMode ? '2px' : '0'};">${category}</span></label>`;
-          html += `<div style="display: flex; align-items: center; gap: 8px;">`;
-          html += `<div contenteditable="${isEditMode}" data-field="technical_skills.${category}" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${skills.join(', ')}</div>`;
-          if (isEditMode) {
-            html += `<button onclick="removeSkillCategory('${category}')" style="padding: 4px 8px; font-size: 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>`;
-          }
-          html += `</div></div>`;
+          html += '<div class="resume-skill-item">';
+          html += `<strong contenteditable="${isEditMode}" data-field="technical_skills_key.${skillIndex}" data-original-key="${category}" data-skill-category="${category}">${category}:</strong> `;
+          html += `<span contenteditable="${isEditMode}" data-field="technical_skills.${category}">${skills.join(', ')}</span>`;
+          html += '</div>';
           skillIndex++;
         }
       }
       html += '</div></div>';
     }
     
+    // Experience
     if (data.experience && data.experience.length > 0) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Experience</h3>`;
+      html += '<div class="resume-section">';
+      html += '<h2 class="resume-section-title">Professional Experience</h2>';
+      
       data.experience.forEach((exp, idx) => {
-        html += `<div style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);" data-exp-index="${idx}">`;
         const jobTitle = exp.job_title || exp.title || exp.role || 'Position';
         const company = exp.company || exp.organization || 'Company';
         const duration = exp.duration || exp.dates || exp.period || '';
         
-        // Company field with label
-        html += `<div style="margin-bottom: 12px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Company</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.company" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${company}</div>`;
-        html += `</div>`;
-        
-        // Job Title field with label
-        html += `<div style="margin-bottom: 12px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Job Title</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.title" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${jobTitle}</div>`;
-        html += `</div>`;
-        
-        // Duration field with label
-        html += `<div style="margin-bottom: 12px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Duration</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.duration" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${duration}</div>`;
-        html += `</div>`;
+        html += `<div class="resume-experience-item" data-exp-index="${idx}">`;
+        html += '<div class="resume-exp-header">';
+        html += '<div class="resume-exp-left">';
+        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.title" class="resume-exp-title">${jobTitle}</div>`;
+        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.company" class="resume-exp-company">${company}</div>`;
+        html += '</div>';
+        html += `<div contenteditable="${isEditMode}" data-field="experience.${idx}.duration" class="resume-exp-duration">${duration}</div>`;
+        html += '</div>';
         
         const bullets = exp.bullets || exp.points || exp.responsibilities || [];
         if (bullets && bullets.length > 0) {
-          html += `<div style="margin-bottom: 8px;">`;
-          html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Key Achievements</label>`;
-          html += '<ul style="margin: 0; padding-left: 20px; color: var(--text-primary);">';
+          html += '<ul class="resume-exp-bullets">';
           bullets.forEach((bullet, bidx) => {
-            html += `<li contenteditable="${isEditMode}" data-field="experience.${idx}.bullets.${bidx}" style="margin-bottom: 6px; padding: 4px; border-radius: 4px; outline: ${isEditMode ? '1px dashed var(--border)' : 'none'};">${bullet}</li>`;
+            html += '<li>';
+            html += `<span class="bullet-content" contenteditable="${isEditMode}" data-field="experience.${idx}.bullets.${bidx}">${bullet}</span>`;
+            if (isEditMode) {
+              html += `<button class="bullet-delete-btn" onclick="deleteExperienceBullet(${idx}, ${bidx})" title="Delete bullet point">Delete</button>`;
+            }
+            html += '</li>';
           });
           html += '</ul>';
-          html += `</div>`;
         }
-        html += `</div>`;
+        html += '</div>';
       });
+      html += '</div>';
     }
     
+    // Education
     if (data.education && data.education.length > 0) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Education</h3>`;
+      html += '<div class="resume-section">';
+      html += '<h2 class="resume-section-title">Education</h2>';
+      
       data.education.forEach((edu, idx) => {
-        html += `<div style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">`;
-        
-        // Degree field with label
-        html += `<div style="margin-bottom: 12px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Degree</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.degree" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${edu.degree || ''}</div>`;
-        html += `</div>`;
-        
-        // Institution field with label
-        html += `<div style="margin-bottom: 12px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Institution</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.institution" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${edu.institution || ''}</div>`;
-        html += `</div>`;
-        
-        // Year field with label
-        html += `<div style="margin-bottom: 8px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Year</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.year" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${edu.year || edu.graduation_date || ''}</div>`;
-        html += `</div>`;
-        
-        html += `</div>`;
+        html += '<div class="resume-education-item">';
+        html += '<div class="resume-edu-header">';
+        html += '<div class="resume-edu-left">';
+        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.degree" class="resume-edu-degree">${edu.degree || ''}</div>`;
+        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.institution" class="resume-edu-institution">${edu.institution || ''}</div>`;
+        html += '</div>';
+        html += `<div contenteditable="${isEditMode}" data-field="education.${idx}.year" class="resume-edu-year">${edu.year || edu.graduation_date || ''}</div>`;
+        html += '</div>';
+        html += '</div>';
       });
+      html += '</div>';
     }
     
-    if (data.certifications && data.certifications.length > 0) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Certifications</h3>`;
-      html += `<div style="padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">`;
-      data.certifications.forEach((cert, idx) => {
-        html += `<div style="margin-bottom: ${idx < data.certifications.length - 1 ? '12px' : '0'};">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Certification ${idx + 1}</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="certifications.${idx}" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${typeof cert === 'string' ? cert : cert.name}</div>`;
-        html += `</div>`;
-      });
-      html += `</div>`;
-    }
-    
+    // Projects
     if (data.projects && data.projects.length > 0) {
-      html += `<h3 style="color: var(--primary); margin-top: 20px;">Projects</h3>`;
+      html += '<div class="resume-section">';
+      html += '<h2 class="resume-section-title">Projects</h2>';
+      
       data.projects.forEach((proj, idx) => {
-        html += `<div style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary);">`;
-        
-        // Project Name field with label
-        html += `<div style="margin-bottom: 12px;">`;
-        html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Project Name</label>`;
-        html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.name" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${proj.name || ''}</div>`;
-        html += `</div>`;
-        
-        // Description field with label
+        html += '<div class="resume-project-item">';
+        html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.name" class="resume-project-title">${proj.name || ''}</div>`;
         if (proj.description) {
-          html += `<div style="margin-bottom: 12px;">`;
-          html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Description</label>`;
-          html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.description" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${proj.description}</div>`;
-          html += `</div>`;
+          html += `<p contenteditable="${isEditMode}" data-field="projects.${idx}.description" class="resume-project-desc">${proj.description}</p>`;
         }
-        
-        // Technologies field with label
         if (proj.technologies) {
-          html += `<div style="margin-bottom: 8px;">`;
-          html += `<label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px;">Technologies</label>`;
-          html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.technologies" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); outline: ${isEditMode ? '2px solid var(--primary)' : 'none'};">${Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies}</div>`;
-          html += `</div>`;
+          const techStr = Array.isArray(proj.technologies) ? proj.technologies.join(', ') : proj.technologies;
+          html += `<div contenteditable="${isEditMode}" data-field="projects.${idx}.technologies" class="resume-project-tech"><strong>Technologies:</strong> ${techStr}</div>`;
         }
-        
-        html += `</div>`;
+        html += '</div>';
       });
+      html += '</div>';
+    }
+    
+    // Certifications
+    if (data.certifications && data.certifications.length > 0) {
+      html += '<div class="resume-section">';
+      html += '<h2 class="resume-section-title">Certifications</h2>';
+      html += '<ul class="resume-cert-list">';
+      
+      data.certifications.forEach((cert, idx) => {
+        const certName = typeof cert === 'string' ? cert : cert.name;
+        html += `<li contenteditable="${isEditMode}" data-field="certifications.${idx}">${certName}</li>`;
+      });
+      html += '</ul></div>';
     }
     
     html += '</div>';
@@ -2566,6 +2549,98 @@
       saveBtn.style.display = 'none';
       renderResumeContent(currentResumeData);
     }
+  }
+
+  // Resume Formatting Toolbar Functions
+  function changeResumeFormat(format) {
+    const wrapper = document.getElementById('resumeContentWrapper');
+    if (!wrapper) return;
+    
+    // Remove existing format classes
+    wrapper.classList.remove('format-classic', 'format-modern');
+    
+    // Add selected format class
+    wrapper.classList.add(`format-${format}`);
+  }
+
+  function changeResumeFontSize(size) {
+    const wrapper = document.getElementById('resumeContentWrapper');
+    if (!wrapper) return;
+    
+    // Remove existing font size classes
+    wrapper.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+    
+    // Add selected font size class
+    wrapper.classList.add(`font-size-${size}`);
+  }
+
+  function toggleCompactMode() {
+    const wrapper = document.getElementById('resumeContentWrapper');
+    if (!wrapper) return;
+    
+    wrapper.classList.toggle('compact-mode');
+    
+    const btn = document.getElementById('compactModeBtn');
+    if (btn) {
+      const isCompact = wrapper.classList.contains('compact-mode');
+      btn.classList.toggle('active', isCompact);
+      btn.innerHTML = isCompact 
+        ? '<span>📄</span><span>Normal</span>' 
+        : '<span>📏</span><span>Compact</span>';
+    }
+  }
+
+  function printResume() {
+    // Temporarily exit edit mode for clean printing
+    const wasEditMode = isEditMode;
+    if (isEditMode) {
+      isEditMode = false;
+      renderResumeContent(currentResumeData);
+    }
+    
+    // Wait for render, then print
+    setTimeout(() => {
+      window.print();
+      
+      // Restore edit mode if it was active
+      if (wasEditMode) {
+        setTimeout(() => {
+          isEditMode = true;
+          renderResumeContent(currentResumeData);
+        }, 100);
+      }
+    }, 50);
+  }
+
+  function exportToPDF() {
+    // Use browser's print-to-PDF functionality
+    const originalTitle = document.title;
+    const wasEditMode = isEditMode;
+    
+    // Set a descriptive filename for the PDF
+    if (currentResumeData && currentResumeData.name) {
+      document.title = `${currentResumeData.name}_Resume`;
+    }
+    
+    // Temporarily exit edit mode for clean export
+    if (isEditMode) {
+      isEditMode = false;
+      renderResumeContent(currentResumeData);
+    }
+    
+    // Wait for render, then open print dialog
+    setTimeout(() => {
+      window.print();
+      
+      // Restore original title and edit mode
+      setTimeout(() => {
+        document.title = originalTitle;
+        if (wasEditMode) {
+          isEditMode = true;
+          renderResumeContent(currentResumeData);
+        }
+      }, 100);
+    }, 50);
   }
 
   async function saveResumeChanges() {
@@ -2896,8 +2971,13 @@
   }
 
   // Remove skill category
-  function removeSkillCategory(category) {
-    if (!confirm(`Are you sure you want to remove "${category}"?`)) {
+  async function removeSkillCategory(category) {
+    const confirmed = await customConfirm(
+      `Are you sure you want to remove "${category}"?`,
+      'Remove Skill Category'
+    );
+    
+    if (!confirmed) {
       return;
     }
     
@@ -2908,11 +2988,19 @@
     
     // Re-render to reflect changes
     renderResumeContent(currentResumeData);
+    
+    // Show success message
+    showResult(`✅ ${category} removed successfully`);
   }
 
   // Delete contact item
-  function deleteContactItem(type) {
-    if (!confirm(`Are you sure you want to delete this ${type}?`)) {
+  async function deleteContactItem(type) {
+    const confirmed = await customConfirm(
+      `Are you sure you want to delete this ${type}?`,
+      'Delete Contact Item'
+    );
+    
+    if (!confirmed) {
       return;
     }
     
@@ -2926,6 +3014,43 @@
     
     // Show success message
     showResult(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`);
+  }
+
+  async function deleteExperienceBullet(expIdx, bulletIdx) {
+    const confirmed = await customConfirm(
+      'Are you sure you want to delete this bullet point?',
+      'Delete Bullet Point'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+    
+    // Remove bullet from data
+    if (currentResumeData.experience && currentResumeData.experience[expIdx]) {
+      const bullets = currentResumeData.experience[expIdx].bullets || 
+                     currentResumeData.experience[expIdx].points || 
+                     currentResumeData.experience[expIdx].responsibilities;
+      
+      if (bullets && Array.isArray(bullets) && bulletIdx < bullets.length) {
+        bullets.splice(bulletIdx, 1);
+        
+        // Update the bullets array reference
+        if (currentResumeData.experience[expIdx].bullets) {
+          currentResumeData.experience[expIdx].bullets = bullets;
+        } else if (currentResumeData.experience[expIdx].points) {
+          currentResumeData.experience[expIdx].points = bullets;
+        } else if (currentResumeData.experience[expIdx].responsibilities) {
+          currentResumeData.experience[expIdx].responsibilities = bullets;
+        }
+      }
+    }
+    
+    // Re-render to reflect changes
+    renderResumeContent(currentResumeData);
+    
+    // Show success message
+    showResult('✅ Bullet point deleted successfully');
   }
 
   // Help modal functions
