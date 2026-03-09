@@ -153,6 +153,105 @@ class ResumeJob(Base):
         Index('idx_user_application_status', 'user_id', 'application_status'),
     )
 
+
+# ============================================================================
+# CHATBOT SYSTEM MODELS
+# ============================================================================
+
+class ChatSession(Base):
+    """Chat sessions for Help, Interview, Chat, and Feedback modes"""
+    __tablename__ = "chat_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)  # References User.id
+    session_type = Column(String(50), index=True)  # help, interview, chat, feedback
+    session_metadata = Column('metadata', JSON, nullable=True)  # Additional session data (e.g., job description for interviews)
+    
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        Index('idx_user_session_type', 'user_id', 'session_type'),
+    )
+
+
+class ChatMessage(Base):
+    """Individual messages within a chat session"""
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, index=True)  # References ChatSession.id
+    role = Column(String(20))  # user, assistant, system
+    content = Column(Text)
+    
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    __table_args__ = (
+        Index('idx_session_created', 'session_id', 'created_at'),
+    )
+
+
+class InterviewSession(Base):
+    """Completed interview sessions with reports"""
+    __tablename__ = "interview_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)  # References User.id
+    
+    job_title = Column(String(255))
+    company_name = Column(String(255), nullable=True)
+    overall_score = Column(Integer)  # 0-100
+    
+    category_scores = Column(JSON)  # Array of category score objects
+    feedback = Column(JSON)  # Full interview report
+    share_token = Column(String(64), unique=True, index=True)  # For public sharing
+    
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    __table_args__ = (
+        Index('idx_user_score', 'user_id', 'overall_score'),
+    )
+
+
+class InterviewUsage(Base):
+    """Track interview usage for rate limiting"""
+    __tablename__ = "interview_usage"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)  # References User.id
+    session_date = Column(DateTime, index=True)  # Date of interview sessions
+    session_count = Column(Integer, default=0)  # Number of interviews completed that day
+    
+    __table_args__ = (
+        Index('idx_user_date', 'user_id', 'session_date'),
+    )
+
+
+class UserFeedback(Base):
+    """User feedback, bug reports, feature requests"""
+    __tablename__ = "user_feedback"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)  # References User.id
+    feedback_type = Column(String(50), index=True)  # bug_report, feature_request, general
+    
+    title = Column(String(255))
+    description = Column(Text)
+    
+    status = Column(String(50), default="open", index=True)  # open, in_progress, resolved, closed
+    priority = Column(String(20), default="medium", index=True)  # low, medium, high, critical
+    
+    feedback_metadata = Column(JSON, nullable=True)  # Additional context (e.g., category, affected feature)
+    
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        Index('idx_status_priority', 'status', 'priority'),
+        Index('idx_type_created', 'feedback_type', 'created_at'),
+    )
+
+
 # Database connection
 def get_database_url():
     """Get database URL - supports PostgreSQL and SQLite"""

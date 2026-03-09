@@ -33,9 +33,13 @@ from app.endpoints import (
     extract_keywords_from_jd, regenerate_keywords, generate_resume_with_feedback, cleanup_expired_states_endpoint,
     update_application_status, get_application_stats
 )
+from app.chatbot.router import router as chatbot_router
 
 # --------------------- App Setup ---------------------
 app = FastAPI(title="Resume Tailor MVP")
+
+# Register chatbot router
+app.include_router(chatbot_router)
 
 # Rate limiting setup
 limiter = Limiter(key_func=get_remote_address)

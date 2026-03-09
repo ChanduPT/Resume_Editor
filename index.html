@@ -5042,6 +5042,9 @@
       
       loadDashboardStats();
       loadDashboardHistory();
+      
+      // Initialize chatbot
+      initChatbot();
     } catch (error) {
       dashboardCredentials = null;
       // Display specific error message from backend
@@ -6217,6 +6220,9 @@
       
       // Initialize tutorial system after login
       initTutorial();
+      
+      // Initialize chatbot
+      initChatbot();
       
     } catch (error) {
       console.error('Login failed:', error);
@@ -8105,6 +8111,1632 @@ document.addEventListener('keydown', function(e) {
     prevTutorialStep();
   } else if (e.key === 'Escape') {
     endTutorial();
+  }
+});
+</script>
+
+<!-- ============================================================================
+     AI CHATBOT SYSTEM
+     ============================================================================ -->
+
+<!-- Floating Chat Button -->
+<button id="chatbotFloatingBtn" class="chatbot-floating-btn" onclick="toggleChatPanel()" title="AI Assistant">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
+  <span id="chatbotUnreadBadge" class="chatbot-unread-badge" style="display: none;">1</span>
+</button>
+
+<!-- Chat Panel -->
+<div id="chatbotPanel" class="chatbot-panel">
+  <div class="chatbot-header">
+    <h3 class="chatbot-title">AI Assistant</h3>
+    <button class="chatbot-close-btn" onclick="toggleChatPanel()">✕</button>
+  </div>
+  
+  <!-- Mode Tabs -->
+  <div class="chatbot-tabs">
+    <button class="chatbot-tab active" data-mode="help" onclick="switchChatMode('help')">
+      <span>💡</span> Help
+    </button>
+    <button class="chatbot-tab" data-mode="interview" onclick="switchChatMode('interview')">
+      <span>🎯</span> Interview
+    </button>
+    <button class="chatbot-tab" data-mode="chat" onclick="switchChatMode('chat')">
+      <span>💬</span> Chat
+    </button>
+    <button class="chatbot-tab" data-mode="feedback" onclick="switchChatMode('feedback')">
+      <span>📝</span> Feedback
+    </button>
+  </div>
+  
+  <!-- Help Mode -->
+  <div id="chatModeHelp" class="chatbot-mode-content active">
+    <div class="chatbot-messages" id="helpMessages">
+      <div class="chatbot-message assistant">
+        <div class="message-content">
+          Hello! I'm your AI assistant. Ask me anything about using the Resume Builder:
+          <ul style="margin: 8px 0 0 20px; font-size: 13px;">
+            <li>How do I upload a resume?</li>
+            <li>What formats are supported?</li>
+            <li>How does AI tailoring work?</li>
+            <li>Can I edit the generated resume?</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="chatbot-input-area">
+      <textarea id="helpInput" class="chatbot-input" placeholder="Ask a question..." rows="2"></textarea>
+      <button class="chatbot-send-btn" onclick="sendHelpMessage()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Interview Mode -->
+  <div id="chatModeInterview" class="chatbot-mode-content">
+    <!-- Interview Start Screen -->
+    <div id="interviewStartScreen" class="interview-screen active">
+      <div class="interview-intro">
+        <div class="interview-icon">🎯</div>
+        <h3>AI Interview Simulator</h3>
+        <p>Practice realistic interviews based on actual job descriptions. Get scored and receive detailed feedback.</p>
+        
+        <div class="interview-info-grid">
+          <div class="interview-info-item">
+            <strong>7 Questions</strong>
+            <span>Technical, behavioral, and situational</span>
+          </div>
+          <div class="interview-info-item">
+            <strong>20-30 min</strong>
+            <span>At your own pace</span>
+          </div>
+          <div class="interview-info-item">
+            <strong>Detailed Report</strong>
+            <span>Scores and improvements</span>
+          </div>
+          <div class="interview-info-item">
+            <strong id="interviewsRemainingText">2 Per Day</strong>
+            <span id="interviewsRemainingSubtext">Limit resets daily</span>
+          </div>
+        </div>
+        
+        <div class="interview-jd-input">
+          <label>Select a job from your applications:</label>
+          <select id="interviewJobSelect" class="chatbot-select" onchange="loadJobForInterview(this.value)">
+            <option value="">-- Choose a job --</option>
+          </select>
+          
+          <div style="text-align: center; margin: 12px 0; color: #94a3b8; font-size: 13px;">OR</div>
+          
+          <label>Paste job description manually:</label>
+          <textarea id="interviewJDInput" class="chatbot-textarea" placeholder="Paste job description here..." rows="6"></textarea>
+          
+          <input type="text" id="interviewJobTitle" class="chatbot-input-field" placeholder="Job Title (required)" style="margin-top: 8px;">
+          <input type="text" id="interviewCompanyName" class="chatbot-input-field" placeholder="Company Name (optional)" style="margin-top: 8px;">
+        </div>
+        
+        <button class="chatbot-primary-btn" onclick="startInterview()">
+          Start Interview
+        </button>
+      </div>
+    </div>
+    
+    <!-- Interview Active Screen -->
+    <div id="interviewActiveScreen" class="interview-screen">
+      <div class="interview-progress-bar">
+        <div id="interviewProgressFill" class="interview-progress-fill" style="width: 0%"></div>
+      </div>
+      <div class="interview-progress-text" id="interviewProgressText">Question 1 of 7</div>
+      
+      <div class="interview-question-container">
+        <div class="interview-question-badge" id="interviewQuestionBadge">Technical</div>
+        <div class="interview-question" id="interviewCurrentQuestion"></div>
+      </div>
+      
+      <div class="interview-answer-area">
+        <textarea id="interviewAnswerInput" class="chatbot-textarea" placeholder="Type your answer here..." rows="8"></textarea>
+        <div class="interview-answer-actions">
+          <button class="chatbot-secondary-btn" onclick="skipInterviewQuestion()">Skip</button>
+          <button class="chatbot-primary-btn" onclick="submitInterviewAnswer()">Submit Answer</button>
+        </div>
+      </div>
+      
+      <!-- Evaluation Feedback -->
+      <div id="interviewEvaluation" class="interview-evaluation" style="display: none;">
+        <div class="evaluation-header">
+          <span class="evaluation-icon">✓</span>
+          <span>Answer Evaluated</span>
+        </div>
+        <div class="evaluation-scores">
+          <div class="evaluation-score-item">
+            <span>Technical</span>
+            <strong id="evalTechnical">-</strong>
+          </div>
+          <div class="evaluation-score-item">
+            <span>Communication</span>
+            <strong id="evalCommunication">-</strong>
+          </div>
+          <div class="evaluation-score-item">
+            <span>Problem-Solving</span>
+            <strong id="evalProblemSolving">-</strong>
+          </div>
+          <div class="evaluation-score-item">
+            <span>Real-World</span>
+            <strong id="evalRealWorld">-</strong>
+          </div>
+        </div>
+        <div class="evaluation-feedback" id="evalFeedback"></div>
+        <button class="chatbot-primary-btn" onclick="nextInterviewQuestion()">Next Question</button>
+      </div>
+    </div>
+    
+    <!-- Interview Report Screen -->
+    <div id="interviewReportScreen" class="interview-screen">
+      <div class="interview-report">
+        <div class="report-header">
+          <div class="report-icon">🎉</div>
+          <h3>Interview Complete!</h3>
+          <div class="report-overall-score">
+            <div class="report-score-circle">
+              <canvas id="reportScoreChart" width="120" height="120"></canvas>
+              <div class="report-score-text">
+                <div id="reportOverallScore" class="report-score-number">0</div>
+                <div class="report-score-label">Overall</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="report-categories">
+          <h4>Category Scores</h4>
+          <div id="reportCategoryScores"></div>
+        </div>
+        
+        <div class="report-section">
+          <h4>💪 Strengths</h4>
+          <ul id="reportStrengths"></ul>
+        </div>
+        
+        <div class="report-section">
+          <h4>📈 Areas for Improvement</h4>
+          <ul id="reportImprovements"></ul>
+        </div>
+        
+        <div class="report-section">
+          <h4>💡 Recommendations</h4>
+          <ul id="reportRecommendations"></ul>
+        </div>
+        
+        <div class="report-actions">
+          <button class="chatbot-secondary-btn" onclick="shareInterviewReport()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            Share Report
+          </button>
+          <button class="chatbot-primary-btn" onclick="resetInterview()">New Interview</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Chat Mode -->
+  <div id="chatModeChat" class="chatbot-mode-content">
+    <div class="chatbot-messages" id="chatMessages">
+      <div class="chatbot-message assistant">
+        <div class="message-content">
+          Hi! I'm here to help with career advice, job search strategies, resume tips, and interview preparation. How can I assist you today?
+        </div>
+      </div>
+    </div>
+    <div class="chatbot-input-area">
+      <textarea id="chatInput" class="chatbot-input" placeholder="Ask about career advice..." rows="2"></textarea>
+      <button class="chatbot-send-btn" onclick="sendChatMessage()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Feedback Mode -->
+  <div id="chatModeFeedback" class="chatbot-mode-content">
+    <div class="feedback-form">
+      <h4>Share Your Feedback</h4>
+      <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px;">
+        Help us improve! Report bugs, request features, or share general feedback.
+      </p>
+      
+      <div class="feedback-type-selector">
+        <button class="feedback-type-btn active" data-type="bug" onclick="selectFeedbackType('bug')">
+          <span>🐛</span> Bug Report
+        </button>
+        <button class="feedback-type-btn" data-type="feature" onclick="selectFeedbackType('feature')">
+          <span>✨</span> Feature Request
+        </button>
+        <button class="feedback-type-btn" data-type="general" onclick="selectFeedbackType('general')">
+          <span>💬</span> General
+        </button>
+      </div>
+      
+      <input type="text" id="feedbackTitle" class="chatbot-input-field" placeholder="Brief title (required)" maxlength="200">
+      
+      <textarea id="feedbackDescription" class="chatbot-textarea" placeholder="Describe in detail..." rows="8"></textarea>
+      
+      <button class="chatbot-primary-btn" onclick="submitFeedback()">
+        Submit Feedback
+      </button>
+      
+      <div id="feedbackSuccess" class="feedback-success" style="display: none;">
+        <div style="font-size: 32px; margin-bottom: 8px;">✅</div>
+        <strong>Thank you for your feedback!</strong>
+        <p>Your submission has been received and will be reviewed by our team.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ============================================================================
+   CHATBOT STYLES
+   ============================================================================ */
+
+.chatbot-floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.chatbot-floating-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.chatbot-unread-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.chatbot-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 420px;
+  max-width: calc(100vw - 48px);
+  height: 650px;
+  max-height: calc(100vh - 100px);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  display: none;
+  flex-direction: column;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+}
+
+.chatbot-panel.active {
+  display: flex;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chatbot-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chatbot-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chatbot-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.chatbot-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-tabs {
+  display: flex;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.chatbot-tab {
+  flex: 1;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.chatbot-tab:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.chatbot-tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+  background: white;
+}
+
+.chatbot-mode-content {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chatbot-mode-content.active {
+  display: flex;
+}
+
+.chatbot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chatbot-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  animation: messageSlide 0.3s ease;
+}
+
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chatbot-message.user {
+  align-self: flex-end;
+}
+
+.chatbot-message.assistant {
+  align-self: flex-start;
+}
+
+.message-content {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chatbot-message.user .message-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chatbot-message.assistant .message-content {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-bottom-left-radius: 4px;
+}
+
+.message-loading {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  width: fit-content;
+}
+
+.message-loading span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.message-loading span:nth-child(1) { animation-delay: -0.32s; }
+.message-loading span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+.chatbot-input-area {
+  padding: 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.chatbot-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chatbot-input:focus {
+  border-color: #667eea;
+}
+
+.chatbot-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.chatbot-send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.chatbot-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Interview Styles */
+.interview-screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.interview-screen.active {
+  display: flex;
+}
+
+.interview-intro {
+  text-align: center;
+}
+
+.interview-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.interview-intro h3 {
+  font-size: 20px;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.interview-intro p {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 24px 0;
+}
+
+.interview-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.interview-info-item {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.interview-info-item strong {
+  display: block;
+  color: #1e293b;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.interview-info-item span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.interview-jd-input {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.interview-jd-input label {
+  display: block;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.chatbot-select,
+.chatbot-textarea,
+.chatbot-input-field {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chatbot-select:focus,
+.chatbot-textarea:focus,
+.chatbot-input-field:focus {
+  border-color: #667eea;
+}
+
+.chatbot-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.chatbot-primary-btn {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chatbot-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.chatbot-primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.chatbot-secondary-btn {
+  padding: 12px 24px;
+  background: white;
+  color: #667eea;
+  border: 1px solid #667eea;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chatbot-secondary-btn:hover {
+  background: #f8fafc;
+}
+
+.interview-progress-bar {
+  height: 4px;
+  background: #e2e8f0;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.interview-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+.interview-progress-text {
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.interview-question-container {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.interview-question-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #667eea;
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.interview-question {
+  font-size: 16px;
+  color: #1e293b;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.interview-answer-area {
+  margin-bottom: 20px;
+}
+
+.interview-answer-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.interview-answer-actions button {
+  flex: 1;
+}
+
+.interview-evaluation {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.evaluation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #15803d;
+  margin-bottom: 12px;
+}
+
+.evaluation-icon {
+  width: 24px;
+  height: 24px;
+  background: #22c55e;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.evaluation-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.evaluation-score-item {
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.evaluation-score-item span {
+  color: #64748b;
+}
+
+.evaluation-score-item strong {
+  color: #15803d;
+  font-size: 15px;
+}
+
+.evaluation-feedback {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.interview-report {
+  text-align: center;
+}
+
+.report-header {
+  margin-bottom: 24px;
+}
+
+.report-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.report-header h3 {
+  font-size: 24px;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+}
+
+.report-overall-score {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.report-score-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.report-score-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.report-score-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.report-score-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.report-categories {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.report-categories h4 {
+  font-size: 14px;
+  color: #475569;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.report-category-item {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-category-item .category-name {
+  font-size: 14px;
+  color: #475569;
+}
+
+.report-category-item .category-score {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.report-section {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.report-section h4 {
+  font-size: 14px;
+  color: #475569;
+  margin: 0 0 8px 0;
+}
+
+.report-section ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.report-section li {
+  margin-bottom: 4px;
+}
+
+.report-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.report-actions button {
+  flex: 1;
+}
+
+/* Feedback Styles */
+.feedback-form {
+  padding: 20px;
+}
+
+.feedback-form h4 {
+  font-size: 18px;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.feedback-type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.feedback-type-btn {
+  flex: 1;
+  padding: 12px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.feedback-type-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.feedback-type-btn.active {
+  background: #ede9fe;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.feedback-type-btn span {
+  font-size: 20px;
+}
+
+.chatbot-input-field {
+  margin-bottom: 12px;
+}
+
+.feedback-success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.feedback-success strong {
+  display: block;
+  color: #15803d;
+  margin-bottom: 8px;
+}
+
+.feedback-success p {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chatbot-panel {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+  }
+  
+  .chatbot-floating-btn {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+</style>
+
+<script>
+// ============================================================================
+// CHATBOT JAVASCRIPT
+// ============================================================================
+
+let chatbotState = {
+  currentMode: 'help',
+  helpSessionId: null,
+  chatSessionId: null,
+  interviewSessionId: null,
+  currentInterviewData: null,
+  selectedFeedbackType: 'bug'
+};
+
+function toggleChatPanel() {
+  const panel = document.getElementById('chatbotPanel');
+  const btn = document.getElementById('chatbotFloatingBtn');
+  
+  if (panel.classList.contains('active')) {
+    panel.classList.remove('active');
+    btn.style.display = 'flex';
+  } else {
+    panel.classList.add('active');
+    btn.style.display = 'none';
+    
+    // Load user jobs for interview mode
+    if (chatbotState.currentMode === 'interview') {
+      loadUserJobsForInterview();
+    }
+    
+    // Check interview usage
+    checkInterviewUsage();
+  }
+}
+
+function switchChatMode(mode) {
+  // Update tabs
+  document.querySelectorAll('.chatbot-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.mode === mode);
+  });
+  
+  // Update content
+  document.querySelectorAll('.chatbot-mode-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  document.getElementById('chatMode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  
+  chatbotState.currentMode = mode;
+  
+  // Load data if needed
+  if (mode === 'interview') {
+    loadUserJobsForInterview();
+    checkInterviewUsage();
+  }
+}
+
+// ============================================================================
+// HELP MODE
+// ============================================================================
+
+async function sendHelpMessage() {
+  const input = document.getElementById('helpInput');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  // Add user message
+  addChatMessage('helpMessages', 'user', message);
+  input.value = '';
+  
+  // Show loading
+  const loadingId = addLoadingMessage('helpMessages');
+  
+  try {
+    // Create session if needed
+    if (!chatbotState.helpSessionId) {
+      const sessionResp = await dashApiCall('/api/chatbot/sessions/start', {
+        method: 'POST',
+        body: JSON.stringify({ session_type: 'help' })
+      });
+      chatbotState.helpSessionId = sessionResp.id;
+    }
+    
+    // Send message
+    const response = await dashApiCall(`/api/chatbot/sessions/${chatbotState.helpSessionId}/message`, {
+      method: 'POST',
+      body: JSON.stringify({ content: message })
+    });
+    
+    // Remove loading and add response
+    removeLoadingMessage(loadingId);
+    addChatMessage('helpMessages', 'assistant', response.content);
+    
+  } catch (error) {
+    removeLoadingMessage(loadingId);
+    addChatMessage('helpMessages', 'assistant', 'Sorry, I encountered an error. Please try again.');
+    console.error('Help message error:', error);
+  }
+}
+
+// Handle Enter key in help input
+document.addEventListener('DOMContentLoaded', function() {
+  const helpInput = document.getElementById('helpInput');
+  if (helpInput) {
+    helpInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendHelpMessage();
+      }
+    });
+  }
+});
+
+// ============================================================================
+// CHAT MODE
+// ============================================================================
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  // Add user message
+  addChatMessage('chatMessages', 'user', message);
+  input.value = '';
+  
+  // Show loading
+  const loadingId = addLoadingMessage('chatMessages');
+  
+  try {
+    // Create session if needed
+    if (!chatbotState.chatSessionId) {
+      const sessionResp = await dashApiCall('/api/chatbot/sessions/start', {
+        method: 'POST',
+        body: JSON.stringify({ session_type: 'chat' })
+      });
+      chatbotState.chatSessionId = sessionResp.id;
+    }
+    
+    // Send message
+    const response = await dashApiCall(`/api/chatbot/sessions/${chatbotState.chatSessionId}/message`, {
+      method: 'POST',
+      body: JSON.stringify({ content: message })
+    });
+    
+    // Remove loading and add response
+    removeLoadingMessage(loadingId);
+    addChatMessage('chatMessages', 'assistant', response.content);
+    
+  } catch (error) {
+    removeLoadingMessage(loadingId);
+    addChatMessage('chatMessages', 'assistant', 'Sorry, I encountered an error. Please try again.');
+    console.error('Chat message error:', error);
+  }
+}
+
+// Handle Enter key in chat input
+document.addEventListener('DOMContentLoaded', function() {
+  const chatInput = document.getElementById('chatInput');
+  if (chatInput) {
+    chatInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+  }
+});
+
+// ============================================================================
+// INTERVIEW MODE
+// ============================================================================
+
+async function loadUserJobsForInterview() {
+  try {
+    const response = await dashApiCall('/api/user/jobs');
+    const jobs = response.jobs || [];
+    const select = document.getElementById('interviewJobSelect');
+    
+    // Clear existing options except first
+    select.innerHTML = '<option value="">-- Choose a job --</option>';
+    
+    // Add job options
+    jobs.forEach(job => {
+      const option = document.createElement('option');
+      option.value = job.request_id;
+      option.textContent = `${job.job_title} at ${job.company_name}`;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error loading jobs:', error);
+  }
+}
+
+async function loadJobForInterview(requestId) {
+  if (!requestId) {
+    document.getElementById('interviewJDInput').value = '';
+    document.getElementById('interviewJobTitle').value = '';
+    document.getElementById('interviewCompanyName').value = '';
+    return;
+  }
+  
+  try {
+    const job = await dashApiCall(`/api/job/${requestId}`);
+    document.getElementById('interviewJDInput').value = job.jd_text || '';
+    document.getElementById('interviewJobTitle').value = job.job_title || '';
+    document.getElementById('interviewCompanyName').value = job.company_name || '';
+  } catch (error) {
+    showToast('Error loading job details', 'error');
+    console.error('Error:', error);
+  }
+}
+
+async function checkInterviewUsage() {
+  try {
+    const usage = await dashApiCall('/api/chatbot/interview/usage');
+    document.getElementById('interviewsRemainingText').textContent = 
+      `${usage.interviews_remaining_today}/${usage.daily_limit} Remaining`;
+    document.getElementById('interviewsRemainingSubtext').textContent = 
+      usage.can_start_new_interview ? 'Available today' : 'Limit reached';
+  } catch (error) {
+    console.error('Error checking usage:', error);
+  }
+}
+
+async function startInterview() {
+  const jdText = document.getElementById('interviewJDInput').value.trim();
+  const jobTitle = document.getElementById('interviewJobTitle').value.trim();
+  const companyName = document.getElementById('interviewCompanyName').value.trim();
+  
+  if (!jdText || !jobTitle) {
+    showToast('Please provide job description and job title', 'error');
+    return;
+  }
+  
+  try {
+    showToast('Generating interview questions...', 'info');
+    
+    const response = await dashApiCall('/api/chatbot/interview/start', {
+      method: 'POST',
+      body: JSON.stringify({
+        job_description: jdText,
+        job_title: jobTitle,
+        company_name: companyName || null
+      })
+    });
+    
+    chatbotState.interviewSessionId = response.session_id;
+    chatbotState.currentInterviewData = {
+      totalQuestions: response.total_questions,
+      currentQuestionIndex: 0,
+      currentQuestion: response.first_question
+    };
+    
+    // Switch to active screen
+    document.getElementById('interviewStartScreen').classList.remove('active');
+    document.getElementById('interviewActiveScreen').classList.add('active');
+    
+    // Display first question
+    displayInterviewQuestion(response.first_question);
+    updateInterviewProgress();
+    
+    showToast('Interview started!', 'success');
+    
+  } catch (error) {
+    if (error.message && error.message.includes('limit')) {
+      showToast('Daily interview limit reached. Try again tomorrow!', 'error');
+    } else {
+      showToast('Error starting interview. Please try again.', 'error');
+    }
+    console.error('Start interview error:', error);
+  }
+}
+
+function displayInterviewQuestion(question) {
+  document.getElementById('interviewCurrentQuestion').textContent = question.question;
+  document.getElementById('interviewQuestionBadge').textContent = 
+    question.type.charAt(0).toUpperCase() + question.type.slice(1);
+  document.getElementById('interviewAnswerInput').value = '';
+  document.getElementById('interviewEvaluation').style.display = 'none';
+}
+
+function updateInterviewProgress() {
+  const data = chatbotState.currentInterviewData;
+  const progress = ((data.currentQuestionIndex + 1) / data.totalQuestions) * 100;
+  
+  document.getElementById('interviewProgressFill').style.width = progress + '%';
+  document.getElementById('interviewProgressText').textContent = 
+    `Question ${data.currentQuestionIndex + 1} of ${data.totalQuestions}`;
+}
+
+async function submitInterviewAnswer() {
+  const answer = document.getElementById('interviewAnswerInput').value.trim();
+  
+  if (!answer) {
+    showToast('Please provide an answer', 'error');
+    return;
+  }
+  
+  try {
+    showToast('Evaluating your answer...', 'info');
+    
+    const response = await dashApiCall(`/api/chatbot/interview/${chatbotState.interviewSessionId}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ answer })
+    });
+    
+    // Display evaluation
+    displayEvaluation(response.evaluation);
+    
+    // Store next question  
+    chatbotState.currentInterviewData.nextQuestion = response.next_question;
+    chatbotState.currentInterviewData.isComplete = response.is_complete;
+    
+    if (!response.is_complete) {
+      chatbotState.currentInterviewData.currentQuestionIndex = response.progress.current;
+    }
+    
+  } catch (error) {
+    showToast('Error submitting answer', 'error');
+    console.error('Submit answer error:', error);
+  }
+}
+
+function displayEvaluation(evaluation) {
+  document.getElementById('evalTechnical').textContent = evaluation.technical_accuracy + '/10';
+  document.getElementById('evalCommunication').textContent = evaluation.communication + '/10';
+  document.getElementById('evalProblemSolving').textContent = evaluation.problem_solving + '/10';
+  document.getElementById('evalRealWorld').textContent = evaluation.real_world_application + '/10';
+  document.getElementById('evalFeedback').textContent = evaluation.feedback;
+  
+  document.getElementById('interviewEvaluation').style.display = 'block';
+  
+  // Scroll to evaluation
+  document.getElementById('interviewEvaluation').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function nextInterviewQuestion() {
+  const data = chatbotState.currentInterviewData;
+  
+  if (data.isComplete) {
+    completeInterview();
+  } else {
+    displayInterviewQuestion(data.nextQuestion);
+    updateInterviewProgress();
+  }
+}
+
+function skipInterviewQuestion() {
+  // Simulate empty answer
+  document.getElementById('interviewAnswerInput').value = 'I would like to skip this question.';
+  submitInterviewAnswer();
+}
+
+async function completeInterview() {
+  try {
+    showToast('Generating your interview report...', 'info');
+    
+    const report = await dashApiCall(`/api/chatbot/interview/${chatbotState.interviewSessionId}/complete`, {
+      method: 'POST'
+    });
+    
+    // Switch to report screen
+    document.getElementById('interviewActiveScreen').classList.remove('active');
+    document.getElementById('interviewReportScreen').classList.add('active');
+    
+    // Display report
+    displayInterviewReport(report);
+    
+    // Update usage
+    checkInterviewUsage();
+    
+  } catch (error) {
+    showToast('Error generating report', 'error');
+    console.error('Complete interview error:', error);
+  }
+}
+
+function displayInterviewReport(report) {
+  // Overall score
+  document.getElementById('reportOverallScore').textContent = report.overall_score;
+  
+  // Draw score chart
+  drawScoreChart(report.overall_score);
+  
+  // Category scores
+  const categoryHtml = report.category_scores.map(cat => `
+    <div class="report-category-item">
+      <span class="category-name">${cat.category}</span>
+      <span class="category-score">${cat.score}/10</span>
+    </div>
+  `).join('');
+  document.getElementById('reportCategoryScores').innerHTML = categoryHtml;
+  
+  // Strengths
+  const strengthsHtml = report.strengths.map(s => `<li>${s}</li>`).join('');
+  document.getElementById('reportStrengths').innerHTML = strengthsHtml;
+  
+  // Improvements
+  const improvementsHtml = report.improvements.map(i => `<li>${i}</li>`).join('');
+  document.getElementById('reportImprovements').innerHTML = improvementsHtml;
+  
+  // Recommendations
+  const recommendationsHtml = report.recommendations.map(r => `<li>${r}</li>`).join('');
+  document.getElementById('reportRecommendations').innerHTML = recommendationsHtml;
+  
+  // Store share token
+  chatbotState.currentInterviewData.shareToken = report.share_token;
+}
+
+function drawScoreChart(score) {
+  const canvas = document.getElementById('reportScoreChart');
+  const ctx = canvas.getContext('2d');
+  const centerX = 60;
+  const centerY = 60;
+  const radius = 50;
+  const lineWidth = 10;
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Background circle
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+  
+  // Score circle
+  const percentage = score / 10;
+  const endAngle = -Math.PI / 2 + (2 * Math.PI * percentage);
+  
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, -Math.PI / 2, endAngle);
+  
+  // Gradient
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, '#667eea');
+  gradient.addColorStop(1, '#764ba2');
+  
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+function shareInterviewReport() {
+  const token = chatbotState.currentInterviewData.shareToken;
+  const url = `${window.location.origin}/api/chatbot/interview/report/${token}`;
+  
+  // Copy to clipboard
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Share link copied to clipboard!', 'success');
+  }).catch(() => {
+    // Fallback: show URL in modal
+    customConfirm(
+      'Share Link',
+      `<p>Copy this link to share your interview report:</p><input type="text" value="${url}" style="width: 100%; padding: 8px; margin-top: 8px;" onclick="this.select()" readonly>`,
+      'Close',
+      null,
+      true
+    );
+  });
+}
+
+function resetInterview() {
+  // Reset state
+  chatbotState.interviewSessionId = null;
+  chatbotState.currentInterviewData = null;
+  
+  // Clear inputs
+  document.getElementById('interviewJobSelect').value = '';
+  document.getElementById('interviewJDInput').value = '';
+  document.getElementById('interviewJobTitle').value = '';
+  document.getElementById('interviewCompanyName').value = '';
+  
+  // Switch to start screen
+  document.getElementById('interviewReportScreen').classList.remove('active');
+  document.getElementById('interviewStartScreen').classList.add('active');
+  
+  // Refresh usage
+  checkInterviewUsage();
+}
+
+// ============================================================================
+// FEEDBACK MODE
+// ============================================================================
+
+function selectFeedbackType(type) {
+  chatbotState.selectedFeedbackType = type;
+  
+  document.querySelectorAll('.feedback-type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+}
+
+async function submitFeedback() {
+  const title = document.getElementById('feedbackTitle').value.trim();
+  const description = document.getElementById('feedbackDescription').value.trim();
+  
+  if (!title || !description) {
+    showToast('Please provide both title and description', 'error');
+    return;
+  }
+  
+  try {
+    await dashApiCall('/api/chatbot/feedback', {
+      method: 'POST',
+      body: JSON.stringify({
+        feedback_type: chatbotState.selectedFeedbackType,
+        title: title,
+        description: description
+      })
+    });
+    
+    // Clear form
+    document.getElementById('feedbackTitle').value = '';
+    document.getElementById('feedbackDescription').value = '';
+    
+    // Show success
+    document.getElementById('feedbackSuccess').style.display = 'block';
+    
+    setTimeout(() => {
+      document.getElementById('feedbackSuccess').style.display = 'none';
+    }, 5000);
+    
+  } catch (error) {
+    showToast('Error submitting feedback', 'error');
+    console.error('Submit feedback error:', error);
+  }
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function addChatMessage(containerId, role, content) {
+  const container = document.getElementById(containerId);
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `chatbot-message ${role}`;
+  messageDiv.innerHTML = `<div class="message-content">${escapeHtml(content)}</div>`;
+  container.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+  
+  return messageDiv;
+}
+
+function addLoadingMessage(containerId) {
+  const container = document.getElementById(containerId);
+  const loadingDiv = document.createElement('div');
+  const loadingId = 'loading-' + Date.now();
+  loadingDiv.id = loadingId;
+  loadingDiv.className = 'message-loading';
+  loadingDiv.innerHTML = '<span></span><span></span><span></span>';
+  container.appendChild(loadingDiv);
+  
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+  
+  return loadingId;
+}
+
+function removeLoadingMessage(loadingId) {
+  const loading = document.getElementById(loadingId);
+  if (loading) {
+    loading.remove();
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Initialize chatbot when user is logged in
+// (Called after successful login in existing code)
+function initChatbot() {
+  // Load interview usage on init
+  checkInterviewUsage();
+}
+
+// Auto-initialize after page load if user is authenticated
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if user is logged in (dashboardCredentials set)
+  if (dashboardCredentials) {
+    initChatbot();
   }
 });
 </script>

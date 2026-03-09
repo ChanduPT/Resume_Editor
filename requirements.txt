@@ -16,3 +16,4 @@ aiohttp==3.9.1
 lxml==5.1.0
 PyJWT==2.8.0
 reportlab==4.1.0
+numpy==1.26.4
