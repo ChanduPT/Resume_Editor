@@ -17,7 +17,7 @@ import json
 import logging
 from typing import Dict, List, Optional, Tuple
 from bs4 import BeautifulSoup
-from app.utils import chat_completion_async
+from app.utils import chat_completion_async, repair_json
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,16 @@ async def extract_with_llm(clean_text: str) -> Dict:
     Use LLM to extract sections and metadata with high accuracy.
     This is the PRIMARY extraction method - no hallucination, only exact extraction.
     """
-    
+    # Truncate very long JDs so the output stays within token limits.
+    # 6 000 chars ≈ 1 500 tokens of input; leaves plenty of room for the
+    # JSON response without hitting max_output_tokens.
+    MAX_INPUT_CHARS = 6000
+    if len(clean_text) > MAX_INPUT_CHARS:
+        logger.warning(
+            f"[LLM EXTRACTION] JD too long ({len(clean_text)} chars), truncating to {MAX_INPUT_CHARS}"
+        )
+        clean_text = clean_text[:MAX_INPUT_CHARS]
+
     prompt = f"""You are a precise Job Description parser. Extract EXACT information from the JD below.
 
     CRITICAL RULES:
@@ -222,16 +231,21 @@ IMPORTANT:
         result_raw = await chat_completion_async(
             prompt,
             response_schema=response_schema,
-            timeout=120  # 2 minutes for careful extraction
+            timeout=120,
+            call_name="jd_extraction",
         )
-        
+
+        # repair_json handles truncated responses (unterminated strings, missing brackets)
+        result_raw = repair_json(result_raw)
         result = json.loads(result_raw)
-        logger.info(f"[LLM EXTRACTION] Successfully extracted: title='{result['job_title']}', "
-                   f"resp={len(result['responsibilities'])}, req={len(result['requirements'])}, "
-                   f"pref={len(result['preferred'])}")
-        
+        logger.info(
+            f"[LLM EXTRACTION] Successfully extracted: title='{result['job_title']}', "
+            f"resp={len(result['responsibilities'])}, req={len(result['requirements'])}, "
+            f"pref={len(result['preferred'])}"
+        )
+
         return result
-        
+
     except Exception as e:
         logger.error(f"[LLM EXTRACTION] Failed: {e}")
         return None
