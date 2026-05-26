@@ -14,16 +14,22 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # ── LLM pricing table (USD per 1 million tokens) ──────────────────────────────
-# Update these as provider pricing changes
+# "input"    = standard input tokens
+# "output"   = non-thinking output tokens
+# "thinking" = thinking/reasoning tokens (separate billing, Gemini 2.5+)
 _MODEL_PRICING: Dict[str, Dict[str, float]] = {
-    # Gemini
-    "gemini-2.5-flash":          {"input": 0.075,  "output": 0.30},
-    "gemini-2.5-flash-preview":  {"input": 0.075,  "output": 0.30},
+    # Gemini 2.5 (thinking models — thinking tokens billed at higher rate)
+    "gemini-2.5-flash":          {"input": 0.15,   "output": 0.60,  "thinking": 3.50},
+    "gemini-2.5-flash-preview":  {"input": 0.15,   "output": 0.60,  "thinking": 3.50},
+    "gemini-2.5-pro":            {"input": 1.25,   "output": 10.00, "thinking": 3.50},
+    # Gemini 2.0
     "gemini-2.0-flash":          {"input": 0.10,   "output": 0.40},
     "gemini-2.0-flash-lite":     {"input": 0.075,  "output": 0.30},
+    # Gemini 1.5
     "gemini-1.5-flash":          {"input": 0.075,  "output": 0.30},
     "gemini-1.5-pro":            {"input": 3.50,   "output": 10.50},
-    "gemini-3-flash-preview":    {"input": 0.075,  "output": 0.30},
+    # Legacy / preview aliases
+    "gemini-3-flash-preview":    {"input": 0.15,   "output": 0.60,  "thinking": 3.50},
     # OpenAI
     "gpt-4o":                    {"input": 2.50,   "output": 10.00},
     "gpt-4o-mini":               {"input": 0.15,   "output": 0.60},
@@ -31,19 +37,32 @@ _MODEL_PRICING: Dict[str, Dict[str, float]] = {
     "gpt-3.5-turbo":             {"input": 0.50,   "output": 1.50},
 }
 
-def _estimate_cost(model_name: str, prompt_tokens: int, completion_tokens: int) -> float:
-    """Return estimated cost in USD given token counts and model name."""
+def _estimate_cost(
+    model_name: str,
+    prompt_tokens: int,
+    completion_tokens: int,
+    thinking_tokens: int = 0,
+) -> float:
+    """Return estimated cost in USD.
+
+    For Gemini 2.5 thinking models, thinking_tokens are billed at a higher
+    rate than regular output tokens.  completion_tokens should be the
+    NON-thinking output count; thinking_tokens the separate thinking count.
+    """
     pricing = _MODEL_PRICING.get(model_name)
     if not pricing:
-        # Generic fallback: try prefix matching
         for key, p in _MODEL_PRICING.items():
             if model_name.startswith(key.split("-")[0]):
                 pricing = p
                 break
     if not pricing:
         return 0.0
-    cost = (prompt_tokens / 1_000_000) * pricing["input"] + \
-           (completion_tokens / 1_000_000) * pricing["output"]
+    thinking_rate = pricing.get("thinking", pricing["output"])
+    cost = (
+        (prompt_tokens     / 1_000_000) * pricing["input"]
+      + (completion_tokens / 1_000_000) * pricing["output"]
+      + (thinking_tokens   / 1_000_000) * thinking_rate
+    )
     return round(cost, 8)
 
 
@@ -57,11 +76,12 @@ def _log_llm_call(
     error_message: str = None,
     request_id: str = None,
     call_name: str = None,
+    thinking_tokens: int = 0,
 ):
     """Write one row to llm_call_logs. Fires-and-forgets — never raises."""
     try:
         from .database import SessionLocal, LLMCallLog
-        cost = _estimate_cost(model_name, prompt_tokens, completion_tokens)
+        cost = _estimate_cost(model_name, prompt_tokens, completion_tokens, thinking_tokens)
         row = LLMCallLog(
             request_id=request_id,
             call_name=call_name,
@@ -69,7 +89,7 @@ def _log_llm_call(
             model_name=model_name,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
-            total_tokens=prompt_tokens + completion_tokens,
+            total_tokens=prompt_tokens + completion_tokens + thinking_tokens,
             cost_usd=cost,
             duration_seconds=round(duration_seconds, 3),
             success=success,
@@ -83,7 +103,7 @@ def _log_llm_call(
             db.close()
         logger.debug(
             f"[LLM_LOG] {call_name or '?'} | {model_name} | "
-            f"in={prompt_tokens} out={completion_tokens} | ${cost:.6f} | {duration_seconds:.2f}s"
+            f"in={prompt_tokens} out={completion_tokens} think={thinking_tokens} | ${cost:.6f} | {duration_seconds:.2f}s"
         )
     except Exception as exc:
         logger.warning(f"[LLM_LOG] Failed to write call log: {exc}")
@@ -447,10 +467,11 @@ def chat_completion(
 
         # Extract token counts from usage_metadata
         usage = getattr(response, "usage_metadata", None)
-        pt = getattr(usage, "prompt_token_count", 0) or 0
-        ct = getattr(usage, "candidates_token_count", 0) or 0
+        pt  = getattr(usage, "prompt_token_count",     0) or 0
+        ct  = getattr(usage, "candidates_token_count", 0) or 0
+        tkt = getattr(usage, "thoughts_token_count",   0) or 0
         _log_llm_call("GEMINI", model_name, pt, ct, time.time() - t0,
-                      request_id=request_id, call_name=call_name)
+                      request_id=request_id, call_name=call_name, thinking_tokens=tkt)
 
         text = getattr(response, "text", None)
         if text:
@@ -549,10 +570,11 @@ async def chat_completion_async(
 
                 # Extract token counts
                 usage = getattr(response, "usage_metadata", None)
-                pt = getattr(usage, "prompt_token_count", 0) or 0
-                ct = getattr(usage, "candidates_token_count", 0) or 0
+                pt  = getattr(usage, "prompt_token_count",     0) or 0
+                ct  = getattr(usage, "candidates_token_count", 0) or 0
+                tkt = getattr(usage, "thoughts_token_count",   0) or 0
                 _log_llm_call("GEMINI", model_name, pt, ct, time.time() - t0,
-                              request_id=request_id, call_name=call_name)
+                              request_id=request_id, call_name=call_name, thinking_tokens=tkt)
 
                 text = getattr(response, "text", None)
                 if text:
