@@ -1,6 +1,6 @@
 # app/database.py
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, Boolean, Index, func
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, Boolean, Index, func, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
@@ -153,6 +153,47 @@ class ResumeJob(Base):
         Index('idx_user_application_status', 'user_id', 'application_status'),
     )
 
+class LLMCallLog(Base):
+    """
+    Tracks every LLM API call for token usage and cost analysis.
+    One row per call — enables per-request, per-model, and per-call-type breakdown.
+    """
+    __tablename__ = "llm_call_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # Context
+    request_id = Column(String(255), nullable=True, index=True)  # resume job request ID
+    call_name  = Column(String(100), nullable=True, index=True)  # e.g. "jd_hints", "summary"
+
+    # Model info
+    provider   = Column(String(20))   # "GEMINI" | "OPENAI"
+    model_name = Column(String(100))  # actual model string used
+
+    # Token counts
+    prompt_tokens     = Column(Integer, default=0)
+    completion_tokens = Column(Integer, default=0)
+    total_tokens      = Column(Integer, default=0)
+
+    # Cost (USD)
+    cost_usd = Column(Float, default=0.0)
+
+    # Timing
+    duration_seconds = Column(Float, nullable=True)
+
+    # Outcome
+    success       = Column(Boolean, default=True)
+    error_message = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    __table_args__ = (
+        Index("idx_llm_request_id",  "request_id"),
+        Index("idx_llm_call_name",   "call_name"),
+        Index("idx_llm_created_at",  "created_at"),
+    )
+
+
 # Database connection
 def get_database_url():
     """Get database URL - supports PostgreSQL and SQLite"""
@@ -167,10 +208,14 @@ def get_database_url():
         # Local development with SQLite
         return "sqlite:///./resume_editor.db"
 
+_db_url = get_database_url()
+_is_sqlite = "sqlite" in _db_url
 engine = create_engine(
-    get_database_url(), 
+    _db_url,
     pool_pre_ping=True,
-    connect_args={"check_same_thread": False} if "sqlite" in get_database_url() else {}
+    connect_args={"check_same_thread": False} if _is_sqlite else {},
+    # Keep pool small on Render free tier (97 connection limit, 2 workers)
+    **({} if _is_sqlite else {"pool_size": 5, "max_overflow": 5, "pool_timeout": 30}),
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -219,7 +264,8 @@ def authenticate_user(db, user_id: str, password: str) -> User:
     return None
 
 # Job search cache helpers
-def generate_cache_key(job_title: str, location: str, date_posted: str, sources: list, sort_by: str = "relevance") -> str:
+def generate_cache_key(job_title: str, location: str, date_posted: str, sources: list, sort_by: str = "relevance",
+                       employment_types: list = None, work_from_home: bool = False) -> str:
     """
     Generate MD5 hash cache key from search parameters
     Ensures consistent caching for identical searches
@@ -228,11 +274,12 @@ def generate_cache_key(job_title: str, location: str, date_posted: str, sources:
     job_title = job_title.lower().strip()
     location = location.lower().strip()
     date_posted = date_posted.lower().strip()
-    sources_str = ",".join(sorted(sources))  # Sort for consistency
+    sources_str = ",".join(sorted(sources))
     sort_by = sort_by.lower().strip()
-    
-    # Create hash
-    key_string = f"{job_title}|{location}|{date_posted}|{sources_str}|{sort_by}"
+    emp_str = ",".join(sorted(employment_types)) if employment_types else "any"
+    wfh_str = str(work_from_home).lower()
+
+    key_string = f"{job_title}|{location}|{date_posted}|{sources_str}|{sort_by}|{emp_str}|{wfh_str}"
     return hashlib.md5(key_string.encode('utf-8')).hexdigest()
 
 def get_cached_job_search(db, cache_key: str) -> dict:

@@ -3,6 +3,7 @@
 from pathlib import Path
 import re
 import os
+import time
 from typing import Dict, Optional, List
 import json
 from .prompts import PARSE_EXPERIENCE_PROMPT, PARSE_SKILLS_PROMPT
@@ -11,6 +12,81 @@ from openai import OpenAI
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+# ── LLM pricing table (USD per 1 million tokens) ──────────────────────────────
+# Update these as provider pricing changes
+_MODEL_PRICING: Dict[str, Dict[str, float]] = {
+    # Gemini
+    "gemini-2.5-flash":          {"input": 0.075,  "output": 0.30},
+    "gemini-2.5-flash-preview":  {"input": 0.075,  "output": 0.30},
+    "gemini-2.0-flash":          {"input": 0.10,   "output": 0.40},
+    "gemini-2.0-flash-lite":     {"input": 0.075,  "output": 0.30},
+    "gemini-1.5-flash":          {"input": 0.075,  "output": 0.30},
+    "gemini-1.5-pro":            {"input": 3.50,   "output": 10.50},
+    "gemini-3-flash-preview":    {"input": 0.075,  "output": 0.30},
+    # OpenAI
+    "gpt-4o":                    {"input": 2.50,   "output": 10.00},
+    "gpt-4o-mini":               {"input": 0.15,   "output": 0.60},
+    "gpt-4-turbo":               {"input": 10.00,  "output": 30.00},
+    "gpt-3.5-turbo":             {"input": 0.50,   "output": 1.50},
+}
+
+def _estimate_cost(model_name: str, prompt_tokens: int, completion_tokens: int) -> float:
+    """Return estimated cost in USD given token counts and model name."""
+    pricing = _MODEL_PRICING.get(model_name)
+    if not pricing:
+        # Generic fallback: try prefix matching
+        for key, p in _MODEL_PRICING.items():
+            if model_name.startswith(key.split("-")[0]):
+                pricing = p
+                break
+    if not pricing:
+        return 0.0
+    cost = (prompt_tokens / 1_000_000) * pricing["input"] + \
+           (completion_tokens / 1_000_000) * pricing["output"]
+    return round(cost, 8)
+
+
+def _log_llm_call(
+    provider: str,
+    model_name: str,
+    prompt_tokens: int,
+    completion_tokens: int,
+    duration_seconds: float,
+    success: bool = True,
+    error_message: str = None,
+    request_id: str = None,
+    call_name: str = None,
+):
+    """Write one row to llm_call_logs. Fires-and-forgets — never raises."""
+    try:
+        from .database import SessionLocal, LLMCallLog
+        cost = _estimate_cost(model_name, prompt_tokens, completion_tokens)
+        row = LLMCallLog(
+            request_id=request_id,
+            call_name=call_name,
+            provider=provider,
+            model_name=model_name,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=prompt_tokens + completion_tokens,
+            cost_usd=cost,
+            duration_seconds=round(duration_seconds, 3),
+            success=success,
+            error_message=error_message,
+        )
+        db = SessionLocal()
+        try:
+            db.add(row)
+            db.commit()
+        finally:
+            db.close()
+        logger.debug(
+            f"[LLM_LOG] {call_name or '?'} | {model_name} | "
+            f"in={prompt_tokens} out={completion_tokens} | ${cost:.6f} | {duration_seconds:.2f}s"
+        )
+    except Exception as exc:
+        logger.warning(f"[LLM_LOG] Failed to write call log: {exc}")
 
 
 try:  # optional dependency for local .env support
@@ -312,6 +388,22 @@ def _provider() -> str:
     """
     return os.getenv("LLM_PROVIDER", "OPENAI").upper()
 
+def _gemini_model() -> str:
+    return os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
+def _gemini_max_output_tokens() -> int:
+    raw_value = os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "65535")
+    try:
+        value = int(raw_value)
+    except ValueError:
+        logger.warning(
+            "[LLM CONFIG] Invalid GEMINI_MAX_OUTPUT_TOKENS=%r; using 65535",
+            raw_value,
+        )
+        return 65535
+
+    return max(1, min(value, 65535))
+
 def openai_client() -> OpenAI:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -320,86 +412,18 @@ def openai_client() -> OpenAI:
         )
     return OpenAI(api_key=api_key)
 
-def chat_completion(prompt: str, model: Optional[str] = None) -> str:
+def chat_completion(
+    prompt: str,
+    model: Optional[str] = None,
+    request_id: str = None,
+    call_name: str = None,
+) -> str:
     """
-    Provider-agnostic completion:
-    - If LLM_PROVIDER=GEMINI, uses Google Gemini via google-generativeai.
-      Requires GEMINI_API_KEY and optional GEMINI_MODEL (defaults to gemini-1.5-flash).
-    - Otherwise uses OpenAI Chat Completions (requires OPENAI_API_KEY and optional OPENAI_MODEL).
+    Provider-agnostic completion.
+    Logs token usage and cost to llm_call_logs automatically.
     """
     provider = _provider()
-
-    if provider == "GEMINI":
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise RuntimeError("GEMINI_API_KEY is not set. Export it or add it to a .env file.")
-        try:
-            import google.generativeai as genai  # lazy import so dependency is optional
-        except ImportError as e:
-            raise ImportError(
-                "google-generativeai not installed. Run: pip install google-generativeai"
-            ) from e
-
-        genai.configure(api_key=api_key)
-        model_name = "gemini-2.5-flash"
-        # Set max_output_tokens to handle large resumes with multiple experiences
-        generation_config = {
-            "temperature": 0.2,
-            "max_output_tokens": 16384,
-        }
-        gmodel = genai.GenerativeModel(model_name, generation_config=generation_config)
-        response = gmodel.generate_content(prompt)
-
-        # Primary text
-        text = getattr(response, "text", None)
-        if text:
-            return text.strip()
-
-        # Fallback extraction if needed
-        candidates = getattr(response, "candidates", None)
-        if candidates:
-            parts = []
-            for cand in candidates:
-                content = getattr(cand, "content", None)
-                if content and hasattr(content, "parts"):
-                    parts.extend([str(p) for p in content.parts])
-            return "\n".join(parts).strip()
-
-        return ""
-
-    else:
-        # Default to OpenAI
-        client = openai_client()
-        model_name = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        resp = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2,
-        )
-        return resp.choices[0].message.content.strip()
-
-
-async def chat_completion_async(prompt: str, response_schema: Optional[dict] = None, model: Optional[str] = None, timeout: int = 120, max_retries: int = 3) -> str:
-    """
-    Async version of chat_completion for parallel API calls with retry logic.
-    Supports structured JSON output via response_schema parameter.
-    
-    Args:
-        prompt: The prompt to send to the LLM
-        response_schema: Optional JSON schema to enforce structured output (Gemini only)
-        model: Optional model override
-        timeout: Timeout in seconds (default: 120)
-        max_retries: Maximum number of retry attempts (default: 3)
-    
-    Returns:
-        str: LLM response text (JSON string if response_schema is provided)
-    
-    Raises:
-        asyncio.TimeoutError: If the LLM call exceeds the timeout after all retries
-        RuntimeError: If all retries fail
-    """
-    import asyncio
-    provider = _provider()
+    t0 = time.time()
 
     if provider == "GEMINI":
         api_key = os.getenv("GEMINI_API_KEY")
@@ -413,29 +437,107 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
             ) from e
 
         genai.configure(api_key=api_key)
-        model_name = "gemini-2.5-flash"
-        #model_name = "gemini-3-flash-preview"
-        
-        # Configure generation with response schema if provided
-        # Set max_output_tokens high enough to handle large resumes with multiple experiences
-        # Each experience can have 5-6 bullets of ~25 words each = ~150 words per role
-        # Plus JSON overhead and multiple roles
-        # Setting to 16384 tokens to prevent truncation
+        model_name = _gemini_model()
         generation_config = {
             "temperature": 0.2,
-            "max_output_tokens": 16384,
+            "max_output_tokens": _gemini_max_output_tokens(),
         }
-        
+        gmodel = genai.GenerativeModel(model_name, generation_config=generation_config)
+        response = gmodel.generate_content(prompt)
+
+        # Extract token counts from usage_metadata
+        usage = getattr(response, "usage_metadata", None)
+        pt = getattr(usage, "prompt_token_count", 0) or 0
+        ct = getattr(usage, "candidates_token_count", 0) or 0
+        _log_llm_call("GEMINI", model_name, pt, ct, time.time() - t0,
+                      request_id=request_id, call_name=call_name)
+
+        text = getattr(response, "text", None)
+        if text:
+            return text.strip()
+        candidates = getattr(response, "candidates", None)
+        if candidates:
+            parts = []
+            for cand in candidates:
+                content = getattr(cand, "content", None)
+                if content and hasattr(content, "parts"):
+                    parts.extend([str(p) for p in content.parts])
+            return "\n".join(parts).strip()
+        return ""
+
+    else:
+        client = openai_client()
+        model_name = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        resp = client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+        )
+        pt = resp.usage.prompt_tokens if resp.usage else 0
+        ct = resp.usage.completion_tokens if resp.usage else 0
+        _log_llm_call("OPENAI", model_name, pt, ct, time.time() - t0,
+                      request_id=request_id, call_name=call_name)
+        return resp.choices[0].message.content.strip()
+
+
+async def chat_completion_async(
+    prompt: str,
+    response_schema: Optional[dict] = None,
+    model: Optional[str] = None,
+    timeout: int = 120,
+    max_retries: int = 3,
+    request_id: str = None,
+    call_name: str = None,
+) -> str:
+    """
+    Async version of chat_completion for parallel API calls with retry logic.
+    Supports structured JSON output via response_schema parameter.
+    Logs token usage and cost to llm_call_logs automatically.
+
+    Args:
+        prompt: The prompt to send to the LLM
+        response_schema: Optional JSON schema to enforce structured output (Gemini only)
+        model: Optional model override
+        timeout: Timeout in seconds (default: 120)
+        max_retries: Maximum number of retry attempts (default: 3)
+        request_id: Optional resume job request ID for cost attribution
+        call_name: Optional label for this call (e.g. "jd_hints", "summary")
+
+    Returns:
+        str: LLM response text (JSON string if response_schema is provided)
+
+    Raises:
+        asyncio.TimeoutError: If the LLM call exceeds the timeout after all retries
+        RuntimeError: If all retries fail
+    """
+    import asyncio
+    provider = _provider()
+    t0 = time.time()
+
+    if provider == "GEMINI":
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY is not set. Export it or add it to a .env file.")
+        try:
+            import google.generativeai as genai
+        except ImportError as e:
+            raise ImportError(
+                "google-generativeai not installed. Run: pip install google-generativeai"
+            ) from e
+
+        genai.configure(api_key=api_key)
+        model_name = _gemini_model()
+
+        generation_config = {
+            "temperature": 0.2,
+            "max_output_tokens": _gemini_max_output_tokens(),
+        }
         if response_schema:
             generation_config["response_mime_type"] = "application/json"
             generation_config["response_schema"] = response_schema
-        
-        gmodel = genai.GenerativeModel(
-            model_name,
-            generation_config=generation_config
-        )
-        
-        # Retry logic with exponential backoff
+
+        gmodel = genai.GenerativeModel(model_name, generation_config=generation_config)
+
         last_error = None
         for attempt in range(max_retries):
             try:
@@ -444,13 +546,18 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
                     loop.run_in_executor(None, gmodel.generate_content, prompt),
                     timeout=timeout
                 )
-                
-                # Success - return response
+
+                # Extract token counts
+                usage = getattr(response, "usage_metadata", None)
+                pt = getattr(usage, "prompt_token_count", 0) or 0
+                ct = getattr(usage, "candidates_token_count", 0) or 0
+                _log_llm_call("GEMINI", model_name, pt, ct, time.time() - t0,
+                              request_id=request_id, call_name=call_name)
+
                 text = getattr(response, "text", None)
                 if text:
                     return text.strip()
-                    
-                # Fallback extraction
+
                 candidates = getattr(response, "candidates", None)
                 if candidates:
                     parts = []
@@ -461,11 +568,11 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
                     result = "\n".join(parts).strip()
                     if result:
                         return result
-                        
+
             except asyncio.TimeoutError as e:
                 last_error = e
                 if attempt < max_retries - 1:
-                    wait_time = (2 ** attempt) * 1  # 1s, 2s, 4s
+                    wait_time = (2 ** attempt) * 1
                     logger.warning(f"LLM timeout on attempt {attempt + 1}/{max_retries}, retrying in {wait_time}s...")
                     await asyncio.sleep(wait_time)
                 continue
@@ -476,22 +583,29 @@ async def chat_completion_async(prompt: str, response_schema: Optional[dict] = N
                     logger.warning(f"LLM error on attempt {attempt + 1}/{max_retries}: {str(e)}, retrying in {wait_time}s...")
                     await asyncio.sleep(wait_time)
                 continue
-        
+
         # All retries failed
+        elapsed = time.time() - t0
+        err_str = str(last_error) if last_error else "no content returned"
+        _log_llm_call("GEMINI", model_name, 0, 0, elapsed, success=False,
+                      error_message=err_str, request_id=request_id, call_name=call_name)
         if last_error:
-            raise RuntimeError(f"LLM call failed after {max_retries} attempts: {str(last_error)}")
+            raise RuntimeError(f"LLM call failed after {max_retries} attempts: {last_error}")
         raise RuntimeError(f"LLM call returned no content after {max_retries} attempts")
 
-        return ""
-
     else:
-        # Default to OpenAI (async not implemented yet, fallback to sync in thread pool)
+        # OpenAI: run sync wrapper in thread pool with token logging
         loop = asyncio.get_event_loop()
         try:
-            return await asyncio.wait_for(
-                loop.run_in_executor(None, chat_completion, prompt, model),
+            result = await asyncio.wait_for(
+                loop.run_in_executor(
+                    None,
+                    lambda: chat_completion(prompt, model,
+                                           request_id=request_id, call_name=call_name)
+                ),
                 timeout=timeout
             )
+            return result
         except asyncio.TimeoutError:
             raise asyncio.TimeoutError(f"LLM call timed out after {timeout} seconds")
 

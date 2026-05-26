@@ -227,8 +227,16 @@ CONTENT GENERATION RULES:
 4. Maintain strong, concise business value and avoid generic filler.
 5. Ensure all bullets flow like professional resume achievements, not keyword lists.
 6. Never mix incompatible tools (AWS + Azure, Tableau + Power BI, etc.).
-7. Maintain consistent tech stack within each role
-8. Don't combine technologies that serve the same purpose in the same role, even if keywords contain them both.
+7. Maintain consistent tech stack within each role.
+8. Don’t combine technologies that serve the same purpose in the same role, even if keywords contain them both.
+9. COMPETING TECHNOLOGY RULE — never use two tools from the same category AS INTERCHANGEABLE SYNONYMS in the same bullet:
+   - Data Warehouses: Snowflake, Redshift, BigQuery, Databricks SQL, Synapse
+   - Cloud Providers: AWS, Azure, GCP
+   - BI Tools: Tableau, Power BI, Looker, Qlik
+   - Orchestration: Airflow, Prefect, Dagster, Luigi
+   - Containers: Docker Compose, Kubernetes, ECS
+   ALLOWED: Different bullets in the same role can use different tools if context is distinct (e.g., "migrated FROM Redshift TO Snowflake" in one bullet is valid).
+   BANNED: Listing them as equivalent alternatives in the same context ("used Snowflake and Redshift" — pick one).
 
 KEYWORD INTEGRATION POLICY:
 Each bullet SHOULD aim to include (where contextually appropriate):
@@ -244,7 +252,7 @@ PRIORITY:
 
 BULLET WRITING RULES:
 - Each role must contain 7-10 bullets.
-- CRITICAL: Each bullet MUST contain exactly 24-30 words. Count words before finalizing each bullet.
+- CRITICAL: Each bullet MUST contain exactly 18-24 words. Count words before finalizing each bullet.
 - Use only ONE connector per bullet ("using", "to", "for", "with", "enabling" etc , based on context)
 - Use Past tense throughout bullets generation.
 - Use realistic tools based on job period and industry context.
@@ -467,7 +475,7 @@ BULLET ENHANCEMENT RULES:
 2. IDENTIFY where technical_keywords from jd_requirements can naturally replace or enhance terms
 3. ADD specific technologies, tools, or frameworks where they fit contextually and match JD requirements
 4. INCORPORATE key_phrases if they align with the accomplishment and emphasize relevant qualifications
-5. MAINTAIN the original tone, but aim for 20-25 words per bullet for optimal readability
+5. MAINTAIN the original tone, but aim for 18-24 words per bullet for optimal readability
 6. KEEP past tense for all previous roles (present tense only if current role)
 7. PRESERVE any existing metrics or quantifiable results (these are valuable)
 8. DO NOT add fabricated metrics where they don't exist in the original
@@ -480,6 +488,12 @@ TECHNICAL ACCURACY & REALISM:
 - Avoid mixing incompatible tools (e.g., AWS + Azure without justification, two similar tools like Tableau + Power BI)
 - Don't combine technologies that serve the same purpose in the same role unnecessarily
 - Align tool choices with company size/industry context from original bullets
+- COMPETING TECHNOLOGY RULE — pick EXACTLY ONE from each group per role; never combine:
+  - Data Warehouses: Snowflake | Redshift | BigQuery | Databricks SQL | Synapse → use only one per role
+  - Cloud Providers: AWS | Azure | GCP → use only one per role (unless multi-cloud is explicit in JD)
+  - BI Tools: Tableau | Power BI | Looker | Qlik → use only one per role
+  - Orchestration: Airflow | Prefect | Dagster → use only one per role
+  When the JD lists alternatives (e.g., "Snowflake, Redshift, or Databricks"), pick the ONE that best fits the candidate's existing stack — NOT all of them.
 
 WRITING QUALITY RULES:
 - Keep sentences natural and readable (not keyword-stuffed)
@@ -551,3 +565,176 @@ Original experience data to enhance:
 #     )
 # result = chat_completion(prompt, response_schema=response_schema)
 # print("Final Result:\n", result)
+
+
+# ====================================================================
+# SINGLE ROLE EXPERIENCE PROMPT - Used when chunking experiences
+# ====================================================================
+GENERATE_SINGLE_ROLE_EXPERIENCE_PROMPT = """
+You are an expert technical resume writer. Generate high-impact, ATS-optimized experience bullets for a SINGLE role.
+
+MANDATORY 4-PART STRUCTURE FOR EVERY BULLET:
+1. Past tense Action Verb (may use a soft skill verb here)
+2. Deliverable / Feature / Artifact  
+3. Technology, Tool, or Method used 
+4. Outcome or Business Value  
+
+CONTENT GENERATION RULES:
+1. Use the company's industry context to guide relevance and terminology.
+2. Use the role seniority to select appropriate complexity.
+3. Integrate provided technical_keywords, soft_skills, and phrases naturally.
+4. Maintain strong, concise business value and avoid generic filler.
+5. Never mix incompatible tools (AWS + Azure, Tableau + Power BI, etc.).
+6. Maintain consistent tech stack within each role.
+7. COMPETING TECHNOLOGY RULE — never use two tools from the same category AS INTERCHANGEABLE SYNONYMS in the same bullet:
+   - Data Warehouses: Snowflake, Redshift, BigQuery, Databricks SQL, Synapse
+   - Cloud Providers: AWS, Azure, GCP
+   - BI Tools: Tableau, Power BI, Looker, Qlik
+   - Orchestration: Airflow, Prefect, Dagster
+   ALLOWED: Different bullets or roles may use different tools from the same category if the context is genuinely different (e.g., "migrated data FROM Redshift TO Snowflake" is valid in one bullet).
+   BANNED: Listing them as equivalent in the same context ("used Snowflake and Redshift for data warehousing" — pick one).
+
+CRITICAL KEYWORD USAGE REQUIREMENT:
+You have been given a SPECIFIC SET of keywords for THIS role only.
+- You MUST use ALL or MOST of the technical_keywords provided below
+- These keywords were specifically selected for this role - use them all
+- Each technical keyword should appear at least once across your bullets
+- Distribute keywords evenly across bullets (don't cluster them)
+
+KEYWORD INTEGRATION POLICY:
+Each bullet SHOULD aim to include (where contextually appropriate):
+- 1-2 technical_keywords used naturally in context
+- 1 soft skill as action verb at the start
+- 1 key phrase if context allows
+- 1 meaningful business outcome phrase
+
+ROLE CONTEXT:
+- Role Position: {role_position} of {total_roles} (1=most recent)
+- You have been assigned {keyword_allocation} technical keywords to use in this role
+
+BULLET WRITING RULES:
+- Generate {bullet_count} bullets for this role.
+- Each bullet MUST contain exactly 18-24 words.
+- Use only ONE connector per bullet ("using", "to", "for", "with", "enabling")
+- Use Past tense throughout.
+- Include metrics in 1-2 bullets only when realistic.
+- Final bullet should highlight testing, documentation, or collaboration.
+
+OUTPUT FORMAT:
+Return ONLY valid JSON with exactly this structure:
+{{
+  "company": "Company name",
+  "role": "Job title",
+  "period": "Employment period",
+  "points": ["Bullet 1.", "Bullet 2.", ...]
+}}
+
+INPUTS:
+Role:
+{role_seniority} + {role_title}
+
+Technical Keywords (USE ALL OF THESE - they are specifically assigned to this role):
+{technical_keywords}
+
+Soft Skills (use as action verbs):
+{soft_skills}
+
+Key Phrases (integrate naturally):
+{phrases}
+
+Role Requirements:
+{jd_requirements}
+
+Role to generate bullets for:
+Company: {company}
+Title: {role_name}
+Period: {period}
+"""
+
+# Response schema for single role
+single_role_response_schema = {
+    "type": "object",
+    "properties": {
+        "company": {"type": "string"},
+        "role": {"type": "string"},
+        "period": {"type": "string"},
+        "points": {
+            "type": "array",
+            "items": {"type": "string"}
+        }
+    },
+    "required": ["company", "role", "period", "points"]
+}
+
+# ====================================================================
+# SINGLE ROLE ENHANCEMENT PROMPT - For enhancing existing bullets one role at a time
+# Used when processing 3+ experiences in resume_jd mode to prevent LLM truncation
+# ====================================================================
+ENHANCE_SINGLE_ROLE_EXPERIENCE_PROMPT = """
+You are an expert technical resume writer specializing in enhancing existing resume bullets to maximize ATS scores while preserving original achievements.
+
+TASK:
+Enhance the experience bullets for a SINGLE role by integrating JD keywords naturally while preserving the original accomplishments.
+
+ROLE CONTEXT:
+- Role Position: {role_position} of {total_roles} (1=most recent)
+- Target Role: {role_seniority} {role_title}
+- You have been assigned {keyword_count} technical keywords to integrate into this role
+
+CRITICAL ENHANCEMENT RULES:
+1. PRESERVE the original achievement and core message of each bullet
+2. ENHANCE by naturally weaving in the provided JD keywords where they fit
+3. MAINTAIN the same bullet count as input (do not add or remove bullets)
+4. DO NOT fabricate new accomplishments or change the fundamental meaning
+5. Replace generic terms with specific technical_keywords (e.g., "database" → "PostgreSQL")
+
+MANDATORY 4-PART STRUCTURE:
+1. Action Verb (use soft_skill verb only if clearly stronger than original)
+2. Deliverable / Feature / Artifact (preserve from original)
+3. Technology, Tool, or Method (enhance with technical_keywords)
+4. Outcome / Business Value (preserve original metrics)
+
+KEYWORD INTEGRATION:
+- You MUST use ALL or MOST of the technical_keywords provided below
+- These keywords were specifically selected for this role - use them all
+- Distribute keywords evenly across bullets (don't cluster)
+- Replace generic terms with specific JD technologies where contextually appropriate
+
+BULLET ENHANCEMENT RULES:
+- Each bullet should be 18-24 words
+- Use only ONE connector per bullet ("using", "to", "for", "with", "enabling")
+- Keep past tense throughout
+- Preserve any existing metrics or quantifiable results
+- DO NOT add fabricated metrics
+
+OUTPUT FORMAT:
+Return ONLY valid JSON with exactly this structure:
+{{
+  "company": "Company name exactly as input",
+  "role": "Job title exactly as input",
+  "period": "Employment period exactly as input",
+  "points": ["Enhanced bullet 1.", "Enhanced bullet 2.", ...]
+}}
+
+INPUTS:
+Target Role: {role_seniority} {role_title}
+
+Technical Keywords (USE ALL OF THESE - they are specifically assigned to this role):
+{technical_keywords}
+
+Soft Skills (use as action verbs if stronger than original):
+{soft_skills}
+
+Key Phrases (integrate naturally):
+{phrases}
+
+JD Requirements:
+{jd_requirements}
+
+Original Role to Enhance:
+Company: {company}
+Title: {role_name}
+Period: {period}
+Original Bullets:
+{original_bullets}
+"""

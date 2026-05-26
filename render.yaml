@@ -17,6 +17,10 @@ services:
         value: 3.12.4
       - key: LLM_PROVIDER
         value: GEMINI
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_MAX_OUTPUT_TOKENS
+        value: "16384"
       - key: MAX_WORKERS
         value: 2
       - key: MAX_CONCURRENT_JOBS

@@ -1167,8 +1167,9 @@ async def search_jobs_endpoint(
         user_id = current_user.user_id if current_user else 'anonymous'
         logger.info(f"[API_JOB_SEARCH] User '{user_id}' searching: '{job_title}' in '{location}'")
         
-        # Generate cache key
-        cache_key = generate_cache_key(job_title, location, date_posted, sources, sort_by)
+        # Generate cache key (includes filters so different filter combos don't share cache)
+        cache_key = generate_cache_key(job_title, location, date_posted, sources, sort_by,
+                                       employment_types=employment_types, work_from_home=work_from_home)
         logger.info(f"[API_JOB_SEARCH] Cache key: {cache_key}")
         
         # Check cache first
@@ -1326,7 +1327,7 @@ async def search_greenhouse_jobs_endpoint(
 
 async def scrape_job_details_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
@@ -1362,7 +1363,8 @@ async def scrape_job_details_endpoint(
         if not url.startswith('http'):
             raise HTTPException(status_code=400, detail="Invalid URL")
         
-        logger.info(f"[API_SCRAPE_JOB] User '{current_user.user_id}' scraping: {url}")
+        user_id = current_user.user_id if current_user else 'anonymous'
+        logger.info(f"[API_SCRAPE_JOB] User '{user_id}' scraping: {url}")
         
         # Check if description is already cached
         cached_description = get_job_description(db, url)

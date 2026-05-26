@@ -1,530 +1,177 @@
 # app/create_pdf.py
-# PDF Resume Generator using ReportLab
+# PDF Resume Generator - matches Word classic format (Times New Roman, ATS-friendly)
 
-import os
 import logging
 from io import BytesIO
-from typing import Dict, Any, List
+from typing import Dict, Any
 
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, ListFlowable, ListItem
-)
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+from reportlab.platypus import SimpleDocTemplate, Paragraph, HRFlowable
+from reportlab.lib.styles import ParagraphStyle
 
 logger = logging.getLogger(__name__)
 
+# Built-in PDF font equivalents of Times New Roman
+_NORMAL = 'Times-Roman'
+_BOLD   = 'Times-Bold'
+
+
+def _s(name, **kw):
+    """Create a ParagraphStyle with sensible defaults."""
+    defaults = dict(fontName=_NORMAL, fontSize=10, leading=13,
+                    spaceBefore=0, spaceAfter=0)
+    defaults.update(kw)
+    return ParagraphStyle(name, **defaults)
+
+
+def _build_story(data: dict) -> list:
+    story = []
+
+    # ── Name ──────────────────────────────────────────────────────────────
+    name_s = _s('Name', fontName=_BOLD, fontSize=12, leading=15,
+                alignment=TA_CENTER, spaceAfter=2)
+    story.append(Paragraph(data.get('name', ''), name_s))
+
+    # ── Contact ───────────────────────────────────────────────────────────
+    contact_data = data.get('contact', {})
+    if isinstance(contact_data, dict):
+        ordered_keys = ["phone", "email", "location",
+                        "linkedin", "github", "portfolio", "website"]
+        parts = []
+        for key in ordered_keys:
+            if key in contact_data and contact_data[key]:
+                # Show actual value for phone/email/location; key name for links
+                if key in ("phone", "email", "location"):
+                    parts.append(str(contact_data[key]))
+                else:
+                    parts.append(key.capitalize())
+        for key, val in contact_data.items():
+            if key not in ordered_keys and val:
+                parts.append(str(val))
+        contact_text = " | ".join(parts)
+    else:
+        contact_text = str(contact_data) if contact_data else ''
+
+    if contact_text:
+        contact_s = _s('Contact', alignment=TA_CENTER, leading=12, spaceAfter=6)
+        story.append(Paragraph(contact_text, contact_s))
+
+    # ── Section heading helper (ALL CAPS bold + horizontal rule) ──────────
+    def section(title):
+        hdr_s = _s(f'Hdr_{title}', fontName=_BOLD, fontSize=11, leading=14,
+                   spaceBefore=8, spaceAfter=1)
+        story.append(Paragraph(title, hdr_s))
+        story.append(HRFlowable(width='100%', thickness=0.5,
+                                color='black', spaceAfter=3))
+
+    body_s   = _s('Body',   spaceAfter=4, alignment=TA_JUSTIFY)
+    bullet_s = _s('Bullet', leftIndent=15, firstLineIndent=-10, spaceAfter=2)
+    bold_s   = _s('Bold',   fontName=_BOLD, fontSize=11, leading=14,
+                  spaceBefore=6, spaceAfter=2)
+    plain_s  = _s('Plain',  spaceAfter=3)
+
+    # ── Professional Summary ───────────────────────────────────────────────
+    if data.get('summary'):
+        section('PROFESSIONAL SUMMARY')
+        story.append(Paragraph(data['summary'], body_s))
+
+    # ── Technical Skills ──────────────────────────────────────────────────
+    skills = data.get('technical_skills') or data.get('skills')
+    if skills:
+        section('TECHNICAL SKILLS')
+        skill_s = _s('Skill', spaceAfter=3)
+        for category, vals in skills.items():
+            if isinstance(vals, list):
+                vals_text = ', '.join(str(v) for v in vals)
+            elif isinstance(vals, dict):
+                vals_text = '; '.join(
+                    f"{k}: {', '.join(v) if isinstance(v, list) else str(v)}"
+                    for k, v in vals.items()
+                )
+            else:
+                vals_text = str(vals)
+            story.append(Paragraph(f'<b>{category}:</b> {vals_text}', skill_s))
+
+    # ── Work Experience ────────────────────────────────────────────────────
+    if data.get('experience'):
+        section('WORK EXPERIENCE')
+        for exp in data['experience']:
+            job_title = exp.get('role') or exp.get('title', 'Position')
+            dates = (exp.get('period') or exp.get('dates')
+                     or exp.get('duration', ''))
+            line = f"{exp.get('company', '')} | {job_title}"
+            if dates:
+                line += f" | {dates}"
+            story.append(Paragraph(line, bold_s))
+            for point in (exp.get('points') or exp.get('bullets') or []):
+                story.append(Paragraph(f'• {point}', bullet_s))
+
+    # ── Projects ──────────────────────────────────────────────────────────
+    if data.get('projects'):
+        section('PROJECTS')
+        proj_bold_s = _s('ProjBold', fontName=_BOLD, fontSize=11, leading=14,
+                         spaceBefore=6, spaceAfter=2)
+        for proj in data['projects']:
+            title = proj.get('name') or proj.get('title', '')
+            if title:
+                story.append(Paragraph(title, proj_bold_s))
+            if proj.get('description'):
+                story.append(Paragraph(proj['description'], body_s))
+            for point in (proj.get('points') or proj.get('bullets') or []):
+                story.append(Paragraph(f'• {point}', bullet_s))
+
+    # ── Education ─────────────────────────────────────────────────────────
+    if data.get('education'):
+        section('EDUCATION')
+        for edu in data['education']:
+            text = edu.get('degree', '')
+            if edu.get('institution'):
+                text += f", {edu['institution']}"
+            if edu.get('year'):
+                text += f" ({edu['year']})"
+            story.append(Paragraph(text, plain_s))
+
+    # ── Certifications ────────────────────────────────────────────────────
+    if data.get('certifications'):
+        section('CERTIFICATIONS')
+        for cert in data['certifications']:
+            if cert.get('name'):
+                text = cert['name']
+                issuer = cert.get('issuer') or cert.get('organization', '')
+                if issuer:
+                    text += f", {issuer}"
+                if cert.get('year'):
+                    text += f" ({cert['year']})"
+                story.append(Paragraph(text, plain_s))
+
+    return story
+
+
+def _make_doc(target, **kwargs):
+    return SimpleDocTemplate(
+        target,
+        pagesize=letter,
+        rightMargin=0.5 * inch,
+        leftMargin=0.5 * inch,
+        topMargin=0.5 * inch,
+        bottomMargin=0.5 * inch,
+        **kwargs
+    )
+
 
 def create_resume_pdf(data: Dict[str, Any], output_path: str) -> str:
-    """
-    Create a professional PDF resume from resume data.
-    
-    Args:
-        data: Resume data dictionary
-        output_path: Path to save the PDF file
-    
-    Returns:
-        Path to the created PDF file
-    """
-    
-    # Create the document
-    doc = SimpleDocTemplate(
-        output_path,
-        pagesize=letter,
-        rightMargin=0.75*inch,
-        leftMargin=0.75*inch,
-        topMargin=0.5*inch,
-        bottomMargin=0.5*inch
-    )
-    
-    # Define custom styles
-    styles = getSampleStyleSheet()
-    
-    # Name style (large, bold)
-    styles.add(ParagraphStyle(
-        name='ResumeName',
-        parent=styles['Heading1'],
-        fontSize=22,
-        leading=26,
-        alignment=TA_CENTER,
-        spaceAfter=4,
-        textColor=colors.HexColor('#1a1a2e')
-    ))
-    
-    # Contact info style
-    styles.add(ParagraphStyle(
-        name='ContactInfo',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        alignment=TA_CENTER,
-        spaceAfter=12,
-        textColor=colors.HexColor('#4a5568')
-    ))
-    
-    # Section header style
-    styles.add(ParagraphStyle(
-        name='SectionHeader',
-        parent=styles['Heading2'],
-        fontSize=12,
-        leading=16,
-        spaceBefore=12,
-        spaceAfter=6,
-        textColor=colors.HexColor('#2d3748'),
-        borderPadding=(0, 0, 3, 0)
-    ))
-    
-    # Company/Role style
-    styles.add(ParagraphStyle(
-        name='CompanyRole',
-        parent=styles['Normal'],
-        fontSize=11,
-        leading=14,
-        spaceBefore=6,
-        spaceAfter=2,
-        textColor=colors.HexColor('#1a1a2e')
-    ))
-    
-    # Period style
-    styles.add(ParagraphStyle(
-        name='Period',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=12,
-        textColor=colors.HexColor('#718096')
-    ))
-    
-    # Body text style
-    styles.add(ParagraphStyle(
-        name='BodyText',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        alignment=TA_JUSTIFY,
-        spaceAfter=8,
-        textColor=colors.HexColor('#2d3748')
-    ))
-    
-    # Bullet point style
-    styles.add(ParagraphStyle(
-        name='BulletPoint',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        leftIndent=15,
-        spaceAfter=3,
-        textColor=colors.HexColor('#2d3748')
-    ))
-    
-    # Build the document content
-    story = []
-    
-    # Name
-    name = data.get('name', 'Your Name')
-    story.append(Paragraph(name, styles['ResumeName']))
-    
-    # Contact info
-    contact = data.get('contact', {})
-    if contact:
-        contact_parts = []
-        if isinstance(contact, dict):
-            for key, value in contact.items():
-                if value:
-                    contact_parts.append(str(value))
-        elif isinstance(contact, str):
-            contact_parts.append(contact)
-        
-        if contact_parts:
-            contact_text = ' | '.join(contact_parts)
-            story.append(Paragraph(contact_text, styles['ContactInfo']))
-    
-    # Summary
-    summary = data.get('summary', '')
-    if summary:
-        story.append(create_section_header('PROFESSIONAL SUMMARY', styles))
-        story.append(Paragraph(summary, styles['BodyText']))
-    
-    # Technical Skills
-    skills = data.get('technical_skills', {})
-    if skills:
-        story.append(create_section_header('TECHNICAL SKILLS', styles))
-        
-        skills_data = []
-        for category, skill_list in skills.items():
-            if isinstance(skill_list, list):
-                skill_text = ', '.join(skill_list)
-            else:
-                skill_text = str(skill_list)
-            skills_data.append([f"<b>{category}:</b>", skill_text])
-        
-        if skills_data:
-            for skill_row in skills_data:
-                skill_para = Paragraph(f"{skill_row[0]} {skill_row[1]}", styles['BodyText'])
-                story.append(skill_para)
-    
-    # Experience
-    experience = data.get('experience', [])
-    if experience:
-        story.append(create_section_header('PROFESSIONAL EXPERIENCE', styles))
-        
-        for exp in experience:
-            company = exp.get('company', '')
-            role = exp.get('role', '')
-            period = exp.get('period', '')
-            points = exp.get('points', [])
-            
-            # Company and Role
-            exp_header = f"<b>{role}</b> at <b>{company}</b>"
-            story.append(Paragraph(exp_header, styles['CompanyRole']))
-            
-            # Period
-            if period:
-                story.append(Paragraph(period, styles['Period']))
-            
-            story.append(Spacer(1, 4))
-            
-            # Bullet points
-            for point in points:
-                if point:
-                    bullet_text = f"• {point}"
-                    story.append(Paragraph(bullet_text, styles['BulletPoint']))
-            
-            story.append(Spacer(1, 6))
-    
-    # Education
-    education = data.get('education', [])
-    if education:
-        story.append(create_section_header('EDUCATION', styles))
-        
-        for edu in education:
-            degree = edu.get('degree', '')
-            institution = edu.get('institution', '')
-            year = edu.get('year', '')
-            
-            edu_text = f"<b>{degree}</b> - {institution}"
-            if year:
-                edu_text += f" ({year})"
-            story.append(Paragraph(edu_text, styles['BodyText']))
-    
-    # Projects
-    projects = data.get('projects', [])
-    if projects:
-        story.append(create_section_header('PROJECTS', styles))
-        
-        for proj in projects:
-            title = proj.get('title', '')
-            bullets = proj.get('bullets', [])
-            
-            if title:
-                story.append(Paragraph(f"<b>{title}</b>", styles['CompanyRole']))
-                
-                for bullet in bullets:
-                    if bullet:
-                        bullet_text = f"• {bullet}"
-                        story.append(Paragraph(bullet_text, styles['BulletPoint']))
-                
-                story.append(Spacer(1, 4))
-    
-    # Certifications
-    certifications = data.get('certifications', [])
-    if certifications:
-        story.append(create_section_header('CERTIFICATIONS', styles))
-        
-        for cert in certifications:
-            cert_name = cert.get('name', '')
-            cert_org = cert.get('organization', '')
-            cert_year = cert.get('year', '')
-            
-            cert_text = f"<b>{cert_name}</b>"
-            if cert_org:
-                cert_text += f" - {cert_org}"
-            if cert_year:
-                cert_text += f" ({cert_year})"
-            story.append(Paragraph(cert_text, styles['BodyText']))
-    
-    # Build PDF
-    doc.build(story)
-    
-    logger.info(f"PDF resume created: {output_path}")
+    """Create a PDF resume matching Word classic format and save to output_path."""
+    doc = _make_doc(output_path)
+    doc.build(_build_story(data))
     return output_path
 
 
-def create_section_header(title: str, styles) -> List:
-    """Create a styled section header with horizontal line."""
-    return Paragraph(
-        f"<u>{title}</u>",
-        styles['SectionHeader']
-    )
-
-
 def create_resume_pdf_bytes(data: Dict[str, Any]) -> bytes:
-    """
-    Create a PDF resume and return as bytes.
-    
-    Args:
-        data: Resume data dictionary
-    
-    Returns:
-        PDF content as bytes
-    """
+    """Create a PDF resume matching Word classic format and return as bytes."""
     buffer = BytesIO()
-    
-    # Create the document
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=letter,
-        rightMargin=0.75*inch,
-        leftMargin=0.75*inch,
-        topMargin=0.5*inch,
-        bottomMargin=0.5*inch
-    )
-    
-    # Define custom styles
-    styles = getSampleStyleSheet()
-    
-    # Name style (large, bold)
-    styles.add(ParagraphStyle(
-        name='ResumeName',
-        parent=styles['Heading1'],
-        fontSize=22,
-        leading=26,
-        alignment=TA_CENTER,
-        spaceAfter=4,
-        textColor=colors.HexColor('#1a1a2e')
-    ))
-    
-    # Contact info style
-    styles.add(ParagraphStyle(
-        name='ContactInfo',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        alignment=TA_CENTER,
-        spaceAfter=12,
-        textColor=colors.HexColor('#4a5568')
-    ))
-    
-    # Section header style
-    styles.add(ParagraphStyle(
-        name='SectionHeader',
-        parent=styles['Heading2'],
-        fontSize=12,
-        leading=16,
-        spaceBefore=12,
-        spaceAfter=6,
-        textColor=colors.HexColor('#2d3748'),
-        borderPadding=(0, 0, 3, 0)
-    ))
-    
-    # Company/Role style
-    styles.add(ParagraphStyle(
-        name='CompanyRole',
-        parent=styles['Normal'],
-        fontSize=11,
-        leading=14,
-        spaceBefore=6,
-        spaceAfter=2,
-        textColor=colors.HexColor('#1a1a2e')
-    ))
-    
-    # Period style
-    styles.add(ParagraphStyle(
-        name='Period',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=12,
-        textColor=colors.HexColor('#718096')
-    ))
-    
-    # Body text style
-    styles.add(ParagraphStyle(
-        name='BodyText',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        alignment=TA_JUSTIFY,
-        spaceAfter=8,
-        textColor=colors.HexColor('#2d3748')
-    ))
-    
-    # Bullet point style
-    styles.add(ParagraphStyle(
-        name='BulletPoint',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        leftIndent=15,
-        spaceAfter=3,
-        textColor=colors.HexColor('#2d3748')
-    ))
-    
-    # Build the document content
-    story = []
-    
-    # Name
-    name = data.get('name', 'Your Name')
-    story.append(Paragraph(name, styles['ResumeName']))
-    
-    # Contact info
-    contact = data.get('contact', {})
-    if contact:
-        contact_parts = []
-        if isinstance(contact, dict):
-            for key, value in contact.items():
-                if value:
-                    contact_parts.append(str(value))
-        elif isinstance(contact, str):
-            contact_parts.append(contact)
-        
-        if contact_parts:
-            contact_text = ' | '.join(contact_parts)
-            story.append(Paragraph(contact_text, styles['ContactInfo']))
-    
-    # Summary
-    summary = data.get('summary', '')
-    if summary:
-        story.append(Paragraph("<u>PROFESSIONAL SUMMARY</u>", styles['SectionHeader']))
-        story.append(Paragraph(summary, styles['BodyText']))
-    
-    # Technical Skills
-    skills = data.get('technical_skills', {})
-    if skills:
-        story.append(Paragraph("<u>TECHNICAL SKILLS</u>", styles['SectionHeader']))
-        
-        for category, skill_list in skills.items():
-            if isinstance(skill_list, list):
-                skill_text = ', '.join(skill_list)
-            else:
-                skill_text = str(skill_list)
-            skill_para = Paragraph(f"<b>{category}:</b> {skill_text}", styles['BodyText'])
-            story.append(skill_para)
-    
-    # Experience
-    experience = data.get('experience', [])
-    if experience:
-        story.append(Paragraph("<u>PROFESSIONAL EXPERIENCE</u>", styles['SectionHeader']))
-        
-        for exp in experience:
-            company = exp.get('company', '')
-            role = exp.get('role', '')
-            period = exp.get('period', '')
-            points = exp.get('points', [])
-            
-            # Company and Role
-            exp_header = f"<b>{role}</b> at <b>{company}</b>"
-            story.append(Paragraph(exp_header, styles['CompanyRole']))
-            
-            # Period
-            if period:
-                story.append(Paragraph(period, styles['Period']))
-            
-            story.append(Spacer(1, 4))
-            
-            # Bullet points
-            for point in points:
-                if point:
-                    bullet_text = f"• {point}"
-                    story.append(Paragraph(bullet_text, styles['BulletPoint']))
-            
-            story.append(Spacer(1, 6))
-    
-    # Education
-    education = data.get('education', [])
-    if education:
-        story.append(Paragraph("<u>EDUCATION</u>", styles['SectionHeader']))
-        
-        for edu in education:
-            degree = edu.get('degree', '')
-            institution = edu.get('institution', '')
-            year = edu.get('year', '')
-            
-            edu_text = f"<b>{degree}</b> - {institution}"
-            if year:
-                edu_text += f" ({year})"
-            story.append(Paragraph(edu_text, styles['BodyText']))
-    
-    # Projects
-    projects = data.get('projects', [])
-    if projects:
-        story.append(Paragraph("<u>PROJECTS</u>", styles['SectionHeader']))
-        
-        for proj in projects:
-            title = proj.get('title', '')
-            bullets = proj.get('bullets', [])
-            
-            if title:
-                story.append(Paragraph(f"<b>{title}</b>", styles['CompanyRole']))
-                
-                for bullet in bullets:
-                    if bullet:
-                        bullet_text = f"• {bullet}"
-                        story.append(Paragraph(bullet_text, styles['BulletPoint']))
-                
-                story.append(Spacer(1, 4))
-    
-    # Certifications
-    certifications = data.get('certifications', [])
-    if certifications:
-        story.append(Paragraph("<u>CERTIFICATIONS</u>", styles['SectionHeader']))
-        
-        for cert in certifications:
-            cert_name = cert.get('name', '')
-            cert_org = cert.get('organization', '')
-            cert_year = cert.get('year', '')
-            
-            cert_text = f"<b>{cert_name}</b>"
-            if cert_org:
-                cert_text += f" - {cert_org}"
-            if cert_year:
-                cert_text += f" ({cert_year})"
-            story.append(Paragraph(cert_text, styles['BodyText']))
-    
-    # Build PDF
-    doc.build(story)
-    
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
-    
-    return pdf_bytes
-
-
-if __name__ == "__main__":
-    # Test with sample data
-    sample_data = {
-        "name": "John Doe",
-        "contact": {
-            "email": "john.doe@email.com",
-            "phone": "+1 (555) 123-4567",
-            "linkedin": "linkedin.com/in/johndoe"
-        },
-        "summary": "Experienced software engineer with 5+ years of expertise in full-stack development.",
-        "technical_skills": {
-            "Languages": ["Python", "JavaScript", "TypeScript"],
-            "Frameworks": ["React", "Node.js", "FastAPI"]
-        },
-        "experience": [
-            {
-                "company": "Tech Corp",
-                "role": "Senior Software Engineer",
-                "period": "Jan 2022 - Present",
-                "points": [
-                    "Led development of microservices architecture",
-                    "Improved system performance by 40%"
-                ]
-            }
-        ],
-        "education": [
-            {
-                "degree": "B.S. Computer Science",
-                "institution": "University of Technology",
-                "year": "2018"
-            }
-        ]
-    }
-    
-    create_resume_pdf(sample_data, "test_resume.pdf")
-    print("Test PDF created: test_resume.pdf")
+    doc = _make_doc(buffer)
+    doc.build(_build_story(data))
+    buffer.seek(0)
+    return buffer.read()
