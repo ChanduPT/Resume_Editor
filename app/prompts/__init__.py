@@ -2,12 +2,15 @@
 Prompts package for resume optimization
 """
 
-from .jd_hints import JD_HINTS_PROMPT, jd_hints_response_schema
+from .jd_hints import JD_HINTS_PROMPT, jd_hints_response_schema, CATEGORIZE_KEYWORDS_PROMPT, categorize_keywords_response_schema
 from .summary import GENERATE_SUMMARY_FROM_JD_PROMPT, summary_response_schema
 from .experience import (
     GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT, 
     GENERATE_EXPERIENCE_BULLETS_FROM_RESUME_PROMPT,
-    experience_response_schema
+    experience_response_schema,
+    GENERATE_SINGLE_ROLE_EXPERIENCE_PROMPT,
+    ENHANCE_SINGLE_ROLE_EXPERIENCE_PROMPT,
+    single_role_response_schema
 )
 from .skills import GENERATE_TECHNICAL_SKILLS_FROM_JD, skills_response_schema
 
@@ -34,11 +37,16 @@ PARSE_RESUME_TEXT_PROMPT = _old_prompts.PARSE_RESUME_TEXT_PROMPT
 __all__ = [
     'JD_HINTS_PROMPT',
     'jd_hints_response_schema',
+    'CATEGORIZE_KEYWORDS_PROMPT',
+    'categorize_keywords_response_schema',
     'GENERATE_SUMMARY_FROM_JD_PROMPT',
     'summary_response_schema',
     'GENERATE_EXPERIENCE_FROM_JD_PROMPT',
     'GENERATE_EXPERIENCE_BULLETS_FROM_JD_PROMPT',
     'experience_response_schema',
+    'GENERATE_SINGLE_ROLE_EXPERIENCE_PROMPT',
+    'ENHANCE_SINGLE_ROLE_EXPERIENCE_PROMPT',
+    'single_role_response_schema',
     'GENERATE_TECHNICAL_SKILLS_FROM_JD',
     'skills_response_schema',
     'PARSE_EXPERIENCE_PROMPT',

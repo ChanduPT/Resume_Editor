@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resume Builder Pro</title>
-<link rel="stylesheet" href="/static/css/main.css?v=74.0">
+<link rel="stylesheet" href="/static/css/main.css?v=78.0">
 </head>
 <body>
 <!-- Loading Overlay for Document Parsing -->
@@ -65,6 +65,10 @@
       </div>
       
       <div class="resume-toolbar-right">
+        <button class="toolbar-btn split-view-btn" id="splitViewBtn" onclick="toggleSideBySideMode()" title="View resume and job description side by side">
+          <span>⬛⬜</span>
+          <span>Side by Side</span>
+        </button>
         <button class="toolbar-btn" id="compactModeBtn" onclick="toggleCompactMode()" title="Toggle section spacing">
           <span>📏</span>
           <span>Compact</span>
@@ -80,7 +84,7 @@
         <span class="btn-icon"></span>
         <span id="editBtnText">Edit</span>
       </button>
-      <button id="viewModalSaveBtn" class="view-modal-btn primary" style="display: none; background: #4a5568; border: none;" onclick="saveResumeChanges()" onmouseover="this.style.background='#2d3748'" onmouseout="this.style.background='#4a5568'">
+      <button id="viewModalSaveBtn" class="view-modal-btn primary" style="display: none;" onclick="saveResumeChanges()">
         <span class="btn-icon"></span>
         <span>Save Changes</span>
       </button>
@@ -134,7 +138,6 @@
     <div class="view-modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--bg);">
       <button class="view-modal-btn cancel" onclick="closeFormatModal()" style="padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background='transparent'">Cancel</button>
       <button class="view-modal-btn primary" onclick="confirmFormatDownload()" style="padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; background: #4F46E5; color: #ffffff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#4338CA'" onmouseout="this.style.background='#4F46E5'">
-        <span>Download</span>
         <span>Download Resume</span>
       </button>
     </div>
@@ -276,7 +279,7 @@
       <div style="padding: 20px; color: var(--text-primary);">
         
         <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary);">
-          <h3 style="margin-top: 0; color: var(--primary);">to Resume Builder Pro!</h3>
+          <h3 style="margin-top: 0; color: var(--primary);">Welcome to Resume Builder Pro!</h3>
           <p style="line-height: 1.6;">An AI-powered platform that helps you create perfectly tailored resumes for every job application. Our intelligent system analyzes job descriptions and optimizes your resume to match exactly what employers are looking for.</p>
           <p style="line-height: 1.6; margin-top: 10px;"><strong>New Features:</strong> View & edit generated resumes, manage technical skills, track all applications in your personal dashboard!</p>
         </div>
@@ -752,13 +755,7 @@
                   <span class="entry-header-label">Value</span>
                   <span class="entry-header-spacer"></span>
                 </div>
-                <div id="contactList">
-                  <div class="contact-entry">
-                    <input placeholder="e.g., Email, Phone, LinkedIn" class="contact-key" value="">
-                    <input placeholder="Enter value" class="contact-value" value="">
-                    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
-                  </div>
-                </div>
+                <div id="contactList"></div>
                 <button type="button" class="add-entry-btn" onclick="addContact()">
                   <span>+</span> Add Contact
                 </button>
@@ -772,13 +769,7 @@
                   <span class="entry-header-label">Skills</span>
                   <span class="entry-header-spacer"></span>
                 </div>
-                <div id="skillsList">
-                  <div class="skill-entry">
-                    <input placeholder="e.g., Languages, Frameworks" class="skill-key" value="">
-                    <input placeholder="Skills (comma-separated)" class="skill-value" value="">
-                    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
-                  </div>
-                </div>
+                <div id="skillsList"></div>
                 <button type="button" class="add-entry-btn" onclick="addSkill()">
                   <span>+</span> Add Skill Category
                 </button>
@@ -787,35 +778,7 @@
               <!-- Experience Section -->
               <div id="section-experience" class="form-section-panel">
                 <h3>Work Experience</h3>
-                <div id="experienceList">
-                  <div class="experience-entry">
-                    <div class="experience-header-inputs">
-                      <div class="input-with-label">
-                        <label>Company</label>
-                        <input placeholder="Company Name" class="exp-company" value="">
-                      </div>
-                      <div class="input-with-label">
-                        <label>Job Title</label>
-                        <input placeholder="Job Title" class="exp-role" value="">
-                      </div>
-                      <div class="input-with-label">
-                        <label>Duration</label>
-                        <input placeholder="e.g., Jan 2020 - Present" class="exp-period" value="">
-                      </div>
-                    </div>
-                    <div class="experience-bullets">
-                      <label>Key Achievements & Responsibilities</label>
-                      <div class="bullets">
-                        <div class="bullet-item">
-                          <input placeholder="Describe an achievement or responsibility..." class="exp-point" value="">
-                          <button type="button" class="bullet-remove-btn" onclick="this.parentElement.remove()">✕</button>
-                        </div>
-                      </div>
-                      <button type="button" class="add-bullet-btn" onclick="addBullet(this)">+ Add Point</button>
-                    </div>
-                    <button type="button" class="remove-entry-btn" onclick="this.parentElement.remove()">Remove Experience</button>
-                  </div>
-                </div>
+                <div id="experienceList"></div>
                 <button type="button" class="add-entry-btn" onclick="addExperience()">
                   <span>+</span> Add Experience
                 </button>
@@ -824,25 +787,7 @@
               <!-- Education Section -->
               <div id="section-education" class="form-section-panel">
                 <h3>Education</h3>
-                <div id="educationList">
-                  <div class="education-entry">
-                    <div class="education-fields">
-                      <div class="input-with-label">
-                        <label>Degree</label>
-                        <input placeholder="e.g., Bachelor of Science" class="edu-degree" value="">
-                      </div>
-                      <div class="input-with-label">
-                        <label>Institution</label>
-                        <input placeholder="e.g., University Name" class="edu-inst" value="">
-                      </div>
-                      <div class="input-with-label">
-                        <label>Year</label>
-                        <input placeholder="e.g., 2020" class="edu-year" value="">
-                      </div>
-                    </div>
-                    <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>
-                  </div>
-                </div>
+                <div id="educationList"></div>
                 <button type="button" class="add-entry-btn" onclick="addEducation()">
                   <span>+</span> Add Education
                 </button>
@@ -881,13 +826,13 @@
         
         <!-- Unsaved Changes Confirmation Modal -->
         <div id="unsavedChangesModal" class="modal" style="display:none;z-index:4000;align-items:center;justify-content:center;">
-          <div class="modal-content" style="width:400px;max-width:90%;padding:20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);background:white;">
-            <h3 style="margin:0 0 8px 0;color:#333;font-size:18px;font-weight:600;text-align:center;">Unsaved Changes</h3>
-            <p style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.4;text-align:center;">Would you like to save before switching tabs?</p>
+          <div class="modal-content" style="width:400px;max-width:90%;padding:24px;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.2);background:var(--card);border:1px solid var(--border);">
+            <h3 style="margin:0 0 8px 0;color:var(--text);font-size:18px;font-weight:600;text-align:center;">Unsaved Changes</h3>
+            <p style="margin:0 0 20px 0;color:var(--text-secondary);font-size:14px;line-height:1.4;text-align:center;">Would you like to save before switching tabs?</p>
             <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
-              <button id="cancelTabSwitch" style="padding:8px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'">Cancel</button>
-              <button id="discardChanges" style="padding:8px 16px;border:1px solid #e74c3c;background:white;color:#e74c3c;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='#e74c3c';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='#e74c3c'">Don't Save</button>
-              <button id="saveAndSwitch" style="padding:8px 16px;border:none;background:#5b7cfa;color:white;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Save</button>
+              <button id="cancelTabSwitch" style="padding:8px 16px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;">Cancel</button>
+              <button id="discardChanges" style="padding:8px 16px;border:1px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;">Don't Save</button>
+              <button id="saveAndSwitch" style="padding:8px 16px;border:none;background:var(--accent);color:white;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;opacity:1;">Save</button>
             </div>
           </div>
         </div>
@@ -956,10 +901,16 @@
                 </div>
               </div>
               
-              <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
-                <span class="btn-icon"></span>
-                <span class="btn-text">Generate Resume</span>
-              </button>
+              <div class="jd-btn-group">
+                <button id="generateJDResumeBtn" type="button" class="generate-btn-inline">
+                  <span class="btn-icon"></span>
+                  <span class="btn-text">Generate Resume</span>
+                </button>
+                <button id="clearAllFieldsBtn" type="button" class="clear-all-btn" onclick="clearAllJDFields()">
+                  <span>🗑️</span>
+                  <span>Clear All</span>
+                </button>
+              </div>
             </div>
           </div>
           
@@ -971,109 +922,85 @@
         </div>
       </div>
 
-      <!-- Job Search Tab Panel -->
+      <!-- Job Search Tab Panel (LinkedIn-style) -->
       <div id="jobSearchTabPanel" style="display: none;">
-        <div class="job-search-container">
-          <div style="text-align: center; margin-bottom: 16px;">
-            <h2 style="margin-bottom: 8px;">Find Your Next Job</h2>
-            <p style="color: var(--text-secondary); margin: 0;">Search thousands of jobs from top companies</p>
-          </div>
-          
-          <!-- All-in-One Search Row -->
-          <div class="search-card" style="background: var(--card-bg); border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-            
-            <div class="search-field-row">
-              
-              <!-- Job Title -->
-              <div class="search-field search-field-xl">
-                <label>Job Title *</label>
-                <input type="text" id="jobSearchTitle" placeholder="e.g., Data Engineer" required
-                  onfocus="this.style.borderColor='var(--primary)'" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)">
+        <div class="job-board-panel">
+
+          <!-- Search Hero -->
+          <div class="jb-hero">
+            <h2 class="jb-hero-title">Find Your Next Opportunity</h2>
+            <p class="jb-hero-sub">Search thousands of jobs from top companies</p>
+            <div class="jb-search-box">
+              <div class="jb-search-field">
+                <svg class="jb-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+                <input type="text" id="jobSearchTitle" class="jb-input" placeholder="Job title, keyword, or company" required autocomplete="off">
                 <div class="job-title-suggestions" id="jobTitleSuggestions" style="display: none;"></div>
               </div>
-              
-              <!-- Location -->
-              <div class="search-field search-field-lg">
-                <label>Location</label>
-                <input type="text" id="jobSearchLocationCustom" placeholder="City or 'remote'" 
-                  onfocus="this.style.borderColor='var(--primary)'; showLocationSuggestions(this.value)" onblur="setTimeout(() => this.style.borderColor='var(--border)', 200)"
-                  oninput="showLocationSuggestions(this.value)">
+              <div class="jb-search-sep"></div>
+              <div class="jb-search-field location-input-container">
+                <svg class="jb-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+                <input type="text" id="jobSearchLocationCustom" class="jb-input" placeholder="City, state, or Remote"
+                  onfocus="showLocationSuggestions(this.value)" oninput="showLocationSuggestions(this.value)">
                 <div class="location-suggestions" id="locationSuggestions" style="display: none;"></div>
               </div>
-              
-              <!-- Job Type -->
-              <div class="search-field search-field-md">
-                <label>Job Type</label>
-                <select id="jobTypeDisplay">
-                  <option value="FULLTIME,PARTTIME,CONTRACTOR,remote">All</option>
-                  <option value="FULLTIME">Full-time</option>
-                  <option value="PARTTIME">Part-time</option>
-                  <option value="CONTRACTOR">Contract</option>
-                  <option value="remote">Remote Only</option>
-                </select>
-              </div>
-              
-              <!-- Date Posted -->
-              <div class="search-field search-field-sm">
-                <label>Date Posted</label>
-                <select id="jobSearchDate">
-                  <option value="all">Any Time</option>
-                  <option value="today">Today</option>
-                  <option value="3days">Last 3 Days</option>
-                  <option value="week" selected>This Week</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
-              
-              <!-- API Source -->
-              <div class="search-field search-field-md">
-                <label>Source</label>
-                <select id="jobSearchSource">
-                  <option value="jsearch">All Jobs</option>
-                  <option value="workday">Workday</option>
-                  <option value="lever">Lever</option>
-                  <option value="icims">iCIMS</option>
-                  <option value="bamboohr">BambooHR</option>
-                  <option value="greenhouse">Greenhouse</option>
-                </select>
-              </div>
-              
-              <!-- Search Button -->
-              <div class="search-field search-field-auto">
-                <button id="searchJobsBtn" class="primary-btn" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 6px; white-space: nowrap; height: 42px;">
-                  Search
-                </button>
-              </div>
-              
-            </div>
-            
-            <!-- Greenhouse Companies Button (shown when greenhouse selected) -->
-            <div id="greenhouseToggleRow" style="display: none; margin-top: 12px; text-align: center;">
-              <button id="showCompanySelectionBtn" style="padding: 8px 20px; background: var(--card-bg); border: 2px solid var(--primary); color: var(--primary); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='var(--card-bg)'; this.style.color='var(--primary)'">
-                Select Companies (<span id="selectedCompanyCount">20</span>)
-              </button>
-            </div>
-
-            <!-- Hidden elements for JavaScript compatibility -->
-            <div style="display: none;">
-              <input type="checkbox" id="typeFullTime" value="FULLTIME" checked>
-              <input type="checkbox" id="typePartTime" value="PARTTIME">
-              <input type="checkbox" id="typeContract" value="CONTRACTOR">
-              <input type="checkbox" id="typeIntern" value="INTERN">
-              <select id="jobExperienceLevel"><option value="" selected>Any Experience</option></select>
-              <input type="number" id="salaryMin">
-              <input type="number" id="salaryMax">
-              <select id="salaryFrequency"><option value="yearly" selected>Yearly</option></select>
-              <select id="jobSearchMaxResults"><option value="20" selected>20</option></select>
-              <select id="jobSearchSort"><option value="relevance" selected>relevance</option></select>
+              <button id="searchJobsBtn" class="jb-search-btn">Search</button>
             </div>
           </div>
 
-          <!-- Greenhouse Company Selection (shows when greenhouse source is selected) -->
-          <div id="greenhouseCompanySection" style="display: none; background: linear-gradient(135deg, var(--primary-light, #f0f8ff) 0%, var(--card-bg) 100%); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 2px solid var(--primary); box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);">
+          <!-- Filter Chips Bar -->
+          <div class="jb-filter-bar">
+            <select id="jobSearchDate" class="jb-filter-chip">
+              <option value="all">Any time</option>
+              <option value="today">Past 24 hours</option>
+              <option value="3days">Past 3 days</option>
+              <option value="week" selected>Past week</option>
+              <option value="month">Past month</option>
+            </select>
+
+            <select id="jobTypeDisplay" class="jb-filter-chip">
+              <option value="FULLTIME,PARTTIME,CONTRACTOR,remote">All job types</option>
+              <option value="FULLTIME">Full-time</option>
+              <option value="PARTTIME">Part-time</option>
+              <option value="CONTRACTOR">Contract</option>
+              <option value="remote">Remote</option>
+            </select>
+
+            <select id="jobSearchSource" class="jb-filter-chip">
+              <option value="jsearch">All sources</option>
+              <option value="workday">Workday</option>
+              <option value="lever">Lever</option>
+              <option value="icims">iCIMS</option>
+              <option value="bamboohr">BambooHR</option>
+              <option value="greenhouse">Greenhouse</option>
+            </select>
+
+            <!-- Greenhouse Companies Button -->
+            <div id="greenhouseToggleRow" style="display: none;">
+              <button id="showCompanySelectionBtn" class="jb-gh-btn">
+                Companies (<span id="selectedCompanyCount">20</span>)
+              </button>
+            </div>
+          </div>
+
+          <!-- Hidden elements for JavaScript compatibility -->
+          <div style="display: none;">
+            <input type="checkbox" id="typeFullTime" value="FULLTIME" checked>
+            <input type="checkbox" id="typePartTime" value="PARTTIME">
+            <input type="checkbox" id="typeContract" value="CONTRACTOR">
+            <input type="checkbox" id="typeIntern" value="INTERN">
+            <select id="jobExperienceLevel"><option value="" selected>Any Experience</option></select>
+            <input type="number" id="salaryMin">
+            <input type="number" id="salaryMax">
+            <select id="salaryFrequency"><option value="yearly" selected>Yearly</option></select>
+            <select id="jobSearchMaxResults"><option value="20" selected>20</option></select>
+            <select id="jobSearchSort"><option value="relevance" selected>relevance</option></select>
+          </div>
+
+          <!-- Greenhouse Company Selection -->
+          <div id="greenhouseCompanySection" style="display: none; background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border);">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h3 style="margin-bottom: 8px; color: var(--primary); font-size: 20px;">Select Greenhouse Companies</h3>
-              <p style="color: var(--text-secondary); font-size: 14px;">Choose which companies to search - All job type filters above will apply to these searches</p>
+              <h3 style="margin-bottom: 6px; color: var(--primary); font-size: 18px; font-weight: 700;">Select Companies</h3>
+              <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">Filter results to Greenhouse-hosted companies</p>
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px;">
@@ -1136,30 +1063,20 @@
               </label>
             </div>
             
-            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-              <button onclick="selectAllGreenhouse()" class="secondary-btn" style="padding: 10px 20px; font-size: 14px; border-radius: 8px;">✅ Select All</button>
-              <button onclick="clearAllGreenhouse()" class="secondary-btn" style="padding: 10px 20px; font-size: 14px; border-radius: 8px;">❌ Clear All</button>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+              <button onclick="selectAllGreenhouse()" class="secondary-btn" style="padding: 8px 16px; font-size: 13px; border-radius: 6px;">Select All</button>
+              <button onclick="clearAllGreenhouse()" class="secondary-btn" style="padding: 8px 16px; font-size: 13px; border-radius: 6px;">Clear All</button>
             </div>
           </div>
-          
+
           <!-- Loading State -->
-          <div id="jobSearchLoading" style="display: none; text-align: center; margin: 20px 0;">
+          <div id="jobSearchLoading" style="display: none; text-align: center; padding: 48px 0;">
             <div class="spinner"></div>
-            <p>Searching for jobs...</p>
+            <p style="color: var(--text-secondary); margin-top: 14px; font-size: 14px;">Searching for jobs...</p>
           </div>
-          
+
           <!-- Results Container -->
-          <div id="jobSearchResults" class="job-results">
-            <!-- Results will be populated here -->
-          </div>
-          
-          <!-- Cache Stats Section (hidden by default) -->
-          <div class="cache-stats-section" style="margin-top: 30px;">
-            <button id="viewCacheStatsBtn" class="secondary-btn" style="display: none;">
-              View Cache Statistics
-            </button>
-            <div id="cacheStatsDisplay" style="display: none; margin-top: 20px; padding: 20px; background: var(--card); border-radius: var(--radius-lg);"></div>
-          </div>
+          <div id="jobSearchResults" class="jb-results"></div>
         </div>
       </div>
 
@@ -1255,8 +1172,8 @@
               oninput="filterDashboardTable()" 
               style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; flex: 1; min-width: 150px;">
             
-            <select id="filterStatus" onchange="filterDashboardTable()" 
-              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
+            <select id="filterStatus" onchange="filterDashboardTable()"
+              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; min-width: 103px; flex-shrink: 0; height: 36px;">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="processing">Processing</option>
@@ -1264,8 +1181,8 @@
               <option value="failed">Failed</option>
             </select>
             
-            <select id="filterDate" onchange="filterDashboardTable()" 
-              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer;">
+            <select id="filterDate" onchange="filterDashboardTable()"
+              style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; min-width: 130px; flex-shrink: 0; height: 36px;">
               <option value="">All Time</option>
               <option value="today">Today</option>
               <option value="week">This Week</option>
@@ -1802,18 +1719,18 @@
     document.querySelectorAll('.form-section-panel').forEach(panel => {
       panel.classList.remove('active');
     });
-    
+
     // Remove active from all nav buttons
     document.querySelectorAll('.form-nav-btn').forEach(btn => {
       btn.classList.remove('active');
     });
-    
+
     // Show selected section
     const section = document.getElementById(`section-${sectionId}`);
     if (section) {
       section.classList.add('active');
     }
-    
+
     // Mark button as active
     event.target.closest('.form-nav-btn').classList.add('active');
   }
@@ -1875,20 +1792,18 @@
   function addContact(k='',v=''){
     const d=document.createElement('div');
     d.className='contact-entry';
-    // Determine placeholder based on key
     let valuePlaceholder = 'Enter value';
     if (k === 'Phone') valuePlaceholder = '+1 999 999 9999';
     else if (k === 'Email') valuePlaceholder = 'abc@mail.com';
     else if (k === 'LinkedIn') valuePlaceholder = 'https://linkedin.com/in/yourprofile';
     else if (k === 'Portfolio') valuePlaceholder = 'https://yourportfolio.com';
     else if (v) valuePlaceholder = 'URL or value';
-
     d.innerHTML=`<input placeholder="e.g., Email, Phone, LinkedIn" class="contact-key" value="${k}" ${k ? 'readonly' : ''}>
     <input placeholder="${valuePlaceholder}" class="contact-value" value="${v}">
     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('contactList').appendChild(d);
   }
-  
+
   function addSkill(k='',v=''){
     const d=document.createElement('div');
     d.className='skill-entry';
@@ -1897,7 +1812,7 @@
     <button type="button" class="entry-remove-btn" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById('skillsList').appendChild(d);
   }
-  
+
   function addExperience(exp=null){
     const d=document.createElement('div');
     d.className='experience-entry';
@@ -1912,7 +1827,7 @@
       </div>
       <div class="input-with-label">
         <label>Duration</label>
-        <input placeholder="e.g., Jan 2020 - Present" class="exp-period" value="${exp?.period||''}">
+        <input placeholder="e.g., Jan 2020 - Present" class="exp-period" value="${exp?.period||exp?.duration||''}">
       </div>
     </div>
     <div class="experience-bullets">
@@ -1927,7 +1842,7 @@
     if (!pts.length) pts = [''];
     pts.forEach(p => addBullet(bulletsDiv, p));
   }
-  
+
   function addBullet(btn,text=''){
     const b=document.createElement('div');
     b.className='bullet-item';
@@ -1939,7 +1854,7 @@
       btn.parentElement.querySelector('.bullets').appendChild(b);
     }
   }
-  
+
   function addEducation(e=null){
     const d=document.createElement('div');
     d.className='education-entry';
@@ -1967,7 +1882,7 @@
     d.innerHTML=`<div class="experience-header-inputs" style="grid-template-columns: 1fr;">
       <div class="input-with-label">
         <label>Project Title</label>
-        <input placeholder="e.g., E-commerce Platform" class="proj-title" value="${proj?.title||''}">
+        <input placeholder="e.g., E-commerce Platform" class="proj-title" value="${proj?.title||proj?.name||''}">
       </div>
     </div>
     <div class="experience-bullets">
@@ -1978,7 +1893,7 @@
     <button type="button" class="remove-entry-btn" onclick="this.parentElement.remove()">Remove Project</button>`;
     document.getElementById('projectsList').appendChild(d);
     const bulletsDiv = d.querySelector('.bullets');
-    let pts = Array.isArray(proj?.bullets) ? proj.bullets : [''];
+    let pts = Array.isArray(proj?.bullets) ? proj.bullets : (Array.isArray(proj?.points) ? proj.points : ['']);
     if (!pts.length) pts = [''];
     pts.forEach(p => addProjectBullet(bulletsDiv, p));
   }
@@ -2005,7 +1920,7 @@
       </div>
       <div class="input-with-label">
         <label>Issuing Organization</label>
-        <input placeholder="e.g., Amazon Web Services" class="cert-org" value="${cert?.organization||''}">
+        <input placeholder="e.g., Amazon Web Services" class="cert-org" value="${cert?.organization||cert?.issuer||''}">
       </div>
       <div class="input-with-label">
         <label>Year</label>
@@ -2322,12 +2237,16 @@
   let currentResumeData = null;
   let currentRequestId = null;
   let isEditMode = false;
+  let isSideBySideMode = false;
+  let currentJdText = null;
 
   // View modal functions
   async function viewResumeContent(requestId, company, title) {
     try {
       currentRequestId = requestId;
       isEditMode = false;
+      isSideBySideMode = false;
+      currentJdText = null;
       
       const modal = document.getElementById('viewModal');
       const modalTitle = document.getElementById('viewModalTitle');
@@ -2344,10 +2263,14 @@
       modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="parse-loading-spinner" style="margin: 0 auto;"></div><p style="margin-top: 20px;">Loading resume...</p></div>';
       modal.style.display = 'flex';
       
-      // Show toolbar
+      // Show toolbar, reset split view button
       const toolbar = document.getElementById('resumeToolbar');
       if (toolbar) toolbar.style.display = 'flex';
-      
+      const splitBtn = document.getElementById('splitViewBtn');
+      if (splitBtn) splitBtn.classList.remove('active');
+      document.querySelector('.view-modal-content').classList.remove('wide-mode');
+      document.getElementById('viewModalBody').classList.remove('side-by-side-layout');
+
       // Set up buttons
       downloadResumeBtn.onclick = () => downloadResumeDocx(requestId, company, title);
       downloadResumeBtn.style.display = 'inline-block';
@@ -2386,7 +2309,8 @@
 
   function renderResumeContent(data) {
     const modalBody = document.getElementById('viewModalBody');
-    let html = '<div id="resumeContentWrapper" class="format-modern font-size-medium">';
+    const editClass = isEditMode ? ' resume-edit-active' : '';
+    let html = `<div id="resumeContentWrapper" class="format-modern font-size-medium${editClass}">`;
     
     // Header Section with Name and Contact
     html += '<div class="resume-header">';
@@ -2471,7 +2395,12 @@
             }
             html += '</li>';
           });
+          if (isEditMode) {
+            html += `<li class="bullet-add-item"><button class="bullet-add-btn" onclick="addExperienceBullet(${idx})">+ Add Bullet</button></li>`;
+          }
           html += '</ul>';
+        } else if (isEditMode) {
+          html += `<ul class="resume-exp-bullets"><li class="bullet-add-item"><button class="bullet-add-btn" onclick="addExperienceBullet(${idx})">+ Add Bullet</button></li></ul>`;
         }
         html += '</div>';
       });
@@ -2535,11 +2464,21 @@
   }
 
   function toggleEditMode() {
+    // Exit side-by-side mode before entering edit mode (incompatible views)
+    if (!isEditMode && isSideBySideMode) {
+      isSideBySideMode = false;
+      currentJdText = null;
+      document.querySelector('.view-modal-content').classList.remove('wide-mode');
+      document.getElementById('viewModalBody').classList.remove('side-by-side-layout');
+      const splitBtn = document.getElementById('splitViewBtn');
+      if (splitBtn) splitBtn.classList.remove('active');
+    }
+
     isEditMode = !isEditMode;
     const editBtn = document.getElementById('viewModalEditBtn');
     const saveBtn = document.getElementById('viewModalSaveBtn');
     const editBtnText = document.getElementById('editBtnText');
-    
+
     if (isEditMode) {
       editBtnText.textContent = 'Cancel';
       saveBtn.style.display = 'inline-block';
@@ -2612,35 +2551,48 @@
     }, 50);
   }
 
-  function exportToPDF() {
-    // Use browser's print-to-PDF functionality
-    const originalTitle = document.title;
-    const wasEditMode = isEditMode;
-    
-    // Set a descriptive filename for the PDF
-    if (currentResumeData && currentResumeData.name) {
-      document.title = `${currentResumeData.name}_Resume`;
+  async function exportToPDF() {
+    // Generate PDF using backend API
+    if (!currentResumeData || !currentResumeData.name) {
+      showNotification('No resume data available to export.', 'error');
+      return;
     }
     
-    // Temporarily exit edit mode for clean export
-    if (isEditMode) {
-      isEditMode = false;
-      renderResumeContent(currentResumeData);
-    }
-    
-    // Wait for render, then open print dialog
-    setTimeout(() => {
-      window.print();
+    try {
+      showNotification('Generating PDF...', 'info');
       
-      // Restore original title and edit mode
-      setTimeout(() => {
-        document.title = originalTitle;
-        if (wasEditMode) {
-          isEditMode = true;
-          renderResumeContent(currentResumeData);
-        }
-      }, 100);
-    }, 50);
+      const response = await fetch('/create_resume_pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': dashboardCredentials 
+            ? 'Basic ' + btoa(`${dashboardCredentials.username}:${dashboardCredentials.password}`)
+            : `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ resume_data: currentResumeData })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to generate PDF' }));
+        throw new Error(errorData.detail || 'Failed to generate PDF');
+      }
+      
+      // Download the PDF
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentResumeData.name.replace(/\s+/g, '_')}_Resume.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showNotification('✅ PDF downloaded successfully!', 'success');
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      showNotification('❌ Failed to generate PDF: ' + error.message, 'error');
+    }
   }
 
   async function saveResumeChanges() {
@@ -2873,6 +2825,157 @@
 
   function closeViewModal() {
     document.getElementById('viewModal').style.display = 'none';
+    isSideBySideMode = false;
+    currentJdText = null;
+    isEditMode = false;
+    document.querySelector('.view-modal-content').classList.remove('wide-mode');
+    document.getElementById('viewModalBody').classList.remove('side-by-side-layout');
+    const splitBtn = document.getElementById('splitViewBtn');
+    if (splitBtn) splitBtn.classList.remove('active');
+  }
+
+  async function toggleSideBySideMode() {
+    isSideBySideMode = !isSideBySideMode;
+    const splitBtn = document.getElementById('splitViewBtn');
+    const modalContent = document.querySelector('.view-modal-content');
+    const modalBody = document.getElementById('viewModalBody');
+
+    if (!isSideBySideMode) {
+      // Exit side-by-side — restore normal resume view
+      splitBtn.classList.remove('active');
+      modalContent.classList.remove('wide-mode');
+      modalBody.classList.remove('side-by-side-layout');
+      if (currentResumeData) renderResumeContent(currentResumeData);
+      return;
+    }
+
+    // Enter side-by-side — fetch JD if not already loaded
+    splitBtn.classList.add('active');
+    modalContent.classList.add('wide-mode');
+    modalBody.classList.add('side-by-side-layout');
+
+    // Show a loading placeholder while we fetch
+    modalBody.innerHTML = `
+      <div class="jd-side-panel">
+        <div class="side-panel-header">📋 Job Description</div>
+        <div class="side-panel-body" id="jdSidePanelBody">
+          <div style="text-align:center;padding:40px;color:var(--text-secondary);">
+            <div class="parse-loading-spinner" style="margin:0 auto;"></div>
+            <p style="margin-top:16px;font-size:13px;">Loading JD...</p>
+          </div>
+        </div>
+      </div>
+      <div class="resume-side-panel">
+        <div class="side-panel-header">📄 Resume</div>
+        <div class="side-panel-body" id="resumeSidePanelBody"></div>
+      </div>
+    `;
+
+    // Render the resume into the right panel immediately
+    const resumePanel = document.getElementById('resumeSidePanelBody');
+    if (currentResumeData && resumePanel) {
+      resumePanel.innerHTML = buildResumeHtml(currentResumeData, false);
+    }
+
+    // Fetch the JD text
+    try {
+      if (!currentJdText) {
+        const resp = await fetch(`/api/jobs/${currentRequestId}/download-jd`, {
+          headers: { 'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword) }
+        });
+        if (!resp.ok) throw new Error('Failed to load JD');
+        currentJdText = await resp.text();
+      }
+      const jdPanel = document.getElementById('jdSidePanelBody');
+      if (jdPanel) {
+        const lines = currentJdText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        jdPanel.innerHTML = lines.map(l => `<p class="jd-text-line">${l}</p>`).join('');
+      }
+    } catch (err) {
+      const jdPanel = document.getElementById('jdSidePanelBody');
+      if (jdPanel) jdPanel.innerHTML = `<p style="color:var(--danger);padding:20px;">❌ Failed to load job description</p>`;
+    }
+  }
+
+  function buildResumeHtml(data, editMode) {
+    let html = `<div id="resumeContentWrapper" class="format-modern font-size-medium${editMode ? ' resume-edit-active' : ''}">`;
+    if (data.name) html += `<div class="resume-header"><h1 class="resume-name">${data.name}</h1>`;
+    if (data.contact) {
+      const parts = [];
+      if (data.contact.email) parts.push(data.contact.email);
+      if (data.contact.phone) parts.push(data.contact.phone);
+      if (data.contact.location) parts.push(data.contact.location);
+      if (data.contact.linkedin) parts.push(data.contact.linkedin);
+      for (const [k, v] of Object.entries(data.contact)) {
+        if (!['email','phone','linkedin','location'].includes(k)) parts.push(v);
+      }
+      if (parts.length) html += `<div class="resume-contact-line">${parts.join(' • ')}</div>`;
+    }
+    html += '</div>';
+    if (data.summary) html += `<div class="resume-section"><h2 class="resume-section-title">Professional Summary</h2><p class="resume-summary">${data.summary}</p></div>`;
+    if (data.technical_skills) {
+      html += '<div class="resume-section"><h2 class="resume-section-title">Technical Skills</h2><div class="resume-skills-grid">';
+      for (const [cat, skills] of Object.entries(data.technical_skills)) {
+        if (Array.isArray(skills) && skills.length) html += `<div class="resume-skill-item"><strong>${cat}:</strong> <span>${skills.join(', ')}</span></div>`;
+      }
+      html += '</div></div>';
+    }
+    if (data.experience && data.experience.length) {
+      html += '<div class="resume-section"><h2 class="resume-section-title">Professional Experience</h2>';
+      data.experience.forEach((exp) => {
+        const jt = exp.job_title || exp.title || exp.role || 'Position';
+        const co = exp.company || exp.organization || 'Company';
+        const dur = exp.duration || exp.dates || exp.period || '';
+        html += `<div class="resume-experience-item"><div class="resume-exp-header"><div class="resume-exp-left"><div class="resume-exp-title">${jt}</div><div class="resume-exp-company">${co}</div></div><div class="resume-exp-duration">${dur}</div></div>`;
+        const bullets = exp.bullets || exp.points || exp.responsibilities || [];
+        if (bullets.length) {
+          html += '<ul class="resume-exp-bullets">';
+          bullets.forEach(b => { html += `<li><span class="bullet-content">${b}</span></li>`; });
+          html += '</ul>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    if (data.education && data.education.length) {
+      html += '<div class="resume-section"><h2 class="resume-section-title">Education</h2>';
+      data.education.forEach(edu => {
+        html += `<div class="resume-education-item"><div class="resume-edu-left"><div class="resume-edu-degree">${edu.degree||''}</div><div class="resume-edu-institution">${edu.institution||''}</div></div><div class="resume-edu-year">${edu.year||edu.graduation_date||''}</div></div>`;
+      });
+      html += '</div>';
+    }
+    if (data.projects && data.projects.length) {
+      html += '<div class="resume-section"><h2 class="resume-section-title">Projects</h2>';
+      data.projects.forEach(p => {
+        html += `<div class="resume-project-item"><div class="resume-project-title">${p.name||''}</div>`;
+        if (p.description) html += `<p class="resume-project-desc">${p.description}</p>`;
+        if (p.technologies) html += `<div class="resume-project-tech"><strong>Technologies:</strong> ${Array.isArray(p.technologies)?p.technologies.join(', '):p.technologies}</div>`;
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    if (data.certifications && data.certifications.length) {
+      html += '<div class="resume-section"><h2 class="resume-section-title">Certifications</h2><ul class="resume-cert-list">';
+      data.certifications.forEach(c => { html += `<li>${typeof c==='string'?c:c.name}</li>`; });
+      html += '</ul></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function addExperienceBullet(expIdx) {
+    if (!currentResumeData || !currentResumeData.experience || !currentResumeData.experience[expIdx]) return;
+    const exp = currentResumeData.experience[expIdx];
+    const bulletKey = exp.bullets ? 'bullets' : exp.points ? 'points' : exp.responsibilities ? 'responsibilities' : 'bullets';
+    if (!exp[bulletKey]) exp[bulletKey] = [];
+    exp[bulletKey].push('New bullet point — click to edit');
+    renderResumeContent(currentResumeData);
+    // Focus the newly added bullet for immediate editing
+    setTimeout(() => {
+      const allBullets = document.querySelectorAll(`[data-field^="experience.${expIdx}.bullets"]`);
+      const last = allBullets[allBullets.length - 1];
+      if (last) { last.focus(); document.execCommand('selectAll', false, null); }
+    }, 50);
   }
 
   // Generate cover letter from a completed job in dashboard
@@ -4290,7 +4393,7 @@
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
-      top: 20px;
+      top: 76px;
       right: 20px;
       background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : 'var(--accent)'};
       color: white;
@@ -4657,6 +4760,39 @@
     
     // Process queue if modal is not currently open
     processKeywordReviewQueue();
+  }
+
+  // Clear all fields in Generate Resume tab
+  async function clearAllJDFields() {
+    const confirmed = await customConfirm('Clear all fields? This will reset company name, job title, job link, and job description.', 'Clear All Fields');
+    if (!confirmed) return;
+    
+    // Clear company name
+    const companyInput = document.getElementById('companyNameJD');
+    if (companyInput) companyInput.value = '';
+    
+    // Clear job title
+    const jobTitleInput = document.getElementById('jobTitleJD');
+    if (jobTitleInput) jobTitleInput.value = '';
+    
+    // Clear job link
+    const jobLinkInput = document.getElementById('jobLinkJD');
+    if (jobLinkInput) jobLinkInput.value = '';
+    
+    // Clear job description
+    const jobDescInput = document.getElementById('jobDescriptionTab');
+    if (jobDescInput) jobDescInput.value = '';
+    
+    // Reset mode to default (Complete JD)
+    const completeJDRadio = document.querySelector('input[name="resumeMode"][value="complete_jd"]');
+    if (completeJDRadio) completeJDRadio.checked = true;
+    updateModeDescription();
+    
+    // Uncheck keyword review
+    const keywordReviewCheckbox = document.getElementById('enableKeywordReview');
+    if (keywordReviewCheckbox) keywordReviewCheckbox.checked = false;
+    
+    showNotification('🧹 All fields cleared!', 'success');
   }
 
   // Load Sample JD for the tab textarea
@@ -5032,6 +5168,10 @@
     }
 
     dashboardCredentials = { username, password };
+    
+    // Store credentials globally for API calls (Copy JD, etc.)
+    currentUsername = username;
+    currentPassword = password;
 
     try {
       await dashApiCall('/api/auth/login', { method: 'POST' });
@@ -5069,42 +5209,41 @@
   async function loadDashboardStats() {
     try {
       const stats = await dashApiCall('/api/user/stats');
-      
-      // Calculate progress percentages for visual effect
-      const totalProgress = Math.min((stats.total_resumes / 50) * 100, 100); // Scale to 50 resumes
-      const todayProgress = Math.min((stats.today_resumes / 10) * 100, 100); // Scale to 10 per day
+
+      const totalProgress = Math.min((stats.total_resumes / 50) * 100, 100);
+      const todayProgress = Math.min((stats.today_resumes / 10) * 100, 100);
       const activeProgress = (stats.active_jobs / stats.limits.max_concurrent_jobs) * 100;
-      
+
       document.getElementById('statsCards').innerHTML = `
         <div class="stat-card-modern">
           <div class="stat-ring-container">
             <svg class="stat-ring" viewBox="0 0 120 120">
               <circle class="stat-ring-bg" cx="60" cy="60" r="52" />
-              <circle class="stat-ring-progress" cx="60" cy="60" r="52" 
+              <circle class="stat-ring-progress" cx="60" cy="60" r="52"
                 style="stroke: #667eea; stroke-dashoffset: ${327 - (327 * totalProgress / 100)};" />
             </svg>
             <div class="stat-value-inside">${stats.total_resumes}</div>
           </div>
           <div class="stat-label-modern">TOTAL RESUMES</div>
         </div>
-        
+
         <div class="stat-card-modern">
           <div class="stat-ring-container">
             <svg class="stat-ring" viewBox="0 0 120 120">
               <circle class="stat-ring-bg" cx="60" cy="60" r="52" />
-              <circle class="stat-ring-progress" cx="60" cy="60" r="52" 
+              <circle class="stat-ring-progress" cx="60" cy="60" r="52"
                 style="stroke: #f5576c; stroke-dashoffset: ${327 - (327 * todayProgress / 100)};" />
             </svg>
             <div class="stat-value-inside">${stats.today_resumes}</div>
           </div>
           <div class="stat-label-modern">TODAY</div>
         </div>
-        
+
         <div class="stat-card-modern">
           <div class="stat-ring-container">
             <svg class="stat-ring" viewBox="0 0 120 120">
               <circle class="stat-ring-bg" cx="60" cy="60" r="52" />
-              <circle class="stat-ring-progress" cx="60" cy="60" r="52" 
+              <circle class="stat-ring-progress" cx="60" cy="60" r="52"
                 style="stroke: #00f2fe; stroke-dashoffset: ${327 - (327 * activeProgress / 100)};" />
             </svg>
             <div class="stat-value-inside">${stats.active_jobs}</div>
@@ -5230,6 +5369,39 @@
     const dropdown = document.getElementById(`kebab-${requestId}`);
     if (dropdown) {
       dropdown.style.display = 'none';
+    }
+  }
+
+  async function regenerateResume(requestId, companyName, jobTitle) {
+    try {
+      closeKebabMenu(requestId);
+      showDashMessage('Loading job data for regeneration...', 'info');
+
+      const response = await fetch(`/api/jobs/${requestId}/download-jd`, {
+        headers: { 'Authorization': 'Basic ' + btoa(currentUsername + ':' + currentPassword) }
+      });
+      if (!response.ok) throw new Error('Failed to load job description');
+      const jdText = await response.text();
+
+      const companyField = document.getElementById('companyNameJD');
+      const titleField = document.getElementById('jobTitleJD');
+      const jdField = document.getElementById('jobDescriptionTab');
+      const linkField = document.getElementById('jobLinkJD');
+
+      if (companyField) companyField.value = (companyName || '').replace(/\s*Link\s*$/, '').trim();
+      if (titleField) titleField.value = (jobTitle || '').trim();
+      if (jdField) jdField.value = jdText || '';
+      if (linkField) linkField.value = '';
+
+      switchTab('jd');
+      showNotification('Job loaded! Generating new resume...', 'info');
+      setTimeout(() => {
+        const generateBtn = document.getElementById('generateJDResumeBtn');
+        if (generateBtn) generateBtn.click();
+      }, 200);
+    } catch (error) {
+      console.error('Error in regenerateResume:', error);
+      showDashMessage('❌ Failed to load job data: ' + error.message, 'error');
     }
   }
 
@@ -5390,7 +5562,7 @@
             <button class="success" onclick="downloadResumeDocx('${requestId}', '${companyName}', '${jobTitle}'); closeKebabMenu('${requestId}')">
               <span>Download Resume</span>
             </button>
-            <button class="danger" onclick="if(confirm('Delete this resume?')) { deleteResume('${requestId}'); closeKebabMenu('${requestId}'); }">
+            <button class="danger" onclick="customConfirm('Delete this resume?', 'Confirm Delete').then(confirmed => { if(confirmed) { deleteResume('${requestId}'); closeKebabMenu('${requestId}'); } })">
               <span>Delete</span>
             </button>
           </div>
@@ -5474,7 +5646,7 @@
           statusHtml = `<span class="status-badge status-failed" style="font-size: 0.85em; padding: 4px 12px; border-radius: 12px; display: inline-block;">❌ Failed</span>`;
         } else if (job.status === 'completed') {
           // Show application status dropdown for completed resumes
-          statusHtml = `<select class="application-status-dropdown" data-job-id="${job.job_id}" onchange="updateApplicationStatus(${job.job_id}, this.value)" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--background); color: var(--text-primary); font-size: 0.85em; cursor: pointer;">
+          statusHtml = `<select class="application-status-dropdown" data-job-id="${job.job_id}" onchange="updateApplicationStatus(${job.job_id}, this.value)">
               <option value="resume_generated" ${applicationStatus === 'resume_generated' ? 'selected' : ''}>Resume Generated</option>
               <option value="applied" ${applicationStatus === 'applied' ? 'selected' : ''}>✅ Applied</option>
               <option value="screening" ${applicationStatus === 'screening' ? 'selected' : ''}>Screening</option>
@@ -5485,11 +5657,11 @@
         }
         
         return `
-        <tr data-request-id="${job.request_id}" data-job-id="${job.job_id}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseenter="this.style.background='var(--card)'" onmouseleave="this.style.background=''">
-          <td style="padding: 12px 16px; color: var(--text-primary); font-weight: 500;">
+        <tr data-request-id="${job.request_id}" data-job-id="${job.job_id}" style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseenter="this.style.background='var(--card)'" onmouseleave="this.style.background=''">
+          <td style="padding: 12px 16px; color: var(--text); font-weight: 500;">
             ${job.company_name} ${jobLinkHtml}
           </td>
-          <td style="padding: 12px 16px; color: var(--text-primary);">${job.job_title}</td>
+          <td style="padding: 12px 16px; color: var(--text);">${job.job_title}</td>
           <td style="padding: 12px 16px;">
             ${statusHtml}
           </td>
@@ -5511,6 +5683,9 @@
                 </button>
                 <button class="secondary" onclick="copyJobDescription('${job.request_id}'); closeKebabMenu('${job.request_id}')">
                   <span>Copy JD</span>
+                </button>
+                <button class="secondary" onclick="regenerateResume('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
+                  <span>Regenerate Resume</span>
                 </button>
                 <button class="success" onclick="downloadResumeDocx('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
                   <span>Download Resume</span>
@@ -5537,9 +5712,18 @@
                 Cancel
               </button>
             ` : `
-              <button class="danger-btn" style="padding: 6px 12px; font-size: 0.9em; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="console.log('[DELETE BTN] Clicked for:', '${job.request_id}'); customConfirm(&quot;Delete this failed job?&quot;, &quot;Confirm Delete&quot;).then(confirmed => { console.log('[DELETE BTN] Confirmed:', confirmed); if(confirmed) deleteResume(&quot;${job.request_id}&quot;); })">
-                Delete
-              </button>
+              <button class="kebab-menu-btn" onclick="toggleKebabMenu(event, '${job.request_id}')">⋮</button>
+              <div class="kebab-dropdown" id="kebab-${job.request_id}">
+                <button class="secondary" onclick="copyJobDescription('${job.request_id}'); closeKebabMenu('${job.request_id}')">
+                  <span>Copy JD</span>
+                </button>
+                <button class="secondary" onclick="regenerateResume('${job.request_id}', '${job.company_name}', '${job.job_title}'); closeKebabMenu('${job.request_id}')">
+                  <span>Regenerate Resume</span>
+                </button>
+                <button class="danger" onclick="customConfirm(&quot;Delete this failed job?&quot;, &quot;Confirm Delete&quot;).then(confirmed => { if(confirmed) { deleteResume(&quot;${job.request_id}&quot;); closeKebabMenu(&quot;${job.request_id}&quot;); } })">
+                  <span>Delete</span>
+                </button>
+              </div>
             `}
           </td>
         </tr>
@@ -5589,15 +5773,15 @@
       } else if (job.status === 'awaiting_feedback') {
         statusHtml = `<span class="status-badge status-awaiting_feedback">Review</span>`;
       } else if (job.status === 'failed') {
-        statusHtml = `<span class="status-badge status-failed">❌ Failed</span>`;
+        statusHtml = `<span class="status-badge status-failed">Failed</span>`;
       } else if (job.status === 'completed') {
         const statusLabels = {
           'resume_generated': 'Generated',
-          'applied': '✅ Applied',
+          'applied': 'Applied',
           'screening': 'Screening',
           'interview': 'Interview',
           'offer': 'Offer',
-          'rejected': '❌ Rejected'
+          'rejected': 'Rejected'
         };
         statusHtml = `<span class="status-badge status-completed">${statusLabels[applicationStatus] || 'Generated'}</span>`;
       }
@@ -6920,11 +7104,6 @@
 
   // ===== JOB SEARCH FUNCTIONALITY =====
   
-  const searchJobsBtn = document.getElementById('searchJobsBtn');
-  if (searchJobsBtn) {
-    searchJobsBtn.addEventListener('click', searchJobs);
-  }
-
   async function searchJobs() {
     const jobTitle = document.getElementById('jobSearchTitle').value.trim();
     
@@ -6932,53 +7111,26 @@
     const customLocation = document.getElementById('jobSearchLocationCustom').value.trim();
     const location = customLocation || 'remote OR us OR usa';
     
-    // Get date posted with null check
-    const datePostedEl = document.getElementById('jobSearchDate');
-    const datePosted = datePostedEl ? datePostedEl.value : 'week';
-    
-    // Get sort by with null check
-    const sortByEl = document.getElementById('jobSearchSort');
-    const sortBy = sortByEl ? sortByEl.value : 'relevance';
-    
-    const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value);
-    
-    // Get employment types (with null checks)
-    const employmentTypes = [];
-    const fullTimeEl = document.getElementById('typeFullTime');
-    const partTimeEl = document.getElementById('typePartTime');
-    const contractEl = document.getElementById('typeContract');
-    const internEl = document.getElementById('typeIntern');
-    
-    if (fullTimeEl && fullTimeEl.checked) employmentTypes.push('FULLTIME');
-    if (partTimeEl && partTimeEl.checked) employmentTypes.push('PARTTIME');
-    if (contractEl && contractEl.checked) employmentTypes.push('CONTRACTOR');
-    if (internEl && internEl.checked) employmentTypes.push('INTERN');
-    
-    // Default to full-time if no employment types selected
-    if (employmentTypes.length === 0) {
-      employmentTypes.push('FULLTIME');
+    const datePosted = document.getElementById('jobSearchDate').value || 'week';
+    const sortBy = document.getElementById('jobSearchSort')?.value || 'relevance';
+    const maxResults = parseInt(document.getElementById('jobSearchMaxResults').value) || 20;
+
+    // Read job type and remote preference from the unified dropdown
+    const selectedJobType = document.getElementById('jobTypeDisplay').value;
+    const workFromHome = selectedJobType === 'remote';
+    let employmentTypes;
+    if (selectedJobType === 'remote' || selectedJobType.includes(',')) {
+      employmentTypes = ['FULLTIME'];
+    } else {
+      employmentTypes = [selectedJobType];
     }
-    
-    // Get experience level
-    const experienceLevelEl = document.getElementById('jobExperienceLevel');
-    const experienceLevel = experienceLevelEl ? experienceLevelEl.value : '';
-    
-    // Get remote work preference
-    const remoteEl = document.getElementById('typeRemote');
-    const workFromHome = remoteEl && remoteEl.checked;
-    
-    // Get salary range (with null checks)
-    const salaryMinEl = document.getElementById('salaryMin');
-    const salaryMaxEl = document.getElementById('salaryMax');
-    const salaryFrequencyEl = document.getElementById('salaryFrequency');
-    
-    const salaryMin = salaryMinEl ? salaryMinEl.value : '';
-    const salaryMax = salaryMaxEl ? salaryMaxEl.value : '';
-    const salaryFrequency = salaryFrequencyEl ? salaryFrequencyEl.value : 'yearly';
-    
-    // Get selected source
-    const jobSourceEl = document.getElementById('jobSearchSource');
-    const selectedSource = jobSourceEl ? jobSourceEl.value : 'jsearch';
+
+    const experienceLevel = document.getElementById('jobExperienceLevel')?.value || '';
+    const salaryMin = document.getElementById('salaryMin')?.value;
+    const salaryMax = document.getElementById('salaryMax')?.value;
+    const salaryFrequency = document.getElementById('salaryFrequency')?.value || 'yearly';
+
+    const selectedSource = document.getElementById('jobSearchSource').value || 'jsearch';
     
     // Map source to backend sources list
     let sources = ['jsearch'];
@@ -6999,16 +7151,8 @@
       return;
     }
     
-    console.log('[JOB_SEARCH] Starting search with params:', {
-      job_title: jobTitle,
-      location: location,
-      max_results: maxResults,
-      employment_types: employmentTypes,
-      source: selectedSource,
-      sort_by: sortBy
-    });
-    
     // Show loading
+    const searchJobsBtn = document.getElementById('searchJobsBtn');
     document.getElementById('jobSearchLoading').style.display = 'block';
     document.getElementById('jobSearchResults').innerHTML = '';
     searchJobsBtn.disabled = true;
@@ -7041,7 +7185,7 @@
       });
       
       if (data.success) {
-        displayJobResults(data.jobs, data.cached, data.cache_hits);
+        displayJobResults(data.jobs, data.cached, data.cache_hits, data.cached_at);
       } else {
         throw new Error(data.detail || 'Failed to search jobs');
       }
@@ -7061,57 +7205,95 @@
     }
   }
 
-  function displayJobResults(jobs, cached = false, cacheHits = 0) {
+  function displayJobResults(jobs, cached = false, cacheHits = 0, cachedAt = null) {
     const resultsContainer = document.getElementById('jobSearchResults');
-    
-    if (jobs.length === 0) {
+
+    if (!jobs || jobs.length === 0) {
       resultsContainer.innerHTML = `
         <div class="no-results">
           <h3>No jobs found</h3>
-          <p>Try adjusting your search criteria</p>
+          <p>Try adjusting your search criteria or selecting a different source.</p>
         </div>
       `;
       return;
     }
-    
-    // Create cache info banner
-    const cacheInfo = cached ? `
-      <div class="cache-info-banner" style="background: var(--success-bg, #d4edda); color: var(--success-text, #155724); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-1 13v-2h2v2H9zm0-4V7h2v4H9z"/>
-        </svg>
-        <span><strong>Cached Results</strong> - Loaded from cache (${cacheHits} hits) • Faster & resource-efficient</span>
-      </div>
-    ` : '';
-    
+
+    const cacheTag = cached
+      ? `<span class="job-cache-badge" title="Loaded from cache — faster and resource-efficient">Cached${cacheHits > 1 ? ' (' + cacheHits + ' hits)' : ''}</span>`
+      : `<span class="job-fresh-badge">Fresh</span>`;
+
     resultsContainer.innerHTML = `
-      ${cacheInfo}
-      <h3 style="margin-bottom: 20px; color: var(--text);">Found ${jobs.length} jobs</h3>
+      <div class="job-results-meta">
+        <span class="job-results-count">${jobs.length} job${jobs.length !== 1 ? 's' : ''} found</span>
+        ${cacheTag}
+      </div>
       ${jobs.map(job => createJobCard(job)).join('')}
     `;
   }
 
+  function avatarColorForCompany(name) {
+    const palette = ['#4f46e5','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#65a30d','#be185d','#0369a1','#9333ea'];
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
+  }
+
   function createJobCard(job) {
+    const jobUrl = escapeHtml(job.link || job.url || '#');
+    const isRemote = job.is_remote || /remote/i.test(job.location || '');
+    const snippet = job.snippet || job.description || '';
+    const company = job.company || '';
+    const avatarLetter = company ? company[0].toUpperCase() : 'J';
+    const avatarColor = avatarColorForCompany(company);
+
+    let postedLabel = '';
+    const rawDate = job.posted_date || job.updated_at;
+    if (rawDate) {
+      try {
+        const d = new Date(rawDate);
+        const diff = Math.floor((Date.now() - d) / 86400000);
+        postedLabel = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : diff < 30 ? `${diff}d ago` : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } catch (_) {}
+    }
+
+    let salaryLabel = '';
+    if (job.salary_min || job.salary_max) {
+      const fmt = n => n >= 1000 ? '$' + Math.round(n / 1000) + 'k' : '$' + n;
+      salaryLabel = job.salary_min && job.salary_max
+        ? `${fmt(job.salary_min)} – ${fmt(job.salary_max)}`
+        : job.salary_min ? `From ${fmt(job.salary_min)}` : `Up to ${fmt(job.salary_max)}`;
+    }
+
+    const metaParts = [
+      job.location ? escapeHtml(job.location) : '',
+      postedLabel ? escapeHtml(postedLabel) : '',
+    ].filter(Boolean).join(' · ');
+
+    const badges = [
+      isRemote ? `<span class="job-badge job-badge-remote">Remote</span>` : '',
+      job.employment_type && job.employment_type !== 'Not specified' ? `<span class="job-badge job-badge-type">${escapeHtml(job.employment_type)}</span>` : '',
+      job.department ? `<span class="job-badge job-badge-dept">${escapeHtml(job.department)}</span>` : '',
+      salaryLabel ? `<span class="job-badge job-badge-salary">${escapeHtml(salaryLabel)}</span>` : '',
+    ].filter(Boolean).join('');
+
     return `
       <div class="job-card">
-        <div class="job-header">
-          <div>
-            <h3 class="job-title">${escapeHtml(job.title)}</h3>
-            <p class="job-company">${escapeHtml(job.company)}</p>
-            <p class="job-location">📍 ${escapeHtml(job.location)}</p>
+        <div class="job-avatar" style="background:${avatarColor}">${avatarLetter}</div>
+        <div class="job-content">
+          <div class="job-content-top">
+            <div class="job-content-main">
+              <h3 class="job-title"><a href="${jobUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(job.title)}</a></h3>
+              <p class="job-company">${escapeHtml(company)}</p>
+              ${metaParts ? `<p class="job-meta-line">${metaParts}</p>` : ''}
+            </div>
+            ${job.source ? `<span class="job-source-pill">${escapeHtml(job.source)}</span>` : ''}
           </div>
-          <span class="job-source">${escapeHtml(job.source)}</span>
-        </div>
-        
-        ${job.snippet ? `<p class="job-snippet">${escapeHtml(job.snippet)}</p>` : ''}
-        
-        <div class="job-actions">
-          <a href="${escapeHtml(job.link)}" target="_blank" rel="noopener noreferrer" class="job-link-btn">
-            View Job →
-          </a>
-          <button class="job-use-btn" onclick='useJobForResume(${JSON.stringify(job).replace(/'/g, "&#39;")})'>
-            Use for Resume
-          </button>
+          ${snippet ? `<p class="job-snippet">${escapeHtml(snippet.substring(0, 200))}${snippet.length > 200 ? '…' : ''}</p>` : ''}
+          ${badges ? `<div class="job-badges">${badges}</div>` : ''}
+          <div class="job-actions">
+            <a href="${jobUrl}" target="_blank" rel="noopener noreferrer" class="job-link-btn">View Job</a>
+            <button class="job-use-btn" onclick='useJobForResume(${JSON.stringify(job).replace(/'/g, "&#39;")})'>Use for Resume</button>
+          </div>
         </div>
       </div>
     `;
@@ -7139,7 +7321,7 @@
     const companyField = document.getElementById('companyNameJD');
     const titleField = document.getElementById('jobTitleJD');
     const linkField = document.getElementById('jobLinkJD');
-    const jdField = document.getElementById('jdTextarea');
+    const jdField = document.getElementById('jobDescriptionTab');
     
     // Fill company and title
     if (companyField) companyField.value = job.company || '';
@@ -7157,17 +7339,16 @@
       try {
         showResult('Fetching full job description...', 'info');
         
-        const response = await fetch('/api/scrape-job', {
+        const response = await fetch('/api/scrape-job-details', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: jobUrl })
         });
-        
+
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.job && data.job.description) {
-            description = data.job.description;
-            console.log('[USE_FOR_RESUME] Successfully fetched full description');
+          if (data.success && data.job_details && data.job_details.description) {
+            description = data.job_details.description;
           }
         }
       } catch (error) {
@@ -7188,216 +7369,20 @@
     }
   }
 
-  // Cache Stats Functions
-  async function loadCacheStats() {
-    try {
-      const response = await fetch('/api/cache/stats');
-      
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        displayCacheStats(data.stats);
-      } else {
-        throw new Error(data.detail || 'Failed to load cache stats');
-      }
-    } catch (error) {
-      console.error('Error loading cache stats:', error);
-      showResult('❌ Failed to load cache statistics', 'error');
-    }
-  }
-
-  function displayCacheStats(stats) {
-    const display = document.getElementById('cacheStatsDisplay');
-    
-    const popularSearchesHTML = stats.popular_searches.length > 0 ? `
-      <div style="margin-top: 20px;">
-        <h4 style="margin-bottom: 10px;">Most Popular Searches</h4>
-        <div style="display: grid; gap: 10px;">
-          ${stats.popular_searches.map(search => `
-            <div style="padding: 10px; background: var(--bg); border-radius: var(--radius-md); display: flex; justify-content: space-between;">
-              <span><strong>${escapeHtml(search.job_title)}</strong> in ${escapeHtml(search.location)}</span>
-              <span style="color: var(--accent); font-weight: 600;">${search.hits} hits</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    ` : '<p style="margin-top: 20px; color: var(--text-secondary);">No popular searches yet</p>';
-    
-    display.innerHTML = `
-      <h3 style="margin-bottom: 20px;">Cache Statistics</h3>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-        <div class="stat-card">
-          <div class="stat-value">${stats.total_cache_entries}</div>
-          <div class="stat-label">Total Cache Entries</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-value">${stats.active_entries}</div>
-          <div class="stat-label">Active Entries</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-value">${stats.expired_entries}</div>
-          <div class="stat-label">Expired Entries</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-value">${stats.total_cache_hits}</div>
-          <div class="stat-label">Total Cache Hits</div>
-        </div>
-      </div>
-      
-      ${popularSearchesHTML}
-      
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
-        <button onclick="clearExpiredCache()" class="secondary-btn" style="margin-right: 10px;">
-          Clear Expired Cache
-        </button>
-        <button onclick="clearAllCache()" class="secondary-btn" style="background: var(--danger, #dc3545); color: white;">
-          ⚠️ Clear All Cache
-        </button>
-      </div>
-    `;
-    
-    display.style.display = 'block';
-  }
-
-  async function clearExpiredCache() {
-    console.log('[DEBUG] clearExpiredCache function called');
-    
-    if (!confirm('Clear expired cache entries?')) {
-      console.log('[DEBUG] User cancelled clear expired cache action');
-      return;
-    }
-    
-    console.log('[DEBUG] User confirmed, sending request to clear expired cache');
-    
-    try {
-      const response = await fetch('/api/cache/clear', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action: 'expired' })
-      });
-      
-      console.log('[DEBUG] Clear expired cache response:', response.status, response.statusText);
-      
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        showResult(`✅ ${data.message}`, 'success');
-        loadCacheStats(); // Reload stats
-      } else {
-        throw new Error(data.detail || 'Failed to clear cache');
-      }
-    } catch (error) {
-      console.error('Error clearing cache:', error);
-      showResult('❌ Failed to clear cache', 'error');
-    }
-  }
-
-  async function clearAllCache() {
-    console.log('[DEBUG] clearAllCache function called');
-    
-    if (!confirm('⚠️ This will clear ALL cached job searches. Are you sure?')) {
-      console.log('[DEBUG] User cancelled clear cache action');
-      return;
-    }
-    
-    console.log('[DEBUG] User confirmed, sending request to clear cache');
-    
-    try {
-      const response = await fetch('/api/cache/clear', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action: 'all' })
-      });
-      
-      console.log('[DEBUG] Clear cache response:', response.status, response.statusText);
-      
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        showResult(`✅ ${data.message}`, 'success');
-        loadCacheStats(); // Reload stats
-      } else {
-        throw new Error(data.detail || 'Failed to clear cache');
-      }
-    } catch (error) {
-      console.error('Error clearing cache:', error);
-      showResult('❌ Failed to clear cache', 'error');
-    }
-  }
-
-  // Setup cache stats button
-  document.getElementById('viewCacheStatsBtn').addEventListener('click', function() {
-    const display = document.getElementById('cacheStatsDisplay');
-    if (display.style.display === 'none') {
-      loadCacheStats();
-      this.textContent = 'Hide Cache Statistics';
-    } else {
-      display.style.display = 'none';
-      this.textContent = 'View Cache Statistics';
-    }
-  });
-
-  // Show cache stats button when job results are displayed
-  const originalDisplayJobResults = displayJobResults;
-  displayJobResults = function(...args) {
-    originalDisplayJobResults.apply(this, args);
-    document.getElementById('viewCacheStatsBtn').style.display = 'inline-block';
-  };
-
-  // Debug function for testing cache clear - can be called from console
-  window.testClearCache = async function() {
-    console.log('[TEST] Testing clear cache API call directly');
-    try {
-      const response = await fetch('/api/cache/clear', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action: 'all' })
-      });
-      
-      console.log('[TEST] Response status:', response.status);
-      console.log('[TEST] Response headers:', [...response.headers.entries()]);
-      
-      const data = await response.json();
-      console.log('[TEST] Response data:', data);
-      
-      if (response.ok) {
-        console.log('[TEST] ✅ Clear cache API is working!');
-        return data;
-      } else {
-        console.error('[TEST] ❌ Clear cache API failed:', data);
-        return data;
-      }
-    } catch (error) {
-      console.error('[TEST] ❌ Error calling clear cache API:', error);
-      return error;
-    }
-  };
 
   // ===== DYNAMIC JOB SEARCH FUNCTIONS =====
   
   // ===== UNIFIED SEARCH FUNCTIONALITY =====
   
-  // Handle job type dropdown
-  const jobTypeDisplay = document.getElementById('jobTypeDisplay');
-  jobTypeDisplay.addEventListener('change', function() {
-    const selectedValue = this.value;
-    const selectedTypes = selectedValue.split(',');
-    
-    // Sync with hidden checkboxes
-    document.getElementById('typeFullTime').checked = selectedTypes.includes('FULLTIME');
-    document.getElementById('typePartTime').checked = selectedTypes.includes('PARTTIME');
-    document.getElementById('typeContract').checked = selectedTypes.includes('CONTRACTOR');
-    document.getElementById('typeRemote').checked = selectedTypes.includes('remote');
+  // Handle job type dropdown (syncs hidden legacy checkboxes for compatibility)
+  document.getElementById('jobTypeDisplay').addEventListener('change', function() {
+    const types = this.value.split(',');
+    const ft = document.getElementById('typeFullTime');
+    const pt = document.getElementById('typePartTime');
+    const ct = document.getElementById('typeContract');
+    if (ft) ft.checked = types.includes('FULLTIME') || this.value.includes(',');
+    if (pt) pt.checked = types.includes('PARTTIME');
+    if (ct) ct.checked = types.includes('CONTRACTOR');
   });
   
   // Show/hide Greenhouse company selection based on source dropdown
@@ -7472,13 +7457,12 @@
     const checkboxes = document.querySelectorAll('#greenhouseCompanySection input[type="checkbox"]:checked');
     checkboxes.forEach(cb => selectedCompanies.push(cb.value));
     
-    // Get job type filters (same as JSearch)
+    // Get job type from unified dropdown
+    const ghJobType = document.getElementById('jobTypeDisplay').value;
+    const remoteOnly = ghJobType === 'remote';
     const employmentTypes = [];
-    if (document.getElementById('typeFullTime').checked) employmentTypes.push('FULLTIME');
-    if (document.getElementById('typePartTime').checked) employmentTypes.push('PARTTIME');
-    if (document.getElementById('typeContract').checked) employmentTypes.push('CONTRACTOR');
-    
-    const remoteOnly = document.getElementById('typeRemote').checked;
+    if (!ghJobType.includes(',') && ghJobType !== 'remote') employmentTypes.push(ghJobType);
+    else employmentTypes.push('FULLTIME');
     
     // Get date posted filter
     const datePosted = document.getElementById('jobSearchDate').value;
@@ -7561,30 +7545,25 @@
   
   function displayGreenhouseResults(jobs, companiesSearched) {
     const resultsContainer = document.getElementById('jobSearchResults');
-    
-    if (jobs.length === 0) {
+
+    if (!jobs || jobs.length === 0) {
       resultsContainer.innerHTML = `
         <div class="no-results">
           <h3>No jobs found</h3>
-          <p>Try different companies or adjust your search criteria</p>
-          <p style="margin-top: 10px; color: var(--text-secondary);">
-            Searched: ${companiesSearched.join(', ')}
-          </p>
+          <p>Try different companies or adjust your search criteria.</p>
+          <p style="margin-top: 10px; color: var(--text-secondary); font-size: 13px;">Searched: ${companiesSearched.slice(0, 5).map(escapeHtml).join(', ')}${companiesSearched.length > 5 ? ` +${companiesSearched.length - 5} more` : ''}</p>
         </div>
       `;
       return;
     }
-    
-    // Create Greenhouse info banner
-    const greenhouseInfo = `
-      <div class="cache-info-banner" style="background: var(--primary-light, #e3f2fd); color: var(--primary-dark, #1565c0); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-        <span><strong>Greenhouse Results</strong> - High-quality jobs from ${companiesSearched.length} tech companies: ${companiesSearched.slice(0,3).join(', ')}${companiesSearched.length > 3 ? ` +${companiesSearched.length-3} more` : ''}</span>
-      </div>
-    `;
-    
+
+    const companySummary = companiesSearched.slice(0, 3).join(', ') + (companiesSearched.length > 3 ? ` +${companiesSearched.length - 3} more` : '');
+
     resultsContainer.innerHTML = `
-      ${greenhouseInfo}
-      <h3 style="margin-bottom: 20px; color: var(--text);">Found ${jobs.length} jobs from ${companiesSearched.length} companies</h3>
+      <div class="job-results-meta">
+        <span class="job-results-count">${jobs.length} job${jobs.length !== 1 ? 's' : ''} from ${companiesSearched.length} companies</span>
+        <span class="job-greenhouse-badge">Greenhouse · ${escapeHtml(companySummary)}</span>
+      </div>
       ${jobs.map(job => createJobCard(job)).join('')}
     `;
   }
@@ -7596,13 +7575,22 @@
   }
 
   // Location Suggestions
+  const LOCATION_PRESETS = [
+    'Remote', 'New York, NY', 'San Francisco, CA', 'Seattle, WA',
+    'Austin, TX', 'Boston, MA', 'Chicago, IL', 'Los Angeles, CA',
+    'Atlanta, GA', 'Denver, CO', 'Washington, DC', 'Miami, FL',
+    'Dallas, TX', 'San Jose, CA', 'Portland, OR', 'Nashville, TN'
+  ];
+
   function showLocationSuggestions(value) {
-    const suggestions = document.getElementById('locationSuggestions');
-    if (value.length > 0) {
-      suggestions.style.display = 'block';
-    } else {
-      suggestions.style.display = 'none';
-    }
+    const box = document.getElementById('locationSuggestions');
+    if (!value || value.length < 1) { box.style.display = 'none'; return; }
+    const filtered = LOCATION_PRESETS.filter(s => s.toLowerCase().includes(value.toLowerCase()));
+    if (filtered.length === 0) { box.style.display = 'none'; return; }
+    box.innerHTML = filtered.map(s =>
+      `<div class="suggestion-item" onclick="selectLocation('${s.replace(/'/g, "\\'")}')">${escapeHtml(s)}</div>`
+    ).join('');
+    box.style.display = 'block';
   }
 
   function selectLocation(location) {
@@ -7643,12 +7631,12 @@
 
 <!-- Custom Confirm Modal - Positioned at body level -->
 <div id="customConfirmModalBodyLevel" class="modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;align-items:center;justify-content:center;background:rgba(15,23,42,0.7);">
-  <div style="width:400px;max-width:90%;min-height:150px;padding:20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);background:#ffffff;position:relative;">
-    <h3 id="confirmModalTitleBodyLevel" style="margin:0 0 8px 0;color:#333;font-size:18px;font-weight:600;text-align:center;">Confirm Action</h3>
-    <p id="confirmModalMessageBodyLevel" style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.4;text-align:center;">Are you sure?</p>
-    <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
-      <button id="confirmModalCancelBodyLevel" style="padding:8px 20px;border:1px solid #ddd;background:#ffffff;color:#333;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">Cancel</button>
-      <button id="confirmModalOkBodyLevel" style="padding:8px 20px;border:none;background:#e74c3c;color:#ffffff;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">OK</button>
+  <div style="width:400px;max-width:90%;min-height:150px;padding:24px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.5);background:var(--card);border:1px solid var(--border);position:relative;">
+    <h3 id="confirmModalTitleBodyLevel" style="margin:0 0 10px 0;color:var(--text);font-size:18px;font-weight:600;text-align:center;">Confirm Action</h3>
+    <p id="confirmModalMessageBodyLevel" style="margin:0 0 24px 0;color:var(--text-secondary);font-size:14px;line-height:1.5;text-align:center;">Are you sure?</p>
+    <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+      <button id="confirmModalCancelBodyLevel" style="padding:9px 22px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.15s ease;">Cancel</button>
+      <button id="confirmModalOkBodyLevel" style="padding:9px 22px;border:none;background:var(--danger);color:#ffffff;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.15s ease;">Confirm</button>
     </div>
   </div>
 </div>

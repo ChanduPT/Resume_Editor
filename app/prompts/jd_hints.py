@@ -371,3 +371,152 @@ jd_hints_response_schema = {
 # # result = chat_completion(prompt, response_schema=jd_hints_response_schema)
 # # print(result)
 
+# ====================================================================
+# KEYWORD CATEGORIZATION PROMPT
+# ====================================================================
+# This prompt takes extracted keywords and categorizes them into:
+# 1. Core Keywords - Must-have skills that should appear across ALL roles
+# 2. Supplementary Keywords - Skills to distribute across specific roles
+# Also handles supplementation when keywords are insufficient
+
+CATEGORIZE_KEYWORDS_PROMPT = """
+SYSTEM:
+You are an expert resume strategist specializing in ATS optimization and intelligent keyword distribution.
+
+TASK:
+Perform TWO operations on the extracted JD keywords:
+1. IDENTIFY COMPETING TECHNOLOGIES — when the JD lists alternative tools, identify a PREFERRED winner per group and rank the others as secondary
+2. CATEGORIZE all keywords — split into core (all roles) and supplementary (distributed per role)
+
+NOTE: Competing tools are NOT banned — they may appear in different roles or in different contexts within the same role (e.g., "migrated FROM Redshift TO Snowflake" is valid). The goal is to PRIORITIZE one tool as the primary choice, not to eliminate the others.
+
+═══════════════════════════════════════════════════════════
+OPERATION 1: COMPETING TECHNOLOGY PRIORITIZATION
+═══════════════════════════════════════════════════════════
+
+A "competing group" is a set of tools that serve the same function and may appear as alternatives in the JD. Identify the PREFERRED tool per group.
+
+KNOWN COMPETING GROUPS — check if 2+ appear in the keyword list:
+- Data Warehouses: Snowflake, Redshift, BigQuery, Databricks SQL, Databricks, Azure Synapse, Synapse
+- Cloud Providers: AWS, Azure, GCP, Google Cloud (flag ONLY if they appear as alternatives, not if genuinely multi-cloud)
+- BI / Visualization: Tableau, Power BI, Looker, Qlik, Metabase, Sisense
+- Orchestration: Airflow, Prefect, Dagster, Luigi, Temporal, Mage
+- Message Queues / Streaming: Kafka, RabbitMQ, SQS, Kinesis, Pub/Sub
+- Vector Databases: Pinecone, Weaviate, Chroma, Qdrant, Milvus
+- Container Orchestration: Kubernetes, ECS, Fargate (flag only if clearly alternatives)
+
+WINNER SELECTION PRIORITY (apply in this order):
+1. Candidate already has it in existing_skills → HIGHEST PRIORITY, pick that one
+2. Appears in the JD Requirements section text (not just Preferred) → prefer this
+3. Appears first or most frequently in the keyword list → tiebreaker
+
+IMPORTANT RULES:
+- If only ONE technology from a known group appears in the keyword list, it is NOT competing — do NOT flag it
+- Only flag genuine conflicts where 2+ tools from the same group appear in the keyword list
+- ALL keywords (including non-winners) remain in core_keywords or supplementary_keywords
+- The winner goes into core_keywords; the non-winners go into supplementary_keywords
+
+═══════════════════════════════════════════════════════════
+OPERATION 2: KEYWORD CATEGORIZATION
+═══════════════════════════════════════════════════════════
+
+Categorize ALL keywords (including all competing tools):
+
+CORE KEYWORDS (20-30% of total):
+- Primary programming language(s) mentioned first or most frequently
+- Core framework/platform defining the role (e.g., React for frontend, Spark for data)
+- WINNER from each competing group (if applicable)
+- Technologies explicitly labeled "required" in the JD Requirements section
+- Technologies in the job title itself
+
+SUPPLEMENTARY KEYWORDS (70-80% of total):
+- Secondary and supporting tools
+- Non-winner tools from competing groups
+- Technologies from "Preferred" or "Nice to have" sections
+- Testing, monitoring, CI/CD, DevOps support tools
+- Domain-specific tools for specific sub-tasks
+
+═══════════════════════════════════════════════════════════
+SUPPLEMENTATION (when total keywords < 15)
+═══════════════════════════════════════════════════════════
+Add up to 5-8 common complementary industry-standard tools for the job domain.
+Mark these with "(supplemented)" suffix.
+
+═══════════════════════════════════════════════════════════
+INPUT
+═══════════════════════════════════════════════════════════
+Job Domain/Title: {job_domain}
+Number of Experience Roles: {num_roles}
+JD Requirements Section: {jd_requirements_text}
+JD Preferred Section: {jd_preferred_text}
+Extracted Technical Keywords: {technical_keywords}
+Candidate's Existing Skills: {existing_skills}
+
+═══════════════════════════════════════════════════════════
+OUTPUT FORMAT (STRICT JSON)
+═══════════════════════════════════════════════════════════
+Return ONLY valid JSON with this exact structure:
+{{
+  "competing_groups": [
+    {{
+      "group_name": "Data Warehouses",
+      "candidates": ["Snowflake", "Redshift"],
+      "winner": "Snowflake",
+      "secondary": ["Redshift"],
+      "reason": "Candidate has Snowflake in existing skills"
+    }}
+  ],
+  "core_keywords": ["Python", "Snowflake", "dbt"],
+  "supplementary_keywords": ["Airflow", "Redshift", "Terraform"],
+  "supplemented_keywords": [],
+  "reasoning": "Python and Snowflake are central; Redshift kept as secondary for distribution across older roles."
+}}
+
+- competing_groups: Each identified conflict with winner and secondary tools. Empty [] if none.
+- core_keywords: Must-haves for ALL roles (winners from competing groups go here)
+- supplementary_keywords: To distribute across roles (secondary competing tools go here, plus other support tools)
+- supplemented_keywords: Added keywords if total count < 15. Empty [] if not needed.
+- reasoning: 1-2 sentence summary
+"""
+
+categorize_keywords_response_schema = {
+    "type": "object",
+    "properties": {
+        "competing_groups": {
+            "type": "array",
+            "description": "Identified competing technology groups with preferred winner",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "group_name": {"type": "string"},
+                    "candidates": {"type": "array", "items": {"type": "string"}},
+                    "winner": {"type": "string"},
+                    "secondary": {"type": "array", "items": {"type": "string"}},
+                    "reason": {"type": "string"}
+                },
+                "required": ["group_name", "candidates", "winner", "secondary", "reason"]
+            }
+        },
+        "core_keywords": {
+            "type": "array",
+            "description": "Essential keywords that should appear across ALL roles",
+            "items": {"type": "string"}
+        },
+        "supplementary_keywords": {
+            "type": "array",
+            "description": "Secondary keywords to distribute across specific roles",
+            "items": {"type": "string"}
+        },
+        "supplemented_keywords": {
+            "type": "array",
+            "description": "Additional keywords added if original count was insufficient",
+            "items": {"type": "string"}
+        },
+        "reasoning": {
+            "type": "string",
+            "description": "Brief explanation of the categorization logic"
+        }
+    },
+    "required": ["competing_groups", "core_keywords", "supplementary_keywords", "supplemented_keywords", "reasoning"]
+}
+

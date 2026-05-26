@@ -193,6 +193,89 @@ async def manual_cleanup():
     finally:
         db.close()
 
+
+@app.get("/api/admin/token-stats")
+async def get_token_stats(days: int = 7, request_id: str = None):
+    """
+    Return token usage and cost breakdown for LLM calls.
+    Query params:
+      days       - look-back window (default 7)
+      request_id - optional: filter to a single resume job
+    """
+    from app.database import SessionLocal, LLMCallLog
+    from sqlalchemy import func as sqlfunc
+    from datetime import timedelta
+
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        q = db.query(LLMCallLog).filter(LLMCallLog.created_at >= cutoff)
+        if request_id:
+            q = q.filter(LLMCallLog.request_id == request_id)
+
+        rows = q.all()
+        if not rows:
+            return {"period_days": days, "total_calls": 0, "total_tokens": 0,
+                    "total_cost_usd": 0.0, "by_call_name": [], "by_model": [],
+                    "recent_calls": []}
+
+        total_calls  = len(rows)
+        total_tokens = sum(r.total_tokens for r in rows)
+        total_cost   = round(sum(r.cost_usd for r in rows), 6)
+
+        # Group by call_name
+        by_name: dict = {}
+        for r in rows:
+            k = r.call_name or "unknown"
+            if k not in by_name:
+                by_name[k] = {"call_name": k, "calls": 0, "prompt_tokens": 0,
+                              "completion_tokens": 0, "total_tokens": 0, "cost_usd": 0.0}
+            by_name[k]["calls"]             += 1
+            by_name[k]["prompt_tokens"]     += r.prompt_tokens
+            by_name[k]["completion_tokens"] += r.completion_tokens
+            by_name[k]["total_tokens"]      += r.total_tokens
+            by_name[k]["cost_usd"]          = round(by_name[k]["cost_usd"] + r.cost_usd, 6)
+
+        # Group by model
+        by_model: dict = {}
+        for r in rows:
+            k = r.model_name or "unknown"
+            if k not in by_model:
+                by_model[k] = {"model": k, "calls": 0, "total_tokens": 0, "cost_usd": 0.0}
+            by_model[k]["calls"]       += 1
+            by_model[k]["total_tokens"] += r.total_tokens
+            by_model[k]["cost_usd"]    = round(by_model[k]["cost_usd"] + r.cost_usd, 6)
+
+        # 20 most recent calls
+        recent = sorted(rows, key=lambda r: r.created_at, reverse=True)[:20]
+        recent_calls = [
+            {
+                "id":           r.id,
+                "call_name":    r.call_name,
+                "request_id":   r.request_id,
+                "model":        r.model_name,
+                "prompt_tokens":     r.prompt_tokens,
+                "completion_tokens": r.completion_tokens,
+                "cost_usd":     r.cost_usd,
+                "duration_s":   r.duration_seconds,
+                "success":      r.success,
+                "created_at":   r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in recent
+        ]
+
+        return {
+            "period_days":    days,
+            "total_calls":    total_calls,
+            "total_tokens":   total_tokens,
+            "total_cost_usd": total_cost,
+            "by_call_name":   sorted(by_name.values(), key=lambda x: -x["cost_usd"]),
+            "by_model":       sorted(by_model.values(), key=lambda x: -x["cost_usd"]),
+            "recent_calls":   recent_calls,
+        }
+    finally:
+        db.close()
+
 # --------------------- User Endpoints ---------------------
 
 app.get("/api/user/jobs")(get_user_jobs)
